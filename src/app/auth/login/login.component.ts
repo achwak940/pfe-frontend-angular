@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-
+import { LoginService } from '../login.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+  
   loginForm=new FormGroup({
     email:new FormControl('',[Validators.required,Validators.email]),
     password:new FormControl('',[Validators.required,Validators.minLength(8),
@@ -15,17 +16,46 @@ export class LoginComponent implements OnInit {
       ])
     
   })
+  errorMessage:string=''
+  currentUser:any=null
 
-  constructor() { }
+  constructor(private serviceAuth:LoginService) { }
+ ngOnInit(): void {
+  this.loginForm.valueChanges.subscribe(() => {
+    this.errorMessage = '';
+  });
+}
 
-  ngOnInit(): void {
+submit(): void {
+  if (this.loginForm.invalid) {
+    this.errorMessage = 'Formulaire invalide';
+    return;
+  }
 
+  const email = (this.loginForm.value.email || '').trim();
+  const password = (this.loginForm.value.password || '').trim();
+
+  if (!password) {
+    this.errorMessage = 'Le mot de passe est obligatoire';
+    return;
   }
-  submit(){
-  if(this.loginForm.valid){
-    console.log(this.loginForm.value);
-  }
-  else{
-    console.log("form is not valid");
-  }
-}}
+
+  this.serviceAuth.loginPostRequest(email, password).subscribe({
+    next: (res: any) => {
+      if (res.token) {
+        localStorage.setItem('token', res.token);
+        this.currentUser=res.user
+        console.log(res.token)
+        console.log(this.currentUser)
+        this.errorMessage = '';
+      } else if (res.erreur) {
+        this.errorMessage = res.erreur;
+      }
+    },
+    error: (err) => {
+      console.error('Http error', err);
+      this.errorMessage = 'Erreur serveur';
+    }
+  });
+}
+}

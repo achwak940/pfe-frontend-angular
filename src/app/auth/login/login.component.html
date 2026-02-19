@@ -1,4 +1,8 @@
 <form [formGroup]="loginForm" (ngSubmit)="submit()">
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
   <div class="form-group">
     <label for="email">Email address</label>
     <input
@@ -9,10 +13,11 @@
       placeholder="Enter email"
     />
   </div>
-     <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" style="color:red">
-      <div *ngIf="loginForm.get('email')?.errors?.['required']">Email obligatoire</div>
-      <div *ngIf="loginForm.get('email')?.errors?.['email']">Email invalide</div>
-    </div>
+  <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" style="color:red">
+    <div *ngIf="loginForm.get('email')?.errors?.['required']">Email obligatoire</div>
+    <div *ngIf="loginForm.get('email')?.errors?.['email']">Email invalide</div>
+  </div>
+
   <div class="form-group">
     <label for="password">Password</label>
     <input
@@ -23,11 +28,11 @@
       placeholder="Password"
     />
     <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" style="color:red">
-  <div *ngIf="loginForm.get('password')?.errors?.['required']">Password obligatoire</div>
-  <div *ngIf="loginForm.get('password')?.errors?.['minlength']">Min 8 caractères</div>
-  <div *ngIf="loginForm.get('password')?.errors?.['pattern']">1 majuscule, 1 chiffre, 1 symbole</div>
-</div>
-
+      <div *ngIf="loginForm.get('password')?.errors?.['required']">Password obligatoire</div>
+      <div *ngIf="loginForm.get('password')?.errors?.['minlength']">Min 8 caractères</div>
+      <div *ngIf="loginForm.get('password')?.errors?.['pattern']">1 majuscule, 1 chiffre, 1 symbole</div>
+    </div>
   </div>
+
   <button type="submit" class="btn btn-primary" [disabled]="!loginForm.valid">Login</button>
 </form>
