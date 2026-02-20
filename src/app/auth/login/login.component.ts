@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { LoginService } from '../login.service';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -19,7 +20,8 @@ export class LoginComponent implements OnInit {
   errorMessage:string=''
   currentUser:any=null
 
-  constructor(private serviceAuth:LoginService) { }
+  constructor(private serviceAuth:LoginService,
+    private router:Router) { }
  ngOnInit(): void {
   this.loginForm.valueChanges.subscribe(() => {
     this.errorMessage = '';
@@ -45,8 +47,18 @@ submit(): void {
       if (res.token) {
         localStorage.setItem('token', res.token);
         this.currentUser=res.user
-        console.log(res.token)
-        console.log(this.currentUser)
+         localStorage.setItem('currentUser', JSON.stringify(res.user));
+        if(this.currentUser.role==="ROLE_SUPER_ADMIN"){
+            this.router.navigate(['/super-admin-dashboard']);
+          
+        }
+        else if(this.currentUser.role==="ROLE_ADMIN"){
+
+  this.router.navigate(['/admin-dashboard']);
+        }else{
+          this.router.navigate(['/'])
+
+        }
         this.errorMessage = '';
       } else if (res.erreur) {
         this.errorMessage = res.erreur;

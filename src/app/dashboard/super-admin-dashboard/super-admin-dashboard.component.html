@@ -1,0 +1,242 @@
+<div class="dashboard-container">
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <i class="fas fa-bolt logo-icon"></i>
+      <span class="app-name">NEBULA</span>
+    </div>
+    
+    <nav class="sidebar-nav" aria-label="Navigation principale">
+      <ul>
+        <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <a routerLink="/dashboard">
+            <i class="fas fa-chart-pie"></i>
+            Tableau de bord
+          </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/users">
+            <i class="fas fa-users"></i>
+            Utilisateurs
+          </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/admins">
+            <i class="fas fa-user-shield"></i>
+            Administrateurs
+          </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/surveys">
+            <i class="fas fa-poll"></i>
+            Sondages
+          </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/questions-ai">
+            <i class="fas fa-robot"></i>
+            Questions & IA
+          </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/results">
+            <i class="fas fa-chart-line"></i>
+            Résultats
+          </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/exports">
+            <i class="fas fa-file-export"></i>
+            Exportations
+          </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/settings">
+            <i class="fas fa-cog"></i>
+            Paramètres
+          </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/security">
+            <i class="fas fa-shield-alt"></i>
+            Sécurité
+          </a>
+        </li>
+      </ul>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <span>v2.4 · thème {{ isDarkTheme ? 'sombre' : 'clair' }}</span>
+      <button class="theme-toggle-btn" (click)="toggleTheme()" aria-label="Changer le thème">
+        <i class="fas" [ngClass]="isDarkTheme ? 'fa-sun' : 'fa-moon'"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========== MAIN PANEL ========== -->
+  <main class="main-area">
+    <!-- top navbar -->
+    <header class="top-navbar">
+      <div class="page-title">
+        <h1>Tableau de bord <span class="badge subtle">super admin</span></h1>
+      </div>
+      <div class="navbar-actions">
+        <div class="search-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" placeholder="Rechercher..." class="search-input" aria-label="Rechercher">
+        </div>
+        <button class="icon-button" aria-label="Notifications" (click)="toggleNotifications()">
+          <i class="fas fa-bell"></i>
+          <span class="dot-notif" *ngIf="hasNotifications"></span>
+        </button>
+        <div class="profile-dropdown" (click)="toggleProfileMenu()">
+          <img [src]="profileImage" alt="Admin" class="avatar">
+          <i class="fas fa-chevron-down"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- main content -->
+    <div class="content">
+      <!-- stats cards -->
+      <section class="cards-grid" aria-label="Indicateurs clés">
+        <article class="stat-card" *ngFor="let stat of statsCards">
+          <div class="stat-icon"><i class="fas" [ngClass]="stat.icon"></i></div>
+          <div class="stat-details">
+            <span class="stat-label">{{ stat.label }}</span>
+            <span class="stat-value">{{ stat.value }}</span>
+            <span class="stat-trend" [class.positive]="stat.trend > 0" [class.neutral]="stat.trend === 0">
+              <i class="fas" [ngClass]="{
+                'fa-arrow-up': stat.trend > 0,
+                'fa-minus': stat.trend === 0,
+                'fa-arrow-down': stat.trend < 0
+              }"></i>
+              {{ stat.trendText }}
+            </span>
+          </div>
+        </article>
+      </section>
+
+      <!-- graphiques -->
+      <section class="charts-row">
+        <div class="chart-container">
+          <h3>Réponses aux sondages <span class="badge outline">hebdomadaire</span></h3>
+          <div class="chart-placeholder bars-placeholder">
+            <div class="fake-bar" *ngFor="let height of chartBars" [style.height.px]="height"></div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <h3>Utilisation IA <span class="badge outline">tendance</span></h3>
+          <div class="chart-placeholder line-placeholder">
+            <svg width="200" height="70" viewBox="0 0 200 70" class="line-svg">
+              <polyline points="0,60 20,40 40,55 60,25 80,40 100,45 120,30 140,43 160,35 180,20 200,30" stroke="#9D50BB" stroke-width="3" fill="none"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- activité récente -->
+      <section class="recent-activity">
+        <div class="section-header">
+          <h2><i class="fas fa-history"></i> Activité récente (utilisateurs / sondages)</h2>
+          <button class="btn-secondary btn-small" (click)="exportActivity()">
+            <i class="fas fa-download"></i> exporter
+          </button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Action</th>
+                <th>Sondage</th>
+                <th>Statut</th>
+                <th>Heure</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let activity of recentActivities">
+                <td>
+                  <span class="user-cell">
+                    <img [src]="activity.userAvatar" [alt]="activity.user">
+                    {{ activity.user }}
+                  </span>
+                </td>
+                <td>{{ activity.action }}</td>
+                <td>{{ activity.survey }}</td>
+                <td>
+                  <span class="badge-status" [class.actif]="activity.status === 'actif'" 
+                        [class.inactif]="activity.status === 'inactif'">
+                    {{ activity.status }}
+                  </span>
+                </td>
+                <td>{{ activity.time }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- filtres et actions -->
+      <div class="utility-row">
+        <div class="filter-card">
+          <span class="filter-label"><i class="fas fa-sliders-h"></i> Filtres rapides</span>
+          <div class="filter-group">
+            <select class="form-select" aria-label="Rôle" [(ngModel)]="selectedRole">
+              <option value="all">Tous les rôles</option>
+              <option value="admin">Admin</option>
+              <option value="user">Utilisateur</option>
+            </select>
+            <input type="text" class="form-input" placeholder="ID" [(ngModel)]="searchId">
+            <button class="btn-primary btn-small" (click)="applyAIFilters()">
+              <i class="fas fa-magic"></i> Appliquer IA
+            </button>
+          </div>
+        </div>
+        <div class="buttons-demo">
+          <button class="btn-primary" (click)="createNewSurvey()">
+            <i class="fas fa-plus-circle"></i> Nouveau sondage
+          </button>
+          <button class="btn-secondary" (click)="syncData()">
+            <i class="fas fa-sync-alt"></i> Synchroniser
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Panneau de notifications (dropdown) -->
+<div class="notifications-panel" *ngIf="showNotifications">
+  <div class="notifications-header">
+    <h3>Notifications</h3>
+    <span class="badge">{{ notifications.length }}</span>
+  </div>
+  <div class="notifications-list">
+    <div class="notification-item" *ngFor="let notif of notifications">
+      <i class="fas" [ngClass]="notif.icon"></i>
+      <div class="notification-content">
+        <p>{{ notif.message }}</p>
+        <span class="notification-time">{{ notif.time }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Menu profil (dropdown) -->
+<div class="profile-menu" *ngIf="showProfileMenu">
+  <div class="profile-header">
+    <img [src]="profileImage" alt="Admin">
+    <div>
+      <h4>{{ getCurrentUserName() }}</h4>
+      <p>{{ getCurrentUserEmail() }}</p>
+    </div>
+  </div>
+  <ul class="profile-menu-items">
+    <li><a href="#"><i class="fas fa-user"></i> Mon profil</a></li>
+    <li><a href="#"><i class="fas fa-cog"></i> Paramètres</a></li>
+    <li><a href="#"><i class="fas fa-shield-alt"></i> Sécurité</a></li>
+    <li class="divider"></li>
+    <li><a href="#" class="logout" (click)="logout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+  </ul>
+</div>

@@ -1,38 +1,73 @@
-<form [formGroup]="loginForm" (ngSubmit)="submit()">
-  <div *ngIf="errorMessage" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
-
-  <div class="form-group">
-    <label for="email">Email address</label>
-    <input
-      type="email"
-      id="email"
-      formControlName="email"
-      class="form-control"
-      placeholder="Enter email"
-    />
-  </div>
-  <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" style="color:red">
-    <div *ngIf="loginForm.get('email')?.errors?.['required']">Email obligatoire</div>
-    <div *ngIf="loginForm.get('email')?.errors?.['email']">Email invalide</div>
-  </div>
-
-  <div class="form-group">
-    <label for="password">Password</label>
-    <input
-      type="password"
-      id="password"
-      formControlName="password"
-      class="form-control"
-      placeholder="Password"
-    />
-    <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" style="color:red">
-      <div *ngIf="loginForm.get('password')?.errors?.['required']">Password obligatoire</div>
-      <div *ngIf="loginForm.get('password')?.errors?.['minlength']">Min 8 caractères</div>
-      <div *ngIf="loginForm.get('password')?.errors?.['pattern']">1 majuscule, 1 chiffre, 1 symbole</div>
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo Placeholder -->
+    <div class="logo-wrapper">
+      <div class="logo-circle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
     </div>
-  </div>
 
-  <button type="submit" class="btn btn-primary" [disabled]="!loginForm.valid">Login</button>
-</form>
+    <!-- Header Text -->
+    <h1 class="welcome-title">Welcome Back</h1>
+    <p class="welcome-subtitle">Sign in to your account</p>
+
+    <!-- Form (unchanged structure) -->
+    <form [formGroup]="loginForm" (ngSubmit)="submit()">
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <div class="input-wrapper">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </span>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="form-control"
+            placeholder="Enter email"
+          />
+        </div>
+      </div>
+      <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="error-message">
+        <div *ngIf="loginForm.get('email')?.errors?.['required']">Email obligatoire</div>
+        <div *ngIf="loginForm.get('email')?.errors?.['email']">Email invalide</div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </span>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="form-control"
+            placeholder="Password"
+          />
+        </div>
+      </div>
+      <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error-message">
+        <div *ngIf="loginForm.get('password')?.errors?.['required']">Password obligatoire</div>
+        <div *ngIf="loginForm.get('password')?.errors?.['minlength']">Min 8 caractères</div>
+        <div *ngIf="loginForm.get('password')?.errors?.['pattern']">1 majuscule, 1 chiffre, 1 symbole</div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="!loginForm.valid">Login</button>
+    </form>
+  </div>
+</div>
