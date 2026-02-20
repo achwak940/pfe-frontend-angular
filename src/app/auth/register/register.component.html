@@ -1,1 +1,160 @@
-<p>register works!</p>
+<div class="registration-container">
+  <div class="form-card">
+    <div class="card-header">
+      <h2 class="form-title">Create Account</h2>
+      <p class="form-subtitle">Join our community today</p>
+    </div>
+    
+    <form [formGroup]="registerForm" (ngSubmit)="submit()" class="registration-form">
+      
+      <!-- First Name Field -->
+      <div class="form-group">
+        <div class="input-wrapper" [class.error]="submitted && registerForm.controls['prenom'].errors?.['required']">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <input 
+            type="text" 
+            id="firstName" 
+            formControlName="prenom" 
+            placeholder=" "
+            class="form-input"
+          >
+          <label for="firstName" class="floating-label">First Name</label>
+        </div>
+        <div class="error-message" *ngIf="submitted && registerForm.controls['prenom'].errors?.['required']">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>First name is required</span>
+        </div>
+      </div>
+
+      <!-- Last Name Field -->
+      <div class="form-group">
+        <div class="input-wrapper" [class.error]="submitted && registerForm.controls['nom'].errors?.['required']">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <input 
+            type="text" 
+            id="lastName" 
+            formControlName="nom" 
+            placeholder=" "
+            class="form-input"
+          >
+          <label for="lastName" class="floating-label">Last Name</label>
+        </div>
+        <div class="error-message" *ngIf="submitted && registerForm.controls['nom'].errors?.['required']">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Last name is required</span>
+        </div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <div class="input-wrapper" [class.error]="submitted && (registerForm.controls['email'].errors?.['required'] || registerForm.controls['email'].errors?.['email'])">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" stroke-width="2"/>
+            <path d="M22 7L12 14L2 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            placeholder=" "
+            class="form-input"
+          >
+          <label for="email" class="floating-label">Email Address</label>
+        </div>
+        <div class="error-message" *ngIf="submitted && registerForm.controls['email'].errors?.['required']">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Email is required</span>
+        </div>
+        <div class="error-message" *ngIf="submitted && registerForm.controls['email'].errors?.['email']">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Please enter a valid email</span>
+        </div>
+        <div class="error-message" *ngIf="submitted && registerForm.controls['email'].errors?.['serverError']">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>{{ registerForm.controls['email'].errors?.['serverError'] }}</span>
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <div class="input-wrapper" [class.error]="submitted && (registerForm.controls['mot_de_passe'].errors?.['required'] || registerForm.controls['mot_de_passe'].errors?.['minlength'] || registerForm.controls['mot_de_passe'].errors?.['pattern'])">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M7 11V7C7 4.23858 9.23858 2 12 2C14.7614 2 17 4.23858 17 7V11" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
+          </svg>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="mot_de_passe" 
+            placeholder=" "
+            class="form-input"
+          >
+          <label for="password" class="floating-label">Password</label>
+        </div>
+        <div class="error-message" *ngIf="submitted && registerForm.controls['mot_de_passe'].errors?.['required']">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Password is required</span>
+        </div>
+        <div class="error-message" *ngIf="submitted && registerForm.controls['mot_de_passe'].errors?.['minlength']">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Minimum 8 characters</span>
+        </div>
+        <div class="error-message" *ngIf="submitted && registerForm.controls['mot_de_passe'].errors?.['pattern']">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Uppercase, number & special character</span>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-button">
+        <span>Sign Up</span>
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="success-message" *ngIf="successMessage">
+        <svg class="success-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>{{ successMessage }}</span>
+      </div>
+
+      <div class="login-link">
+        <span>Already have an account?</span>
+        <a href="#" class="signin-link">Sign In</a>
+      </div>
+    </form>
+  </div>
+</div>
