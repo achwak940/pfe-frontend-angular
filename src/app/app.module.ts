@@ -8,7 +8,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { FormsModule } from '@angular/forms';
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+   
   ],
   imports: [
     BrowserModule,

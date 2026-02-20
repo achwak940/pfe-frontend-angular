@@ -1,0 +1,1094 @@
+/* ===== RESET & LIGHT PURPLE BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  background: #f2eaff;
+}
+
+/* main container - FULL WIDTH */
+.dashboard {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  padding: 2.2rem;
+}
+
+/* ===== ICONS SYSTEM (pure CSS) ===== */
+.icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  position: relative;
+  background: transparent;
+}
+
+/* search icon */
+.icon-search::before {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #6f4fbb;
+  border-radius: 50%;
+  left: 2px;
+  top: 2px;
+}
+.icon-search::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 8px;
+  background: #6f4fbb;
+  transform: rotate(-45deg);
+  right: 3px;
+  bottom: 3px;
+}
+
+/* filter/settings icon */
+.icon-filter::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 2px;
+  background: #6f4fbb;
+  top: 4px;
+  left: 3px;
+  box-shadow: 0 5px 0 #6f4fbb, 0 10px 0 #6f4fbb;
+}
+.icon-filter::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #6f4fbb;
+  top: 2px;
+  left: 8px;
+  box-shadow: 0 10px 0 #6f4fbb;
+}
+
+/* status dot icon */
+.icon-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #40c97e;
+  box-shadow: 0 0 0 2px #e0f5e4;
+}
+.icon-dot.inactive {
+  background: #f48080;
+  box-shadow: 0 0 0 2px #ffe2e2;
+}
+
+/* bell icon */
+.icon-bell::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #6f4fbb;
+  border-radius: 50% 50% 0 0;
+  top: 0;
+  left: 2px;
+}
+.icon-bell::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #6f4fbb;
+  border-radius: 50%;
+  bottom: -2px;
+  left: 8px;
+}
+
+/* close icon (modal) */
+.icon-close::before,
+.icon-close::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 2px;
+  background: #b89ef0;
+  top: 9px;
+  left: 1px;
+}
+.icon-close::before {
+  transform: rotate(45deg);
+}
+.icon-close::after {
+  transform: rotate(-45deg);
+}
+.icon-close:hover::before,
+.icon-close:hover::after {
+  background: #6d44b5;
+}
+
+/* left/right pagination icons */
+.icon-prev::before {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-left: 2px solid #4d3780;
+  border-bottom: 2px solid #4d3780;
+  transform: rotate(45deg);
+  left: 8px;
+  top: 6px;
+}
+.icon-next::before {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #4d3780;
+  border-top: 2px solid #4d3780;
+  transform: rotate(45deg);
+  left: 4px;
+  top: 6px;
+}
+
+/* eye icon (view details) */
+.icon-eye::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #502e9e;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(45deg);
+  left: 2px;
+  top: 1px;
+}
+.icon-eye::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #502e9e;
+  left: 7px;
+  top: 6px;
+}
+
+/* toggle switch (pure CSS) */
+.toggle-switch {
+  width: 40px;
+  height: 22px;
+  background: #d9c6ff;
+  border-radius: 40px;
+  display: inline-block;
+  position: relative;
+  border: 1px solid #b69eff;
+}
+.toggle-switch::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  transition: left 0.2s;
+  box-shadow: 0 1px 4px #9f86d4;
+}
+.toggle-active .toggle-switch::after {
+  left: 20px;
+}
+.toggle-active .toggle-switch {
+  background: #9f7aea;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1 {
+  font-size: 2.2rem;
+  font-weight: 600;
+  background: linear-gradient(130deg, #5b3e96, #b18aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* notification dropdown */
+.notification-wrapper {
+  position: relative;
+}
+.notif-trigger {
+  display: block;
+  width: 32px;
+  height: 32px;
+  cursor: default;
+}
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #e3418b;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 30px;
+  border: 2px solid white;
+}
+.notif-dropdown {
+  display: none;
+  position: absolute;
+  top: 40px;
+  right: -10px;
+  background: white;
+  min-width: 300px;
+  border-radius: 2rem;
+  box-shadow: 0 30px 40px -20px #ac93e0;
+  padding: 1rem;
+  z-index: 50;
+  border: 1px solid #eeddff;
+}
+.notification-wrapper:hover .notif-dropdown {
+  display: block;
+}
+.notif-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem;
+  border-radius: 1.5rem;
+  transition: background 0.2s;
+}
+.notif-item:hover {
+  background: #f3eaff;
+}
+.notif-avatar {
+  width: 36px;
+  height: 36px;
+  background: #d7c3ff;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #3b2670;
+}
+.notif-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #2d1b4e;
+}
+
+.avatar-main {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(145deg, #dac5ff, #c4acfc);
+  border-radius: 40% 60% 40% 60% / 50% 40% 60% 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #3b2670;
+  box-shadow: 0 10px 14px #cbb2f5;
+}
+
+/* ===== BOUTON AJOUTER ===== */
+.btn-add {
+  background: linear-gradient(145deg, #9f7aea, #b595ff);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(159, 122, 234, 0.3);
+  transition: all 0.2s;
+}
+.btn-add:hover {
+  background: linear-gradient(145deg, #8b6cd9, #a27ee9);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px rgba(159, 122, 234, 0.4);
+}
+
+/* Icon plus */
+.icon-plus::before,
+.icon-plus::after {
+  content: "";
+  position: absolute;
+  background: white;
+}
+.icon-plus::before {
+  width: 2px;
+  height: 14px;
+  top: 3px;
+  left: 9px;
+}
+.icon-plus::after {
+  width: 14px;
+  height: 2px;
+  top: 9px;
+  left: 3px;
+}
+
+/* Icon edit (crayon) */
+.icon-edit::before {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #6f4fbb;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  left: 2px;
+  top: 2px;
+}
+.icon-edit::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 2px;
+  background: #6f4fbb;
+  transform: rotate(45deg);
+  left: 10px;
+  top: 4px;
+}
+
+/* Icon block (interdit) */
+.icon-block::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f48080;
+  border-radius: 50%;
+  left: 0;
+  top: 0;
+}
+.icon-block::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 2px;
+  background: #f48080;
+  transform: rotate(45deg);
+  left: 2px;
+  top: 7px;
+}
+
+/* Icon plus large pour modal */
+.icon-plus-large::before,
+.icon-plus-large::after {
+  content: "";
+  position: absolute;
+  background: white;
+}
+.icon-plus-large::before {
+  width: 4px;
+  height: 24px;
+  top: 8px;
+  left: 18px;
+}
+.icon-plus-large::after {
+  width: 24px;
+  height: 4px;
+  top: 18px;
+  left: 8px;
+}
+
+/* Icon edit large pour modal */
+.icon-edit-large::before,
+.icon-edit-large::after {
+  content: "";
+  position: absolute;
+  background: white;
+}
+.icon-edit-large::before {
+  width: 4px;
+  height: 24px;
+  background: white;
+  transform: rotate(45deg);
+  top: 10px;
+  left: 18px;
+}
+.icon-edit-large::after {
+  width: 20px;
+  height: 4px;
+  background: white;
+  transform: rotate(45deg);
+  top: 18px;
+  left: 8px;
+}
+
+/* Icon warning */
+.icon-warning::before {
+  content: "!";
+  position: absolute;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #f48080;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ===== FILTERS ===== */
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 1rem 1.5rem;
+  border-radius: 4rem;
+  border: 1px solid #fff1ff;
+}
+
+.search-field {
+  flex: 2;
+  min-width: 250px;
+  display: flex;
+  align-items: center;
+  background: #fbf6ff;
+  border-radius: 3rem;
+  padding: 0 1.2rem;
+  border: 1px solid #e7dbff;
+}
+.search-field:focus-within {
+  border-color: #b18aff;
+  box-shadow: 0 0 0 4px rgba(186, 150, 255, 0.25);
+}
+.search-field .icon {
+  margin-right: 8px;
+}
+.search-field input {
+  border: none;
+  background: transparent;
+  padding: 0.9rem 0;
+  width: 100%;
+  outline: none;
+  color: #2d1b4e;
+}
+.search-field input::placeholder {
+  color: #c5b0f0;
+}
+
+.filter-dropdown {
+  flex: 1;
+  min-width: 140px;
+  background: #fbf6ff;
+  border: 1px solid #e7dbff;
+  border-radius: 3rem;
+  padding: 0 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.filter-dropdown select {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-weight: 500;
+  color: #3f2b6e;
+  cursor: pointer;
+}
+
+/* ===== USER CARDS ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.user-card {
+  background: white;
+  border-radius: 2.5rem;
+  padding: 1.8rem 1.5rem;
+  box-shadow: 0 18px 30px -12px rgba(148, 113, 209, 0.3);
+  transition: transform 0.25s ease, box-shadow 0.25s;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+.user-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 30px 40px -14px #b595fc;
+  border-color: #e9daff;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+.avatar-init {
+  width: 64px;
+  height: 64px;
+  border-radius: 28px;
+  background: #dcc9ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: #3b2670;
+  box-shadow: 0 8px 14px #d1bcfa;
+}
+.user-info h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #281b44;
+}
+.user-info .email {
+  font-size: 0.8rem;
+  color: #7b64b3;
+}
+
+.badge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0 1.2rem;
+}
+.role-tag {
+  background: #eee4ff;
+  padding: 0.3rem 1.2rem;
+  border-radius: 40px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #492d89;
+  border: 1px solid #dcccff;
+}
+.status-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  border-top: 1px solid #f0eaff;
+  padding-top: 1.2rem;
+}
+
+.role-selector {
+  background: #f2ebff;
+  border: 1px solid #dcccff;
+  border-radius: 2rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.7rem;
+  color: #3e2970;
+  outline: none;
+}
+
+/* ===== BOUTONS D'ACTION SUR LES CARTES ===== */
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.icon-btn:hover {
+  background: #f0e6ff;
+  transform: scale(1.1);
+}
+
+.view-btn:hover {
+  background: #e2d2ff;
+}
+.edit-btn:hover {
+  background: #fff0d9;
+}
+.edit-btn .icon-edit::before,
+.edit-btn .icon-edit::after {
+  border-color: #f6b83e;
+  background: #f6b83e;
+}
+.block-btn:hover {
+  background: #ffe5e5;
+}
+.block-btn .icon-block::before,
+.block-btn .icon-block::after {
+  border-color: #f48080;
+  background: #f48080;
+}
+
+/* ===== MODAL SYSTEM ===== */
+.modal-toggle {
+  display: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(93, 70, 138, 0.3);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+/* Modal triggers pour les détails */
+#modal-1:checked ~ .dashboard .overlay-1,
+#modal-2:checked ~ .dashboard .overlay-2,
+#modal-3:checked ~ .dashboard .overlay-3,
+#modal-4:checked ~ .dashboard .overlay-4,
+#modal-5:checked ~ .dashboard .overlay-5,
+#modal-6:checked ~ .dashboard .overlay-6 {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Modal triggers pour l'ajout */
+#modal-add:checked ~ .dashboard .overlay-add {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Modal triggers pour la modification */
+#modal-edit-1:checked ~ .dashboard .overlay-edit-1,
+#modal-edit-2:checked ~ .dashboard .overlay-edit-2,
+#modal-edit-3:checked ~ .dashboard .overlay-edit-3,
+#modal-edit-4:checked ~ .dashboard .overlay-edit-4,
+#modal-edit-5:checked ~ .dashboard .overlay-edit-5,
+#modal-edit-6:checked ~ .dashboard .overlay-edit-6 {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Modal triggers pour le blocage */
+#modal-block-1:checked ~ .dashboard .overlay-block-1,
+#modal-block-2:checked ~ .dashboard .overlay-block-2,
+#modal-block-3:checked ~ .dashboard .overlay-block-3,
+#modal-block-4:checked ~ .dashboard .overlay-block-4,
+#modal-block-5:checked ~ .dashboard .overlay-block-5,
+#modal-block-6:checked ~ .dashboard .overlay-block-6 {
+  visibility: visible;
+  opacity: 1;
+}
+
+.modal-card {
+  background: white;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 3rem;
+  box-shadow: 0 50px 70px -20px #8d6dc9;
+  padding: 2.2rem;
+  position: relative;
+  animation: modalPop 0.3s;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.modal-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 36px;
+  background: #d3bcff;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #351f66;
+}
+
+.modal-avatar-add {
+  width: 90px;
+  height: 90px;
+  border-radius: 36px;
+  background: linear-gradient(145deg, #9f7aea, #b595ff);
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.modal-icon-warning {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  background: #fff0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.modal-card h2 {
+  text-align: center;
+  color: #39266b;
+  margin-bottom: 1.2rem;
+}
+
+.detail-item {
+  background: #faf4ff;
+  border-radius: 40px;
+  padding: 0.8rem 1.5rem;
+  margin: 0.7rem 0;
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #e7d6ff;
+}
+.detail-item .label {
+  font-weight: 600;
+  color: #5e3ba3;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* ===== BOUTONS DE MODAL AVEC COULEURS SPÉCIFIQUES ===== */
+
+/* Bouton Annuler - couleur jean */
+.btn-cancel {
+  background: #4a6fa5;  /* Bleu jean */
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-cancel:hover {
+  background: #3a5a87;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(74, 111, 165, 0.3);
+}
+
+/* Bouton Supprimer - rouge */
+.btn-delete {
+  background: #dc3545;  /* Rouge */
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-delete:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(220, 53, 69, 0.3);
+}
+
+/* Bouton Enregistrer / Créer - violet (garde le thème) */
+.btn-save {
+  background: linear-gradient(145deg, #9f7aea, #b595ff);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-save:hover {
+  background: linear-gradient(145deg, #8b6cd9, #a27ee9);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(159, 122, 234, 0.3);
+}
+
+/* Bouton secondaire (pour compatibilité) */
+.modal-btn-secondary {
+  background: #f0e6ff;
+  color: #5e3ba3;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-btn-secondary:hover {
+  background: #e2d2ff;
+  transform: translateY(-2px);
+}
+
+/* Bouton danger */
+.modal-btn-danger {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-btn-danger:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(220, 53, 69, 0.3);
+}
+
+/* Bouton succès (pour débloquer) */
+.modal-btn-success {
+  background: #40c97e;
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-btn-success:hover {
+  background: #36b06c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(64, 201, 126, 0.3);
+}
+
+/* Bouton primaire (conservé pour compatibilité) */
+.modal-btn-primary {
+  background: linear-gradient(145deg, #9f7aea, #b595ff);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-btn-primary:hover {
+  background: linear-gradient(145deg, #8b6cd9, #a27ee9);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(159, 122, 234, 0.3);
+}
+
+.confirm-text {
+  color: #6b4f9e;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* ===== FORMULAIRES MODAL ===== */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border: 2px solid #f0e6ff;
+  border-radius: 3rem;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s;
+  background: #faf4ff;
+}
+.modal-input:focus {
+  border-color: #9f7aea;
+  box-shadow: 0 0 0 4px rgba(159, 122, 234, 0.2);
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-select {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: 2px solid #f0e6ff;
+  border-radius: 3rem;
+  font-size: 1rem;
+  outline: none;
+  background: #faf4ff;
+  color: #3f2b6e;
+  cursor: pointer;
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 2rem 0;
+}
+.page-number {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: white;
+  color: #4d3780;
+  box-shadow: 0 8px 14px #decbff;
+  cursor: default;
+}
+.page-number.active {
+  background: #ab8ee2;
+  color: white;
+}
+.page-icon {
+  width: 32px;
+  height: 32px;
+  position: relative;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  background: white;
+  border-radius: 2.5rem;
+  padding: 3rem;
+  text-align: center;
+  margin: 2rem 0 0;
+  box-shadow: 0 18px 28px -12px #cbb2f5;
+}
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  background: #f0e6ff;
+  border-radius: 50%;
+  position: relative;
+}
+.empty-icon::before,
+.empty-icon::after {
+  content: "";
+  position: absolute;
+  background: #b79eff;
+}
+.empty-icon::before {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  top: 20px;
+  left: 25px;
+}
+.empty-icon::after {
+  width: 40px;
+  height: 8px;
+  border-radius: 20px;
+  bottom: 20px;
+  left: 20px;
+}
+.empty-state h3 {
+  color: #5f40a0;
+  font-size: 1.6rem;
+  margin: 0.5rem 0;
+}
+.empty-state p {
+  color: #8e76c1;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1000px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 650px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+}

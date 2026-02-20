@@ -1,0 +1,732 @@
+<!-- modal triggers pour les détails -->
+<input type="checkbox" id="modal-1" class="modal-toggle">
+<input type="checkbox" id="modal-2" class="modal-toggle">
+<input type="checkbox" id="modal-3" class="modal-toggle">
+<input type="checkbox" id="modal-4" class="modal-toggle">
+<input type="checkbox" id="modal-5" class="modal-toggle">
+<input type="checkbox" id="modal-6" class="modal-toggle">
+
+<!-- modal pour ajouter un utilisateur -->
+<input type="checkbox" id="modal-add" class="modal-toggle">
+
+<!-- modal pour modifier -->
+<input type="checkbox" id="modal-edit-1" class="modal-toggle">
+<input type="checkbox" id="modal-edit-2" class="modal-toggle">
+<input type="checkbox" id="modal-edit-3" class="modal-toggle">
+<input type="checkbox" id="modal-edit-4" class="modal-toggle">
+<input type="checkbox" id="modal-edit-5" class="modal-toggle">
+<input type="checkbox" id="modal-edit-6" class="modal-toggle">
+
+<!-- modal pour bloquer/supprimer -->
+<input type="checkbox" id="modal-block-1" class="modal-toggle">
+<input type="checkbox" id="modal-block-2" class="modal-toggle">
+<input type="checkbox" id="modal-block-3" class="modal-toggle">
+<input type="checkbox" id="modal-block-4" class="modal-toggle">
+<input type="checkbox" id="modal-block-5" class="modal-toggle">
+<input type="checkbox" id="modal-block-6" class="modal-toggle">
+
+<div class="dashboard">
+  <!-- header avec bouton ajouter -->
+  <div class="header">
+    <h1>
+      <span class="icon" style="width:32px; height:32px;">
+        <span class="icon-filter" style="transform: scale(1.5);"></span>
+      </span>
+      user management
+    </h1>
+    <div class="header-actions">
+      <label for="modal-add" class="btn-add">
+        <span class="icon icon-plus"></span>
+        Ajouter
+      </label>
+      <div class="user-profile">
+        <div class="notification-wrapper">
+          <span class="notif-trigger">
+            <span class="icon icon-bell" style="width:24px; height:24px;"></span>
+          </span>
+          <span class="notif-badge">3</span>
+          <div class="notif-dropdown">
+            <div class="notif-item">
+              <div class="notif-avatar">JC</div>
+              <div class="notif-text">Jessie role updated</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-avatar">LP</div>
+              <div class="notif-text">Lea status active</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-avatar">TG</div>
+              <div class="notif-text">Taylor request</div>
+            </div>
+          </div>
+        </div>
+        <div class="avatar-main">JD</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- filters avec icônes réelles -->
+  <div class="filters-row">
+    <div class="search-field">
+      <span class="icon icon-search"></span>
+      <input type="text" placeholder="Search users...">
+    </div>
+    <div class="filter-dropdown">
+      <span class="icon icon-filter"></span>
+      <select>
+        <option>All roles</option>
+        <option>Admin</option>
+        <option>Editor</option>
+      </select>
+    </div>
+    <div class="filter-dropdown">
+      <span class="icon icon-dot"></span>
+      <select>
+        <option>All status</option>
+        <option>Active</option>
+        <option>Inactive</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- user cards -->
+  <div class="cards-grid">
+    <!-- Maya -->
+    <div class="user-card">
+      <div class="card-header">
+        <div class="avatar-init">MK</div>
+        <div class="user-info">
+          <h3>Maya Khan</h3>
+          <div class="email">maya.k@work.co</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="role-tag">Admin</span>
+        <span class="status-tag">
+          <span class="icon icon-dot"></span> Active
+        </span>
+      </div>
+      <div class="action-group">
+        <span class="toggle-active"><span class="toggle-switch"></span></span>
+        <select class="role-selector">
+          <option>Admin</option>
+          <option>Editor</option>
+        </select>
+        <div class="card-actions">
+          <label for="modal-1" class="icon-btn view-btn" title="Voir détails">
+            <span class="icon icon-eye"></span>
+          </label>
+          <label for="modal-edit-1" class="icon-btn edit-btn" title="Modifier">
+            <span class="icon icon-edit"></span>
+          </label>
+          <label for="modal-block-1" class="icon-btn block-btn" title="Bloquer">
+            <span class="icon icon-block"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jessie -->
+    <div class="user-card">
+      <div class="card-header">
+        <div class="avatar-init">JC</div>
+        <div class="user-info">
+          <h3>Jessie Chen</h3>
+          <div class="email">j.chen@design.io</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="role-tag">Editor</span>
+        <span class="status-tag">
+          <span class="icon icon-dot"></span> Active
+        </span>
+      </div>
+      <div class="action-group">
+        <span class="toggle-active"><span class="toggle-switch"></span></span>
+        <select class="role-selector">
+          <option>Admin</option>
+          <option selected>Editor</option>
+        </select>
+        <div class="card-actions">
+          <label for="modal-2" class="icon-btn view-btn" title="Voir détails">
+            <span class="icon icon-eye"></span>
+          </label>
+          <label for="modal-edit-2" class="icon-btn edit-btn" title="Modifier">
+            <span class="icon icon-edit"></span>
+          </label>
+          <label for="modal-block-2" class="icon-btn block-btn" title="Bloquer">
+            <span class="icon icon-block"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ravi -->
+    <div class="user-card">
+      <div class="card-header">
+        <div class="avatar-init">RS</div>
+        <div class="user-info">
+          <h3>Ravi Shah</h3>
+          <div class="email">ravi.shah@old.org</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="role-tag">Viewer</span>
+        <span class="status-tag">
+          <span class="icon icon-dot inactive"></span> Inactive
+        </span>
+      </div>
+      <div class="action-group">
+        <span class="toggle-switch"></span>
+        <select class="role-selector">
+          <option>Viewer</option>
+          <option>Editor</option>
+        </select>
+        <div class="card-actions">
+          <label for="modal-3" class="icon-btn view-btn" title="Voir détails">
+            <span class="icon icon-eye"></span>
+          </label>
+          <label for="modal-edit-3" class="icon-btn edit-btn" title="Modifier">
+            <span class="icon icon-edit"></span>
+          </label>
+          <label for="modal-block-3" class="icon-btn block-btn" title="Débloquer">
+            <span class="icon icon-block"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lea -->
+    <div class="user-card">
+      <div class="card-header">
+        <div class="avatar-init">LP</div>
+        <div class="user-info">
+          <h3>Lea Peterson</h3>
+          <div class="email">lea.p@sys.com</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="role-tag">Admin</span>
+        <span class="status-tag">
+          <span class="icon icon-dot"></span> Active
+        </span>
+      </div>
+      <div class="action-group">
+        <span class="toggle-active"><span class="toggle-switch"></span></span>
+        <select class="role-selector">
+          <option>Admin</option>
+          <option>Editor</option>
+        </select>
+        <div class="card-actions">
+          <label for="modal-4" class="icon-btn view-btn" title="Voir détails">
+            <span class="icon icon-eye"></span>
+          </label>
+          <label for="modal-edit-4" class="icon-btn edit-btn" title="Modifier">
+            <span class="icon icon-edit"></span>
+          </label>
+          <label for="modal-block-4" class="icon-btn block-btn" title="Bloquer">
+            <span class="icon icon-block"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Taylor -->
+    <div class="user-card">
+      <div class="card-header">
+        <div class="avatar-init">TG</div>
+        <div class="user-info">
+          <h3>Taylor Gray</h3>
+          <div class="email">t.gray@content.com</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="role-tag">Editor</span>
+        <span class="status-tag">
+          <span class="icon icon-dot inactive"></span> Inactive
+        </span>
+      </div>
+      <div class="action-group">
+        <span class="toggle-switch"></span>
+        <select class="role-selector">
+          <option>Admin</option>
+          <option selected>Editor</option>
+        </select>
+        <div class="card-actions">
+          <label for="modal-5" class="icon-btn view-btn" title="Voir détails">
+            <span class="icon icon-eye"></span>
+          </label>
+          <label for="modal-edit-5" class="icon-btn edit-btn" title="Modifier">
+            <span class="icon icon-edit"></span>
+          </label>
+          <label for="modal-block-5" class="icon-btn block-btn" title="Débloquer">
+            <span class="icon icon-block"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nia -->
+    <div class="user-card">
+      <div class="card-header">
+        <div class="avatar-init">NM</div>
+        <div class="user-info">
+          <h3>Nia M.</h3>
+          <div class="email">nia.m@guest.net</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="role-tag">Viewer</span>
+        <span class="status-tag">
+          <span class="icon icon-dot"></span> Active
+        </span>
+      </div>
+      <div class="action-group">
+        <span class="toggle-active"><span class="toggle-switch"></span></span>
+        <select class="role-selector">
+          <option>Viewer</option>
+          <option>Editor</option>
+        </select>
+        <div class="card-actions">
+          <label for="modal-6" class="icon-btn view-btn" title="Voir détails">
+            <span class="icon icon-eye"></span>
+          </label>
+          <label for="modal-edit-6" class="icon-btn edit-btn" title="Modifier">
+            <span class="icon icon-edit"></span>
+          </label>
+          <label for="modal-block-6" class="icon-btn block-btn" title="Bloquer">
+            <span class="icon icon-block"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- pagination -->
+  <div class="pagination">
+    <span class="page-icon"><span class="icon-prev"></span></span>
+    <span class="page-number active">1</span>
+    <span class="page-number">2</span>
+    <span class="page-number">3</span>
+    <span class="page-number">4</span>
+    <span class="page-icon"><span class="icon-next"></span></span>
+  </div>
+
+  <!-- empty state -->
+  <div class="empty-state">
+    <div class="empty-icon"></div>
+    <h3>No users found</h3>
+    <p>Adjust your filters or search term</p>
+  </div>
+
+  <!-- ===== MODALS DÉTAILS ===== -->
+  <div class="modal-overlay overlay-1">
+    <div class="modal-card">
+      <label for="modal-1" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar">MK</div>
+      <h2>Maya Khan</h2>
+      <div class="detail-item"><span class="label">Email</span> maya.k@work.co</div>
+      <div class="detail-item"><span class="label">Role</span> Admin</div>
+      <div class="detail-item"><span class="label">Status</span> Active</div>
+      <div class="modal-actions">
+        <label for="modal-edit-1" class="modal-btn">Modifier</label>
+        <label for="modal-block-1" class="modal-btn">Bloquer</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay overlay-2">
+    <div class="modal-card">
+      <label for="modal-2" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar">JC</div>
+      <h2>Jessie Chen</h2>
+      <div class="detail-item"><span class="label">Email</span> j.chen@design.io</div>
+      <div class="detail-item"><span class="label">Role</span> Editor</div>
+      <div class="detail-item"><span class="label">Status</span> Active</div>
+      <div class="modal-actions">
+        <label for="modal-edit-2" class="modal-btn">Modifier</label>
+        <label for="modal-block-2" class="modal-btn">Bloquer</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay overlay-3">
+    <div class="modal-card">
+      <label for="modal-3" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar">RS</div>
+      <h2>Ravi Shah</h2>
+      <div class="detail-item"><span class="label">Email</span> ravi.shah@old.org</div>
+      <div class="detail-item"><span class="label">Role</span> Viewer</div>
+      <div class="detail-item"><span class="label">Status</span> Inactive</div>
+      <div class="modal-actions">
+        <label for="modal-edit-3" class="modal-btn">Modifier</label>
+        <label for="modal-block-3" class="modal-btn">Débloquer</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay overlay-4">
+    <div class="modal-card">
+      <label for="modal-4" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar">LP</div>
+      <h2>Lea Peterson</h2>
+      <div class="detail-item"><span class="label">Email</span> lea.p@sys.com</div>
+      <div class="detail-item"><span class="label">Role</span> Admin</div>
+      <div class="detail-item"><span class="label">Department</span> Engineering</div>
+      <div class="modal-actions">
+        <label for="modal-edit-4" class="modal-btn">Modifier</label>
+        <label for="modal-block-4" class="modal-btn">Bloquer</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay overlay-5">
+    <div class="modal-card">
+      <label for="modal-5" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar">TG</div>
+      <h2>Taylor Gray</h2>
+      <div class="detail-item"><span class="label">Email</span> t.gray@content.com</div>
+      <div class="detail-item"><span class="label">Role</span> Editor</div>
+      <div class="detail-item"><span class="label">Status</span> Inactive</div>
+      <div class="modal-actions">
+        <label for="modal-edit-5" class="modal-btn">Modifier</label>
+        <label for="modal-block-5" class="modal-btn">Débloquer</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay overlay-6">
+    <div class="modal-card">
+      <label for="modal-6" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar">NM</div>
+      <h2>Nia M.</h2>
+      <div class="detail-item"><span class="label">Email</span> nia.m@guest.net</div>
+      <div class="detail-item"><span class="label">Role</span> Viewer</div>
+      <div class="detail-item"><span class="label">Status</span> Active</div>
+      <div class="modal-actions">
+        <label for="modal-edit-6" class="modal-btn">Modifier</label>
+        <label for="modal-block-6" class="modal-btn">Bloquer</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL AJOUTER ===== -->
+  <div class="modal-overlay overlay-add">
+    <div class="modal-card modal-add">
+      <label for="modal-add" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar-add">
+        <span class="icon icon-plus-large"></span>
+      </div>
+      <h2>Ajouter un utilisateur</h2>
+      <div class="form-group">
+        <input type="text" placeholder="Nom complet" class="modal-input">
+      </div>
+      <div class="form-group">
+        <input type="email" placeholder="Email" class="modal-input">
+      </div>
+      <div class="form-row">
+        <select class="modal-select">
+          <option>Admin</option>
+          <option>Editor</option>
+          <option>Viewer</option>
+        </select>
+        <select class="modal-select">
+          <option>Actif</option>
+          <option>Inactif</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-save">Créer</button>
+        <label for="modal-add" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL MODIFIER (pour Maya) ===== -->
+  <div class="modal-overlay overlay-edit-1">
+    <div class="modal-card modal-add">
+      <label for="modal-edit-1" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar-add">
+        <span class="icon icon-edit-large"></span>
+      </div>
+      <h2>Modifier Maya Khan</h2>
+      <div class="form-group">
+        <input type="text" value="Maya Khan" class="modal-input">
+      </div>
+      <div class="form-group">
+        <input type="email" value="maya.k@work.co" class="modal-input">
+      </div>
+      <div class="form-row">
+        <select class="modal-select">
+          <option selected>Admin</option>
+          <option>Editor</option>
+          <option>Viewer</option>
+        </select>
+        <select class="modal-select">
+          <option selected>Actif</option>
+          <option>Inactif</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-save">Enregistrer</button>
+        <label for="modal-edit-1" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL MODIFIER (pour Jessie) ===== -->
+  <div class="modal-overlay overlay-edit-2">
+    <div class="modal-card modal-add">
+      <label for="modal-edit-2" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar-add">
+        <span class="icon icon-edit-large"></span>
+      </div>
+      <h2>Modifier Jessie Chen</h2>
+      <div class="form-group">
+        <input type="text" value="Jessie Chen" class="modal-input">
+      </div>
+      <div class="form-group">
+        <input type="email" value="j.chen@design.io" class="modal-input">
+      </div>
+      <div class="form-row">
+        <select class="modal-select">
+          <option>Admin</option>
+          <option selected>Editor</option>
+          <option>Viewer</option>
+        </select>
+        <select class="modal-select">
+          <option selected>Actif</option>
+          <option>Inactif</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-save">Enregistrer</button>
+        <label for="modal-edit-2" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL MODIFIER (pour Ravi) ===== -->
+  <div class="modal-overlay overlay-edit-3">
+    <div class="modal-card modal-add">
+      <label for="modal-edit-3" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar-add">
+        <span class="icon icon-edit-large"></span>
+      </div>
+      <h2>Modifier Ravi Shah</h2>
+      <div class="form-group">
+        <input type="text" value="Ravi Shah" class="modal-input">
+      </div>
+      <div class="form-group">
+        <input type="email" value="ravi.shah@old.org" class="modal-input">
+      </div>
+      <div class="form-row">
+        <select class="modal-select">
+          <option>Admin</option>
+          <option>Editor</option>
+          <option selected>Viewer</option>
+        </select>
+        <select class="modal-select">
+          <option>Actif</option>
+          <option selected>Inactif</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-save">Enregistrer</button>
+        <label for="modal-edit-3" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL MODIFIER (pour Lea) ===== -->
+  <div class="modal-overlay overlay-edit-4">
+    <div class="modal-card modal-add">
+      <label for="modal-edit-4" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar-add">
+        <span class="icon icon-edit-large"></span>
+      </div>
+      <h2>Modifier Lea Peterson</h2>
+      <div class="form-group">
+        <input type="text" value="Lea Peterson" class="modal-input">
+      </div>
+      <div class="form-group">
+        <input type="email" value="lea.p@sys.com" class="modal-input">
+      </div>
+      <div class="form-row">
+        <select class="modal-select">
+          <option selected>Admin</option>
+          <option>Editor</option>
+          <option>Viewer</option>
+        </select>
+        <select class="modal-select">
+          <option selected>Actif</option>
+          <option>Inactif</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-save">Enregistrer</button>
+        <label for="modal-edit-4" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL MODIFIER (pour Taylor) ===== -->
+  <div class="modal-overlay overlay-edit-5">
+    <div class="modal-card modal-add">
+      <label for="modal-edit-5" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar-add">
+        <span class="icon icon-edit-large"></span>
+      </div>
+      <h2>Modifier Taylor Gray</h2>
+      <div class="form-group">
+        <input type="text" value="Taylor Gray" class="modal-input">
+      </div>
+      <div class="form-group">
+        <input type="email" value="t.gray@content.com" class="modal-input">
+      </div>
+      <div class="form-row">
+        <select class="modal-select">
+          <option>Admin</option>
+          <option selected>Editor</option>
+          <option>Viewer</option>
+        </select>
+        <select class="modal-select">
+          <option>Actif</option>
+          <option selected>Inactif</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-save">Enregistrer</button>
+        <label for="modal-edit-5" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL MODIFIER (pour Nia) ===== -->
+  <div class="modal-overlay overlay-edit-6">
+    <div class="modal-card modal-add">
+      <label for="modal-edit-6" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-avatar-add">
+        <span class="icon icon-edit-large"></span>
+      </div>
+      <h2>Modifier Nia M.</h2>
+      <div class="form-group">
+        <input type="text" value="Nia M." class="modal-input">
+      </div>
+      <div class="form-group">
+        <input type="email" value="nia.m@guest.net" class="modal-input">
+      </div>
+      <div class="form-row">
+        <select class="modal-select">
+          <option>Admin</option>
+          <option>Editor</option>
+          <option selected>Viewer</option>
+        </select>
+        <select class="modal-select">
+          <option selected>Actif</option>
+          <option>Inactif</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-save">Enregistrer</button>
+        <label for="modal-edit-6" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL BLOQUER/SUPPRIMER (pour Maya) ===== -->
+  <div class="modal-overlay overlay-block-1">
+    <div class="modal-card modal-confirm">
+      <label for="modal-block-1" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-icon-warning">
+        <span class="icon-warning"></span>
+      </div>
+      <h2>Bloquer Maya Khan ?</h2>
+      <p class="confirm-text">Cette action désactivera l'accès de l'utilisateur.</p>
+      <div class="modal-actions">
+        <button class="btn-delete">Bloquer</button>
+        <label for="modal-block-1" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL BLOQUER/SUPPRIMER (pour Jessie) ===== -->
+  <div class="modal-overlay overlay-block-2">
+    <div class="modal-card modal-confirm">
+      <label for="modal-block-2" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-icon-warning">
+        <span class="icon-warning"></span>
+      </div>
+      <h2>Bloquer Jessie Chen ?</h2>
+      <p class="confirm-text">Cette action désactivera l'accès de l'utilisateur.</p>
+      <div class="modal-actions">
+        <button class="btn-delete">Bloquer</button>
+        <label for="modal-block-2" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DÉBLOQUER (pour Ravi) ===== -->
+  <div class="modal-overlay overlay-block-3">
+    <div class="modal-card modal-confirm">
+      <label for="modal-block-3" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-icon-warning">
+        <span class="icon-warning"></span>
+      </div>
+      <h2>Débloquer Ravi Shah ?</h2>
+      <p class="confirm-text">Cette action réactivera l'accès de l'utilisateur.</p>
+      <div class="modal-actions">
+        <button class="modal-btn-success">Débloquer</button>
+        <label for="modal-block-3" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL BLOQUER/SUPPRIMER (pour Lea) ===== -->
+  <div class="modal-overlay overlay-block-4">
+    <div class="modal-card modal-confirm">
+      <label for="modal-block-4" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-icon-warning">
+        <span class="icon-warning"></span>
+      </div>
+      <h2>Bloquer Lea Peterson ?</h2>
+      <p class="confirm-text">Cette action désactivera l'accès de l'utilisateur.</p>
+      <div class="modal-actions">
+        <button class="btn-delete">Bloquer</button>
+        <label for="modal-block-4" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DÉBLOQUER (pour Taylor) ===== -->
+  <div class="modal-overlay overlay-block-5">
+    <div class="modal-card modal-confirm">
+      <label for="modal-block-5" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-icon-warning">
+        <span class="icon-warning"></span>
+      </div>
+      <h2>Débloquer Taylor Gray ?</h2>
+      <p class="confirm-text">Cette action réactivera l'accès de l'utilisateur.</p>
+      <div class="modal-actions">
+        <button class="modal-btn-success">Débloquer</button>
+        <label for="modal-block-5" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL BLOQUER/SUPPRIMER (pour Nia) ===== -->
+  <div class="modal-overlay overlay-block-6">
+    <div class="modal-card modal-confirm">
+      <label for="modal-block-6" class="modal-close-btn"><span class="icon icon-close"></span></label>
+      <div class="modal-icon-warning">
+        <span class="icon-warning"></span>
+      </div>
+      <h2>Bloquer Nia M. ?</h2>
+      <p class="confirm-text">Cette action désactivera l'accès de l'utilisateur.</p>
+      <div class="modal-actions">
+        <button class="btn-delete">Bloquer</button>
+        <label for="modal-block-6" class="btn-cancel">Annuler</label>
+      </div>
+    </div>
+  </div>
+</div>
