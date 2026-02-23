@@ -8,6 +8,7 @@ import { UsersManagementComponent } from './dashboard/users-management/users-man
 import { GestionEnquetesComponent } from './dashboard/gestion-enquetes/gestion-enquetes.component';
 import { GestionQuestionsComponent } from './dashboard/gestion-questions/gestion-questions.component';
 import { AnalyseReportingComponent } from './dashboard/analyse-reporting/analyse-reporting.component';
+import { FeedbackSupportComponent } from './dashboard/feedback-support/feedback-support.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -19,6 +20,7 @@ const routes: Routes = [
      { path: 'gestionEnquete', component: GestionEnquetesComponent },
       { path: 'gestionQuestions', component: GestionQuestionsComponent },
       { path: 'AnalyseReporting', component: AnalyseReportingComponent },
+       { path: 'feedback', component: FeedbackSupportComponent },
 ];
 
 @NgModule({
