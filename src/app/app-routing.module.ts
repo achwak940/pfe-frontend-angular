@@ -6,6 +6,7 @@ import { SuperAdminDashboardComponent } from './dashboard/super-admin-dashboard/
 import { RegisterComponent } from './auth/register/register.component';
 import { UsersManagementComponent } from './dashboard/users-management/users-management.component';
 import { GestionEnquetesComponent } from './dashboard/gestion-enquetes/gestion-enquetes.component';
+import { GestionQuestionsComponent } from './dashboard/gestion-questions/gestion-questions.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -15,6 +16,7 @@ const routes: Routes = [
    { path: 'register', component: RegisterComponent },
    { path: 'users', component: UsersManagementComponent },
      { path: 'gestionEnquete', component: GestionEnquetesComponent },
+      { path: 'gestionQuestions', component: GestionQuestionsComponent },
 ];
 
 @NgModule({

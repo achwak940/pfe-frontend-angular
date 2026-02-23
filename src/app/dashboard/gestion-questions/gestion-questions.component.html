@@ -1,0 +1,431 @@
+<div class="questions-dashboard">
+  <!-- En-tête avec statistiques -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Gestion des questions</h1>
+      <p class="subtitle">Enquête : Expérience d'achat 2025 · Gérez toutes les questions de votre enquête</p>
+    </div>
+    <div class="header-right">
+      <div class="stats-badge">
+        <span class="stat-item">
+          <i class="fas fa-question-circle"></i>
+          <span>12 questions</span>
+        </span>
+        <span class="stat-item">
+          <i class="fas fa-robot"></i>
+          <span>4 générées IA</span>
+        </span>
+        <span class="stat-item">
+          <i class="fas fa-check-circle"></i>
+          <span>8 manuelles</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre d'actions et contrôle IA -->
+  <div class="action-bar">
+    <div class="ia-toggle-container">
+      <div class="toggle-wrapper">
+        <label class="toggle-switch">
+          <input type="checkbox" id="iaToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label">
+          <i class="fas fa-robot"></i>
+          Génération IA activée
+        </span>
+      </div>
+      <span class="ia-badge">IA prête</span>
+    </div>
+    <button class="btn btn-primary" id="addQuestionBtn">
+      <i class="fas fa-plus-circle"></i> Nouvelle question
+    </button>
+  </div>
+
+  <!-- Formulaire de création de question -->
+  <div class="question-form-card" id="questionForm">
+    <div class="form-header">
+      <h3><i class="fas fa-pen" style="color: #9D50BB;"></i> Créer une nouvelle question</h3>
+    </div>
+    
+    <div class="form-body">
+      <div class="form-row">
+        <div class="form-group large">
+          <label>Titre / Énoncé de la question <span class="required">*</span></label>
+          <input type="text" id="questionTitle" placeholder="ex: Comment évaluez-vous notre service ?" value="Comment évaluez-vous la qualité du service ?">
+        </div>
+      </div>
+
+      <div class="form-row grid-2">
+        <div class="form-group">
+          <label>Type de question <span class="required">*</span></label>
+          <select id="questionType">
+            <option value="multiple" selected>Choix multiple</option>
+            <option value="unique">Choix unique</option>
+            <option value="text">Texte libre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Statut</label>
+          <select id="questionStatus">
+            <option value="active" selected>Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Options de réponse (visible seulement pour choix multiple/unique) -->
+      <div class="form-row" id="optionsSection">
+        <div class="form-group">
+          <label>Options de réponse <span class="required">*</span> <small>(minimum 2 options)</small></label>
+          <div class="options-list" id="optionsList">
+            <div class="option-item">
+              <input type="text" value="Très satisfait" placeholder="Option 1">
+              <button class="remove-option"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="option-item">
+              <input type="text" value="Satisfait" placeholder="Option 2">
+              <button class="remove-option"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="option-item">
+              <input type="text" value="Neutre" placeholder="Option 3">
+              <button class="remove-option"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm add-option-btn">
+            <i class="fas fa-plus"></i> Ajouter une option
+          </button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="requiredCheckbox" checked>
+            <span class="checkbox-custom"></span>
+            Question obligatoire
+          </label>
+        </div>
+      </div>
+
+      <!-- Section génération IA -->
+      <div class="ia-generation-section">
+        <div class="ia-header">
+          <i class="fas fa-robot" style="color: #9D50BB;"></i>
+          <span>Générer une question avec l'IA</span>
+        </div>
+        <div class="ia-content">
+          <div class="ia-preview">
+            <p class="ia-question">"Quelles sont les principales raisons de votre satisfaction concernant notre service ?"</p>
+            <div class="ia-actions">
+              <button class="btn btn-outline btn-sm">
+                <i class="fas fa-sync-alt"></i> Régénérer
+              </button>
+              <button class="btn btn-primary btn-sm" id="useIaQuestion">
+                <i class="fas fa-plus"></i> Utiliser cette question
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-outline" id="cancelForm">Annuler</button>
+        <button class="btn btn-primary" id="addQuestion">
+          <i class="fas fa-check"></i> Ajouter la question
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des questions -->
+  <div class="questions-header">
+    <h2 class="section-title">
+      <i class="fas fa-list"></i> Liste des questions
+      <span class="questions-count">12 questions</span>
+    </h2>
+    <div class="questions-filter">
+      <select class="filter-select">
+        <option>Toutes les questions</option>
+        <option>Actives uniquement</option>
+        <option>Inactives uniquement</option>
+        <option>Générées par IA</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="questions-grid" id="questionsGrid">
+    <!-- Carte question 1 - Choix multiple / Active / IA -->
+    <div class="question-card" data-id="1">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Comment évaluez-vous la qualité du service ?</h3>
+          <div class="card-badges">
+            <span class="badge type-badge">
+              <i class="fas fa-check-double"></i> Choix multiple
+            </span>
+            <span class="badge status-badge active">
+              <i class="fas fa-circle"></i> Active
+            </span>
+            <span class="badge ia-badge">
+              <i class="fas fa-robot"></i> IA
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="options-preview">
+          <strong>Options :</strong>
+          <div class="options-chips">
+            <span class="option-chip">Très satisfait</span>
+            <span class="option-chip">Satisfait</span>
+            <span class="option-chip">Neutre</span>
+            <span class="option-chip">Insatisfait</span>
+            <span class="option-chip">Très insatisfait</span>
+          </div>
+        </div>
+        <div class="question-meta">
+          <span class="required-badge">
+            <i class="fas fa-exclamation-circle"></i> Obligatoire
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn edit-btn">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn delete-btn">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+        <button class="action-btn status-toggle active">
+          <i class="fas fa-toggle-on"></i>
+          <span>Désactiver</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte question 2 - Choix unique / Active / Manuelle -->
+    <div class="question-card" data-id="2">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Recommanderiez-vous notre service à un proche ?</h3>
+          <div class="card-badges">
+            <span class="badge type-badge">
+              <i class="fas fa-dot-circle"></i> Choix unique
+            </span>
+            <span class="badge status-badge active">
+              <i class="fas fa-circle"></i> Active
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="options-preview">
+          <strong>Options :</strong>
+          <div class="options-chips">
+            <span class="option-chip">Oui</span>
+            <span class="option-chip">Non</span>
+            <span class="option-chip">Peut-être</span>
+          </div>
+        </div>
+        <div class="question-meta">
+          <span class="required-badge">
+            <i class="fas fa-exclamation-circle"></i> Obligatoire
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn edit-btn">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn delete-btn">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+        <button class="action-btn status-toggle active">
+          <i class="fas fa-toggle-on"></i>
+          <span>Désactiver</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte question 3 - Texte libre / Inactive / IA -->
+    <div class="question-card" data-id="3">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Quelles améliorations suggérez-vous pour notre service ?</h3>
+          <div class="card-badges">
+            <span class="badge type-badge">
+              <i class="fas fa-align-left"></i> Texte libre
+            </span>
+            <span class="badge status-badge inactive">
+              <i class="fas fa-circle"></i> Inactive
+            </span>
+            <span class="badge ia-badge">
+              <i class="fas fa-robot"></i> IA
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="options-preview">
+          <span class="text-preview">Réponse libre (texte)</span>
+        </div>
+        <div class="question-meta">
+          <span class="required-badge optional">
+            <i class="fas fa-minus-circle"></i> Facultative
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn edit-btn">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn delete-btn">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+        <button class="action-btn status-toggle inactive">
+          <i class="fas fa-toggle-off"></i>
+          <span>Activer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte question 4 - Choix multiple / Active / Manuelle -->
+    <div class="question-card" data-id="4">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Quels aspects de notre service appréciez-vous le plus ?</h3>
+          <div class="card-badges">
+            <span class="badge type-badge">
+              <i class="fas fa-check-double"></i> Choix multiple
+            </span>
+            <span class="badge status-badge active">
+              <i class="fas fa-circle"></i> Active
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="options-preview">
+          <strong>Options :</strong>
+          <div class="options-chips">
+            <span class="option-chip">Qualité</span>
+            <span class="option-chip">Prix</span>
+            <span class="option-chip">Service client</span>
+            <span class="option-chip">Rapidité</span>
+          </div>
+        </div>
+        <div class="question-meta">
+          <span class="required-badge">
+            <i class="fas fa-exclamation-circle"></i> Obligatoire
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn edit-btn">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn delete-btn">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+        <button class="action-btn status-toggle active">
+          <i class="fas fa-toggle-on"></i>
+          <span>Désactiver</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte question 5 - Choix unique / Active / IA -->
+    <div class="question-card" data-id="5">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>À quelle fréquence utilisez-vous notre service ?</h3>
+          <div class="card-badges">
+            <span class="badge type-badge">
+              <i class="fas fa-dot-circle"></i> Choix unique
+            </span>
+            <span class="badge status-badge active">
+              <i class="fas fa-circle"></i> Active
+            </span>
+            <span class="badge ia-badge">
+              <i class="fas fa-robot"></i> IA
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="options-preview">
+          <strong>Options :</strong>
+          <div class="options-chips">
+            <span class="option-chip">Plusieurs fois/jour</span>
+            <span class="option-chip">1 fois/jour</span>
+            <span class="option-chip">Plusieurs fois/semaine</span>
+            <span class="option-chip">1 fois/semaine</span>
+            <span class="option-chip">Rarement</span>
+          </div>
+        </div>
+        <div class="question-meta">
+          <span class="required-badge">
+            <i class="fas fa-exclamation-circle"></i> Obligatoire
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn edit-btn">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn delete-btn">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+        <button class="action-btn status-toggle active">
+          <i class="fas fa-toggle-on"></i>
+          <span>Désactiver</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmation de suppression (caché par défaut) -->
+  <div class="modal-overlay" id="deleteModal" style="display: none;">
+    <div class="modal-container small">
+      <div class="modal-header">
+        <h3><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Confirmer la suppression</h3>
+        <button class="modal-close" id="closeDeleteModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer cette question ?</p>
+        <p class="question-preview">"Comment évaluez-vous la qualité du service ?"</p>
+        <p class="warning-text">Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="cancelDelete">Annuler</button>
+        <button class="btn btn-danger" id="confirmDelete">
+          <i class="fas fa-trash"></i> Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
