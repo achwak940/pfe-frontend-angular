@@ -10,6 +10,7 @@ import { GestionEnquetesComponent } from './gestion-enquetes/gestion-enquetes.co
 import { GestionQuestionsComponent } from './gestion-questions/gestion-questions.component';
 import { AnalyseReportingComponent } from './analyse-reporting/analyse-reporting.component';
 import { FeedbackSupportComponent } from './feedback-support/feedback-support.component';
+import { GestionIaQuestionsComponent } from './gestion-ia-questions/gestion-ia-questions.component';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { FeedbackSupportComponent } from './feedback-support/feedback-support.co
     GestionEnquetesComponent,
     GestionQuestionsComponent,
     AnalyseReportingComponent,
-    FeedbackSupportComponent
+    FeedbackSupportComponent,
+    GestionIaQuestionsComponent
   ],
   imports: [
     CommonModule,

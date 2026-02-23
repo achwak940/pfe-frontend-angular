@@ -1,0 +1,537 @@
+<div class="ia-questions-dashboard">
+  <!-- 1️⃣ EN-TÊTE / HEADER -->
+  <div class="header">
+    <div class="header-left">
+       <h1>
+        <i class="fas fa-robot" style="color: #9D50BB; margin-right: 0.5rem;"></i>
+        Gestion IA – Questions automatiques
+      </h1>
+      <p class="subtitle">Activez l'IA pour générer automatiquement des questions ou consultez l'historique des questions générées.</p>
+    </div>
+    <div class="header-right">
+      <div class="ia-status">
+        <span class="status-badge active" id="iaStatusBadge">
+          <i class="fas fa-circle"></i> IA Activée
+        </span>
+      </div>
+      <button class="btn btn-primary" id="settingsBtn">
+        <i class="fas fa-cog"></i> Paramètres IA
+      </button>
+    </div>
+  </div>
+
+  <!-- 2️⃣ SECTION : ACTIVER / DÉSACTIVER L'IA -->
+  <div class="activation-section">
+    <div class="activation-card">
+      <div class="activation-left">
+        <div class="activation-icon">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="activation-info">
+          <h3>Génération automatique de questions</h3>
+          <p class="activation-description">
+            Lorsque l'IA est activée, des questions seront automatiquement proposées après chaque enquête ou selon la planification définie.
+          </p>
+        </div>
+      </div>
+      <div class="activation-right">
+        <div class="toggle-wrapper">
+          <label class="toggle-switch">
+            <input type="checkbox" id="iaToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label" id="toggleLabel">Activé</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3️⃣ SECTION : PARAMÈTRES IA (MODAL) -->
+  <div class="modal-overlay" id="settingsModal" style="display: none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3><i class="fas fa-cog" style="color: #9D50BB;"></i> Paramètres IA</h3>
+        <button class="modal-close" id="closeSettingsModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="iaSettingsForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Type de question par défaut</label>
+              <select id="questionType">
+                <option value="qcm" selected>QCM (Choix multiple)</option>
+                <option value="vf">Vrai/Faux</option>
+                <option value="ouverte">Question ouverte</option>
+                <option value="echelle">Échelle de satisfaction (1-5)</option>
+                <option value="mixte">Mixte (aléatoire)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row grid-2">
+            <div class="form-group">
+              <label>Longueur des questions</label>
+              <select id="questionLength">
+                <option value="courte">Courte</option>
+                <option value="moyenne" selected>Moyenne</option>
+                <option value="longue">Longue</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Difficulté</label>
+              <select id="difficulty">
+                <option value="facile">Facile</option>
+                <option value="moyenne" selected>Moyenne</option>
+                <option value="difficile">Difficile</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre de questions générées par enquête</label>
+              <div class="slider-container">
+                <input type="range" id="questionCount" min="1" max="20" value="5" class="slider">
+                <span class="slider-value" id="questionCountValue">5</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Style / Tonalité</label>
+              <select id="tone">
+                <option value="formelle" selected>Formelle</option>
+                <option value="amicale">Amicale</option>
+                <option value="neutre">Neutre</option>
+                <option value="engageante">Engageante</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Planification automatique</label>
+              <select id="schedule">
+                <option value="jamais">Jamais</option>
+                <option value="apres" selected>Après chaque enquête</option>
+                <option value="quotidien">Quotidien</option>
+                <option value="hebdomadaire">Hebdomadaire</option>
+                <option value="mensuel">Mensuel</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="cancelSettings">Annuler</button>
+        <button class="btn btn-primary" id="saveSettings">
+          <i class="fas fa-save"></i> Enregistrer les paramètres
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4️⃣ SECTION : ACTIONS RAPIDES -->
+  <div class="quick-actions">
+    <button class="btn btn-primary" id="generateNowBtn">
+      <i class="fas fa-magic"></i> Générer une nouvelle question
+    </button>
+    <button class="btn btn-outline" id="resetHistoryBtn">
+      <i class="fas fa-trash"></i> Réinitialiser l'historique
+    </button>
+  </div>
+
+  <!-- 5️⃣ SECTION : HISTORIQUE DES QUESTIONS GÉNÉRÉES -->
+  <div class="history-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fas fa-history"></i> Historique des questions générées
+      </h2>
+      <div class="history-count">24 questions au total</div>
+    </div>
+
+    <!-- Filtres de l'historique -->
+    <div class="history-filters">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Rechercher une question...">
+      </div>
+
+      <div class="filter-group">
+        <select class="filter-select">
+          <option>Tous les types</option>
+          <option>QCM</option>
+          <option>Vrai/Faux</option>
+          <option>Question ouverte</option>
+          <option>Échelle</option>
+        </select>
+
+        <select class="filter-select">
+          <option>Toutes difficultés</option>
+          <option>Facile</option>
+          <option>Moyenne</option>
+          <option>Difficile</option>
+        </select>
+
+        <select class="filter-select">
+          <option>Toutes enquêtes</option>
+          <option>Expérience d'achat</option>
+          <option>Support client</option>
+          <option>Application mobile</option>
+        </select>
+
+        <select class="filter-select">
+          <option>Dernière semaine</option>
+          <option>Dernier mois</option>
+          <option>3 derniers mois</option>
+          <option>Cette année</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Grille des questions -->
+    <div class="questions-grid">
+      <!-- Carte question 1 -->
+      <div class="question-card">
+        <div class="card-header">
+          <div class="question-badges">
+            <span class="badge type">QCM</span>
+            <span class="badge difficulty moyenne">Moyenne</span>
+          </div>
+          <div class="card-menu">
+            <i class="fas fa-ellipsis-v"></i>
+          </div>
+        </div>
+        <div class="card-content">
+          <p class="question-text">Comment évalueriez-vous la qualité du service client lors de votre dernière interaction ?</p>
+          <div class="question-meta">
+            <span class="meta-item"><i class="far fa-calendar-alt"></i> 15/03/2025</span>
+            <span class="meta-item"><i class="fas fa-poll"></i> Expérience d'achat</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="footer-actions">
+            <button class="action-btn" title="Modifier"><i class="fas fa-edit"></i> Modifier</button>
+            <button class="action-btn" title="Réutiliser"><i class="fas fa-copy"></i> Réutiliser</button>
+            <button class="action-btn delete" title="Supprimer"><i class="fas fa-trash"></i> Supprimer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carte question 2 -->
+      <div class="question-card">
+        <div class="card-header">
+          <div class="question-badges">
+            <span class="badge type">Vrai/Faux</span>
+            <span class="badge difficulty facile">Facile</span>
+          </div>
+          <div class="card-menu">
+            <i class="fas fa-ellipsis-v"></i>
+          </div>
+        </div>
+        <div class="card-content">
+          <p class="question-text">Recommanderiez-vous notre service à un proche ?</p>
+          <div class="question-meta">
+            <span class="meta-item"><i class="far fa-calendar-alt"></i> 14/03/2025</span>
+            <span class="meta-item"><i class="fas fa-poll"></i> Support client</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="footer-actions">
+            <button class="action-btn"><i class="fas fa-edit"></i> Modifier</button>
+            <button class="action-btn"><i class="fas fa-copy"></i> Réutiliser</button>
+            <button class="action-btn delete"><i class="fas fa-trash"></i> Supprimer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carte question 3 -->
+      <div class="question-card">
+        <div class="card-header">
+          <div class="question-badges">
+            <span class="badge type">Ouverte</span>
+            <span class="badge difficulty difficile">Difficile</span>
+          </div>
+          <div class="card-menu">
+            <i class="fas fa-ellipsis-v"></i>
+          </div>
+        </div>
+        <div class="card-content">
+          <p class="question-text">Quelles améliorations spécifiques suggéreriez-vous pour optimiser notre plateforme ?</p>
+          <div class="question-meta">
+            <span class="meta-item"><i class="far fa-calendar-alt"></i> 12/03/2025</span>
+            <span class="meta-item"><i class="fas fa-poll"></i> Application mobile</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="footer-actions">
+            <button class="action-btn"><i class="fas fa-edit"></i> Modifier</button>
+            <button class="action-btn"><i class="fas fa-copy"></i> Réutiliser</button>
+            <button class="action-btn delete"><i class="fas fa-trash"></i> Supprimer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carte question 4 -->
+      <div class="question-card">
+        <div class="card-header">
+          <div class="question-badges">
+            <span class="badge type">Échelle</span>
+            <span class="badge difficulty moyenne">Moyenne</span>
+          </div>
+          <div class="card-menu">
+            <i class="fas fa-ellipsis-v"></i>
+          </div>
+        </div>
+        <div class="card-content">
+          <p class="question-text">Sur une échelle de 1 à 5, comment évaluez-vous la rapidité de traitement de votre demande ?</p>
+          <div class="question-meta">
+            <span class="meta-item"><i class="far fa-calendar-alt"></i> 10/03/2025</span>
+            <span class="meta-item"><i class="fas fa-poll"></i> Support client</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="footer-actions">
+            <button class="action-btn"><i class="fas fa-edit"></i> Modifier</button>
+            <button class="action-btn"><i class="fas fa-copy"></i> Réutiliser</button>
+            <button class="action-btn delete"><i class="fas fa-trash"></i> Supprimer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carte question 5 -->
+      <div class="question-card">
+        <div class="card-header">
+          <div class="question-badges">
+            <span class="badge type">QCM</span>
+            <span class="badge difficulty facile">Facile</span>
+          </div>
+          <div class="card-menu">
+            <i class="fas fa-ellipsis-v"></i>
+          </div>
+        </div>
+        <div class="card-content">
+          <p class="question-text">Quel est votre canal de communication préféré pour le support client ?</p>
+          <div class="question-meta">
+            <span class="meta-item"><i class="far fa-calendar-alt"></i> 08/03/2025</span>
+            <span class="meta-item"><i class="fas fa-poll"></i> Support client</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="footer-actions">
+            <button class="action-btn"><i class="fas fa-edit"></i> Modifier</button>
+            <button class="action-btn"><i class="fas fa-copy"></i> Réutiliser</button>
+            <button class="action-btn delete"><i class="fas fa-trash"></i> Supprimer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carte question 6 -->
+      <div class="question-card">
+        <div class="card-header">
+          <div class="question-badges">
+            <span class="badge type">Ouverte</span>
+            <span class="badge difficulty moyenne">Moyenne</span>
+          </div>
+          <div class="card-menu">
+            <i class="fas fa-ellipsis-v"></i>
+          </div>
+        </div>
+        <div class="card-content">
+          <p class="question-text">Décrivez votre expérience globale avec notre application mobile.</p>
+          <div class="question-meta">
+            <span class="meta-item"><i class="far fa-calendar-alt"></i> 05/03/2025</span>
+            <span class="meta-item"><i class="fas fa-poll"></i> Application mobile</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="footer-actions">
+            <button class="action-btn"><i class="fas fa-edit"></i> Modifier</button>
+            <button class="action-btn"><i class="fas fa-copy"></i> Réutiliser</button>
+            <button class="action-btn delete"><i class="fas fa-trash"></i> Supprimer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn">4</button>
+      <span class="page-dots">...</span>
+      <button class="page-btn">8</button>
+    </div>
+  </div>
+
+  <!-- 6️⃣ SECTION REPORTING IA -->
+  <h2 class="section-title">
+    <i class="fas fa-chart-pie"></i> Statistiques IA
+  </h2>
+
+  <div class="stats-grid">
+    <!-- Carte: Totaux -->
+    <div class="stats-card">
+      <div class="card-header">
+        <h3>Aperçu général</h3>
+      </div>
+      <div class="card-content stats-overview">
+        <div class="stat-big">
+          <span class="stat-value">24</span>
+          <span class="stat-label">Questions générées</span>
+        </div>
+        <div class="stat-big">
+          <span class="stat-value">18</span>
+          <span class="stat-label">Utilisées</span>
+        </div>
+        <div class="stat-big">
+          <span class="stat-value">6</span>
+          <span class="stat-label">En attente</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte: Répartition par type -->
+    <div class="stats-card">
+      <div class="card-header">
+        <h3>Répartition par type</h3>
+        <i class="fas fa-ellipsis-h"></i>
+      </div>
+      <div class="card-content">
+        <div class="pie-chart-small">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#eef2f6" stroke-width="20"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#9D50BB" stroke-width="20" 
+                    stroke-dasharray="100" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#f39c12" stroke-width="20" 
+                    stroke-dasharray="75" stroke-dashoffset="100" transform="rotate(-90 50 50)"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#3498db" stroke-width="20" 
+                    stroke-dasharray="50" stroke-dashoffset="175" transform="rotate(-90 50 50)"/>
+          </svg>
+        </div>
+        <div class="legend">
+          <div><span class="dot purple"></span> QCM (40%)</div>
+          <div><span class="dot orange"></span> Ouvertes (30%)</div>
+          <div><span class="dot blue"></span> Vrai/Faux (20%)</div>
+          <div><span class="dot gray"></span> Échelle (10%)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte: Répartition par difficulté -->
+    <div class="stats-card">
+      <div class="card-header">
+        <h3>Répartition par difficulté</h3>
+        <i class="fas fa-ellipsis-h"></i>
+      </div>
+      <div class="card-content">
+        <div class="difficulty-bars">
+          <div class="difficulty-item">
+            <span class="difficulty-label">Facile</span>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 35%"></div>
+            </div>
+            <span class="difficulty-value">35%</span>
+          </div>
+          <div class="difficulty-item">
+            <span class="difficulty-label">Moyenne</span>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 45%"></div>
+            </div>
+            <span class="difficulty-value">45%</span>
+          </div>
+          <div class="difficulty-item">
+            <span class="difficulty-label">Difficile</span>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 20%"></div>
+            </div>
+            <span class="difficulty-value">20%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte: Questions par période -->
+    <div class="stats-card">
+      <div class="card-header">
+        <h3>Questions par période</h3>
+        <select class="period-select">
+          <option>Semaine</option>
+          <option>Mois</option>
+          <option>Trimestre</option>
+        </select>
+      </div>
+      <div class="card-content">
+        <div class="mini-bar-chart">
+          <div class="bar-group">
+            <div class="bar" style="height: 30px"></div>
+            <span class="bar-label">L</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 45px"></div>
+            <span class="bar-label">M</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 25px"></div>
+            <span class="bar-label">M</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 60px"></div>
+            <span class="bar-label">J</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 55px"></div>
+            <span class="bar-label">V</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 20px"></div>
+            <span class="bar-label">S</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 10px"></div>
+            <span class="bar-label">D</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmation réinitialisation -->
+  <div class="modal-overlay" id="resetConfirmModal" style="display: none;">
+    <div class="modal-container small">
+      <div class="modal-header">
+        <h3><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Confirmer la réinitialisation</h3>
+        <button class="modal-close" id="closeResetModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir réinitialiser l'historique des questions générées ?</p>
+        <p class="warning-text">Cette action est irréversible et supprimera définitivement toutes les questions.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="cancelReset">Annuler</button>
+        <button class="btn btn-danger" id="confirmReset">
+          <i class="fas fa-trash"></i> Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div class="toast-area">
+    <div class="toast success" id="successToast" style="display: none;">
+      <i class="fas fa-check-circle"></i>
+      <div class="toast-content">
+        <strong>Succès</strong>
+        <span>Action effectuée avec succès</span>
+      </div>
+    </div>
+  </div>
+</div>
