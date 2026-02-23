@@ -10,7 +10,6 @@ import { GestionQuestionsComponent } from './dashboard/gestion-questions/gestion
 import { AnalyseReportingComponent } from './dashboard/analyse-reporting/analyse-reporting.component';
 import { FeedbackSupportComponent } from './dashboard/feedback-support/feedback-support.component';
 import { GestionIaQuestionsComponent } from './dashboard/gestion-ia-questions/gestion-ia-questions.component';
-
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -24,7 +23,6 @@ const routes: Routes = [
        { path: 'feedback', component: FeedbackSupportComponent },
        { path: 'QuestionIA', component: GestionIaQuestionsComponent },
 ];
-
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]

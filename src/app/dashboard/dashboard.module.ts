@@ -27,7 +27,7 @@ import { GestionIaQuestionsComponent } from './gestion-ia-questions/gestion-ia-q
   imports: [
     CommonModule,
     FormsModule, // ← AJOUTER ICI
-    DashboardRoutingModule
+    DashboardRoutingModule,
   ],
   exports: [
     AdminDashboardComponent,
