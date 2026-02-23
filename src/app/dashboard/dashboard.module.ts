@@ -8,6 +8,7 @@ import { SuperAdminDashboardComponent } from './super-admin-dashboard/super-admi
 import { UsersManagementComponent } from './users-management/users-management.component';
 import { GestionEnquetesComponent } from './gestion-enquetes/gestion-enquetes.component';
 import { GestionQuestionsComponent } from './gestion-questions/gestion-questions.component';
+import { AnalyseReportingComponent } from './analyse-reporting/analyse-reporting.component';
 
 
 @NgModule({
@@ -16,7 +17,8 @@ import { GestionQuestionsComponent } from './gestion-questions/gestion-questions
     SuperAdminDashboardComponent,
     UsersManagementComponent,
     GestionEnquetesComponent,
-    GestionQuestionsComponent
+    GestionQuestionsComponent,
+    AnalyseReportingComponent
   ],
   imports: [
     CommonModule,

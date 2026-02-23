@@ -1,0 +1,484 @@
+<div class="analytics-dashboard">
+  <!-- 1️⃣ EN-TÊTE / HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Analyse et Reporting</h1>
+      <p class="subtitle">Plateforme de satisfaction · Résultats et statistiques de vos enquêtes</p>
+    </div>
+    <div class="header-right">
+      <div class="export-buttons">
+        <button class="btn btn-outline btn-icon">
+          <i class="fas fa-file-pdf"></i>
+          <span>PDF</span>
+        </button>
+        <button class="btn btn-outline btn-icon">
+          <i class="fas fa-file-excel"></i>
+          <span>Excel</span>
+        </button>
+        <button class="btn btn-outline btn-icon">
+          <i class="fas fa-file-csv"></i>
+          <span>CSV</span>
+        </button>
+        <button class="btn btn-primary btn-icon">
+          <i class="fas fa-download"></i>
+          <span>Exporter tout</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2️⃣ SECTION FILTRES ET RECHERCHE -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Rechercher une enquête...">
+      </div>
+      
+      <div class="filter-group">
+        <button class="filter-btn active">Tous</button>
+        <button class="filter-btn">Brouillon</button>
+        <button class="filter-btn">Publiée</button>
+        <button class="filter-btn">Fermée</button>
+      </div>
+    </div>
+
+    <div class="filters-row advanced">
+      <div class="date-range">
+        <div class="date-input">
+          <i class="fas fa-calendar-alt"></i>
+          <input type="date" placeholder="Date début">
+        </div>
+        <span class="date-separator">—</span>
+        <div class="date-input">
+          <i class="fas fa-calendar-alt"></i>
+          <input type="date" placeholder="Date fin">
+        </div>
+      </div>
+
+      <div class="user-filter">
+        <select class="filter-select">
+          <option>Tous les utilisateurs</option>
+          <option>Clients premium</option>
+          <option>Nouveaux utilisateurs</option>
+          <option>Testeurs bêta</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary btn-sm">
+        <i class="fas fa-filter"></i> Appliquer filtres
+      </button>
+    </div>
+  </div>
+
+  <!-- 3️⃣ TABLEAU DES RÉSULTATS -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2 class="section-title">
+        <i class="fas fa-list"></i> Résultats des enquêtes
+      </h2>
+      <span class="results-count">12 enquêtes · 1,284 réponses</span>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Nom de l'enquête</th>
+            <th>Participants</th>
+            <th>Taux complétude</th>
+            <th>Moyenne notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="survey-name">
+                <span class="survey-title">Expérience d'achat 2025</span>
+                <span class="badge published">Publiée</span>
+              </div>
+            </td>
+            <td><span class="stat-badge purple">184</span></td>
+            <td>
+              <div class="completion-cell">
+                <span class="completion-value">68%</span>
+                <div class="mini-progress">
+                  <div class="mini-progress-fill" style="width: 68%"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="rating">4.2/5</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="action-icon" title="Voir détails"><i class="fas fa-eye"></i></button>
+                <button class="action-icon" title="Exporter"><i class="fas fa-download"></i></button>
+                <button class="action-icon" title="Graphique"><i class="fas fa-chart-bar"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="survey-name">
+                <span class="survey-title">Support client NPS</span>
+                <span class="badge draft">Brouillon</span>
+              </div>
+            </td>
+            <td><span class="stat-badge warning">0</span></td>
+            <td>
+              <div class="completion-cell">
+                <span class="completion-value">0%</span>
+                <div class="mini-progress">
+                  <div class="mini-progress-fill" style="width: 0%"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="rating">—</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="action-icon"><i class="fas fa-eye"></i></button>
+                <button class="action-icon"><i class="fas fa-download"></i></button>
+                <button class="action-icon"><i class="fas fa-chart-bar"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="survey-name">
+                <span class="survey-title">Restaurant Le Select</span>
+                <span class="badge closed">Fermée</span>
+              </div>
+            </td>
+            <td><span class="stat-badge success">312</span></td>
+            <td>
+              <div class="completion-cell">
+                <span class="completion-value">100%</span>
+                <div class="mini-progress">
+                  <div class="mini-progress-fill" style="width: 100%"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="rating">4.8/5</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="action-icon"><i class="fas fa-eye"></i></button>
+                <button class="action-icon"><i class="fas fa-download"></i></button>
+                <button class="action-icon"><i class="fas fa-chart-bar"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="survey-name">
+                <span class="survey-title">Application mobile v2</span>
+                <span class="badge published">Publiée</span>
+              </div>
+            </td>
+            <td><span class="stat-badge purple">57</span></td>
+            <td>
+              <div class="completion-cell">
+                <span class="completion-value">30%</span>
+                <div class="mini-progress">
+                  <div class="mini-progress-fill" style="width: 30%"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="rating">3.9/5</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="action-icon"><i class="fas fa-eye"></i></button>
+                <button class="action-icon"><i class="fas fa-download"></i></button>
+                <button class="action-icon"><i class="fas fa-chart-bar"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn">4</button>
+      <span class="page-dots">...</span>
+      <button class="page-btn">12</button>
+    </div>
+  </div>
+
+  <!-- 4️⃣ DASHBOARD ANALYTIQUE / CARDS GRAPHIQUES -->
+  <h2 class="section-title">
+    <i class="fas fa-chart-pie"></i> Dashboard analytique
+  </h2>
+
+  <div class="analytics-grid">
+    <!-- Carte 1: Participation par enquête -->
+    <div class="analytics-card">
+      <div class="card-header">
+        <h3>Participation par enquête</h3>
+        <i class="fas fa-ellipsis-h"></i>
+      </div>
+      <div class="card-content">
+        <div class="survey-stat">
+          <div class="survey-stat-info">
+            <span class="survey-stat-name">Expérience d'achat</span>
+            <span class="survey-stat-value">184</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 68%"></div>
+          </div>
+        </div>
+        <div class="survey-stat">
+          <div class="survey-stat-info">
+            <span class="survey-stat-name">Support client</span>
+            <span class="survey-stat-value">0</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="survey-stat">
+          <div class="survey-stat-info">
+            <span class="survey-stat-name">Restaurant</span>
+            <span class="survey-stat-value">312</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 100%"></div>
+          </div>
+        </div>
+        <div class="survey-stat">
+          <div class="survey-stat-info">
+            <span class="survey-stat-name">Application mobile</span>
+            <span class="survey-stat-value">57</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 30%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte 2: Top utilisateurs actifs -->
+    <div class="analytics-card">
+      <div class="card-header">
+        <h3>Top 5 utilisateurs actifs</h3>
+        <i class="fas fa-ellipsis-h"></i>
+      </div>
+      <div class="card-content">
+        <div class="user-stat">
+          <span class="user-rank">1</span>
+          <span class="user-name">Marie D.</span>
+          <span class="user-count">24 réponses</span>
+        </div>
+        <div class="user-stat">
+          <span class="user-rank">2</span>
+          <span class="user-name">Thomas L.</span>
+          <span class="user-count">18 réponses</span>
+        </div>
+        <div class="user-stat">
+          <span class="user-rank">3</span>
+          <span class="user-name">Sophie M.</span>
+          <span class="user-count">15 réponses</span>
+        </div>
+        <div class="user-stat">
+          <span class="user-rank">4</span>
+          <span class="user-name">Pierre B.</span>
+          <span class="user-count">12 réponses</span>
+        </div>
+        <div class="user-stat">
+          <span class="user-rank">5</span>
+          <span class="user-name">Julie K.</span>
+          <span class="user-count">10 réponses</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte 3: Taux de complétude global -->
+    <div class="analytics-card">
+      <div class="card-header">
+        <h3>Taux de complétude global</h3>
+        <i class="fas fa-ellipsis-h"></i>
+      </div>
+      <div class="card-content center">
+        <div class="pie-chart-container">
+          <div class="pie-chart">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#eef2f6" stroke-width="20"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="url(#gradient)" stroke-width="20" 
+                      stroke-dasharray="251.2" stroke-dashoffset="75.36" transform="rotate(-90 50 50)"/>
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#9D50BB"/>
+                  <stop offset="100%" stop-color="#b46fd3"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="pie-text">70%</span>
+          </div>
+        </div>
+        <p class="pie-label">1,284 réponses complètes sur 1,835</p>
+      </div>
+    </div>
+
+    <!-- Carte 4: Participation par période -->
+    <div class="analytics-card">
+      <div class="card-header">
+        <h3>Participation par période</h3>
+        <select class="period-select">
+          <option>Semaine</option>
+          <option>Mois</option>
+          <option>Trimestre</option>
+        </select>
+      </div>
+      <div class="card-content">
+        <div class="mini-bar-chart">
+          <div class="bar-group">
+            <div class="bar" style="height: 45px"></div>
+            <span class="bar-label">L</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 68px"></div>
+            <span class="bar-label">M</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 52px"></div>
+            <span class="bar-label">M</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 82px"></div>
+            <span class="bar-label">J</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 71px"></div>
+            <span class="bar-label">V</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 38px"></div>
+            <span class="bar-label">S</span>
+          </div>
+          <div class="bar-group">
+            <div class="bar" style="height: 22px"></div>
+            <span class="bar-label">D</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5️⃣ MODAL DÉTAILS ENQUÊTE (caché par défaut) -->
+  <div class="modal-overlay" id="surveyDetailModal" style="display: none;">
+    <div class="modal-container large">
+      <div class="modal-header">
+        <h3><i class="fas fa-chart-bar" style="color: #9D50BB;"></i> Détails : Expérience d'achat 2025</h3>
+        <button class="modal-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Filtres modal -->
+        <div class="modal-filters">
+          <div class="filter-group">
+            <label>Type de participation :</label>
+            <select class="filter-select small">
+              <option>Tous</option>
+              <option>Anonyme</option>
+              <option>Connecté</option>
+            </select>
+          </div>
+          <div class="export-actions">
+            <button class="btn btn-primary btn-sm"><i class="fas fa-file-pdf"></i> PDF</button>
+            <button class="btn btn-outline btn-sm"><i class="fas fa-file-excel"></i> Excel</button>
+            <button class="btn btn-outline btn-sm"><i class="fas fa-file-csv"></i> CSV</button>
+          </div>
+        </div>
+
+        <!-- Liste questions avec stats -->
+        <div class="questions-stats">
+          <div class="question-stat-item">
+            <div class="question-header">
+              <span class="question-text">Comment évaluez-vous la qualité du service ?</span>
+              <span class="question-responses">184 réponses</span>
+            </div>
+            <div class="question-chart">
+              <div class="mini-bar-chart horizontal">
+                <div class="bar-item">
+                  <span class="bar-label">Très satisfait</span>
+                  <div class="bar-container">
+                    <div class="bar-fill" style="width: 45%"></div>
+                  </div>
+                  <span class="bar-value">45%</span>
+                </div>
+                <div class="bar-item">
+                  <span class="bar-label">Satisfait</span>
+                  <div class="bar-container">
+                    <div class="bar-fill" style="width: 30%"></div>
+                  </div>
+                  <span class="bar-value">30%</span>
+                </div>
+                <div class="bar-item">
+                  <span class="bar-label">Neutre</span>
+                  <div class="bar-container">
+                    <div class="bar-fill" style="width: 15%"></div>
+                  </div>
+                  <span class="bar-value">15%</span>
+                </div>
+                <div class="bar-item">
+                  <span class="bar-label">Insatisfait</span>
+                  <div class="bar-container">
+                    <div class="bar-fill" style="width: 10%"></div>
+                  </div>
+                  <span class="bar-value">10%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="question-stat-item">
+            <div class="question-header">
+              <span class="question-text">Recommanderiez-vous notre service ?</span>
+              <span class="question-responses">184 réponses</span>
+            </div>
+            <div class="question-chart">
+              <div class="mini-pie">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="25" fill="none" stroke="#eef2f6" stroke-width="10"/>
+                  <circle cx="30" cy="30" r="25" fill="none" stroke="#9D50BB" stroke-width="10" 
+                          stroke-dasharray="157" stroke-dashoffset="47" transform="rotate(-90 30 30)"/>
+                </svg>
+                <div class="mini-pie-legend">
+                  <span><span class="dot purple"></span> Oui 70%</span>
+                  <span><span class="dot gray"></span> Non 30%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline">Fermer</button>
+        <button class="btn btn-primary">Exporter les résultats</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6️⃣ NOTIFICATIONS TOAST -->
+  <div class="toast-area">
+    <div class="toast success">
+      <i class="fas fa-check-circle"></i>
+      <div class="toast-content">
+        <strong>Export réussi</strong>
+        <span>Les données ont été exportées en PDF</span>
+      </div>
+    </div>
+    <div class="toast info">
+      <i class="fas fa-info-circle"></i>
+      <div class="toast-content">
+        <strong>Filtres appliqués</strong>
+        <span>Affichage des résultats filtrés</span>
+      </div>
+    </div>
+  </div>
+</div>
