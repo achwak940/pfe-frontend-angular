@@ -1,0 +1,822 @@
+<div class="dashboard">
+  <!-- En-tête -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Gestion des enquêtes</h1>
+      <p class="subtitle">Plateforme de satisfaction · 6 enquêtes au total</p>
+    </div>
+    <div class="header-right">
+      <div class="stats-badge">
+        <span class="stat-item">
+          <i class="fas fa-chart-line"></i>
+          <span>2 actives</span>
+        </span>
+        <span class="stat-item">
+          <i class="fas fa-check-circle"></i>
+          <span>2 publiées</span>
+        </span>
+        <span class="stat-item">
+          <i class="fas fa-clock"></i>
+          <span>2 brouillons</span>
+        </span>
+      </div>
+      <button class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nouvelle enquête
+      </button>
+    </div>
+  </div>
+
+  <!-- Barre de recherche et filtres -->
+  <div class="search-section">
+    <div class="search-wrapper">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Rechercher par titre, description ou ID...">
+    </div>
+    
+    <div class="filter-group">
+      <button class="filter-btn active">Toutes</button>
+      <button class="filter-btn">Brouillon</button>
+      <button class="filter-btn">Publiée</button>
+      <button class="filter-btn">Fermée</button>
+      <button class="filter-btn">Archivée</button>
+    </div>
+
+    <div class="sort-group">
+      <select class="sort-select">
+        <option>Date de création ↓</option>
+        <option>Date de création ↑</option>
+        <option>Nombre réponses ↓</option>
+        <option>Nombre réponses ↑</option>
+        <option>Titre A-Z</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Grille des enquêtes -->
+  <div class="surveys-grid">
+    <!-- Carte 1 - Publiée / Anonyme -->
+    <div class="survey-card">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Expérience d'achat 2025</h3>
+          <div class="card-meta">
+            <span class="badge published">Publiée</span>
+            <span class="survey-id">ENQ-001</span>
+          </div>
+        </div>
+        <div class="card-progress">
+          <div class="progress-ring">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#e9ecf0" stroke-width="4"/>
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#9D50BB" stroke-width="4" 
+                      stroke-dasharray="85" stroke-dashoffset="40" transform="rotate(-90 25 25)"/>
+            </svg>
+            <span class="progress-text">68%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <p class="description">Évaluation complète de l'expérience d'achat en magasin et en ligne. Satisfaction client, qualité service, fidélisation.</p>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="far fa-calendar-alt"></i>
+            <div>
+              <span class="info-label">Création</span>
+              <span class="info-value">12 févr. 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="far fa-calendar-times"></i>
+            <div>
+              <span class="info-label">Date fin</span>
+              <span class="info-value">30 mars 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-users"></i>
+            <div>
+              <span class="info-label">Participation</span>
+              <span class="info-value">184 / 270</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-question-circle"></i>
+            <div>
+              <span class="info-label">Questions</span>
+              <span class="info-value">12</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="participation-type">
+          <span class="type-badge">
+            <i class="fas fa-user-secret"></i> Anonyme
+          </span>
+          <span class="completion-rate">
+            <i class="fas fa-chart-pie"></i> 68% complété
+          </span>
+        </div>
+      </div>
+
+      <!-- QR Code et Lien -->
+      <div class="qr-link-section">
+        <div class="qr-code-container">
+          <div class="qr-code">
+            <i class="fas fa-qrcode"></i>
+          </div>
+          <div class="qr-info">
+            <span class="qr-label">QR Code</span>
+            <span class="qr-desc">Cliquez pour télécharger</span>
+          </div>
+        </div>
+        <div class="link-container">
+          <i class="fas fa-link"></i>
+          <span class="link-text">https://survey.app/exp2025</span>
+          <button class="copy-btn">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn primary">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn warning" disabled>
+          <i class="fas fa-paper-plane"></i>
+          <span>Publier</span>
+        </button>
+        <button class="action-btn success">
+          <i class="fas fa-chart-bar"></i>
+          <span>Statistiques</span>
+        </button>
+        <button class="action-btn danger">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte 2 - Brouillon / Connecté -->
+    <div class="survey-card draft">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Support client NPS 2025</h3>
+          <div class="card-meta">
+            <span class="badge draft">Brouillon</span>
+            <span class="survey-id">ENQ-002</span>
+          </div>
+        </div>
+        <div class="card-progress">
+          <div class="progress-ring">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#e9ecf0" stroke-width="4"/>
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#f39c12" stroke-width="4" 
+                      stroke-dasharray="50" stroke-dashoffset="75" transform="rotate(-90 25 25)"/>
+            </svg>
+            <span class="progress-text">40%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <p class="description">Mesure du Net Promoter Score pour le support client. Évaluation de la satisfaction et recommandation.</p>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="far fa-calendar-alt"></i>
+            <div>
+              <span class="info-label">Création</span>
+              <span class="info-value">1 mars 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="far fa-calendar-times"></i>
+            <div>
+              <span class="info-label">Date fin</span>
+              <span class="info-value">30 avr. 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-users"></i>
+            <div>
+              <span class="info-label">Participation</span>
+              <span class="info-value">0 / 150</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-question-circle"></i>
+            <div>
+              <span class="info-label">Questions</span>
+              <span class="info-value">5/8</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="participation-type">
+          <span class="type-badge">
+            <i class="fas fa-user-check"></i> Connecté
+          </span>
+          <span class="completion-rate warning">
+            <i class="fas fa-exclamation-triangle"></i> 40% complété
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn primary">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn warning">
+          <i class="fas fa-paper-plane"></i>
+          <span>Publier</span>
+        </button>
+        <button class="action-btn success" disabled>
+          <i class="fas fa-chart-bar"></i>
+          <span>Statistiques</span>
+        </button>
+        <button class="action-btn danger">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte 3 - Fermée / Anonyme -->
+    <div class="survey-card closed">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Restaurant Le Select</h3>
+          <div class="card-meta">
+            <span class="badge closed">Fermée</span>
+            <span class="survey-id">ENQ-003</span>
+          </div>
+        </div>
+        <div class="card-progress">
+          <div class="progress-ring">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#e9ecf0" stroke-width="4"/>
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#2ecc71" stroke-width="4" 
+                      stroke-dasharray="125" stroke-dashoffset="0" transform="rotate(-90 25 25)"/>
+            </svg>
+            <span class="progress-text">100%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <p class="description">Évaluation des repas et du service. Satisfaction client pour le restaurant gastronomique.</p>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="far fa-calendar-alt"></i>
+            <div>
+              <span class="info-label">Création</span>
+              <span class="info-value">10 janv. 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="far fa-calendar-times"></i>
+            <div>
+              <span class="info-label">Date fin</span>
+              <span class="info-value">10 févr. 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-users"></i>
+            <div>
+              <span class="info-label">Participation</span>
+              <span class="info-value">312 / 312</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-question-circle"></i>
+            <div>
+              <span class="info-label">Questions</span>
+              <span class="info-value">15</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="participation-type">
+          <span class="type-badge">
+            <i class="fas fa-user-secret"></i> Anonyme
+          </span>
+          <span class="completion-rate success">
+            <i class="fas fa-check-circle"></i> 100% complété
+          </span>
+        </div>
+      </div>
+
+      <!-- QR Code et Lien -->
+      <div class="qr-link-section">
+        <div class="qr-code-container">
+          <div class="qr-code">
+            <i class="fas fa-qrcode"></i>
+          </div>
+          <div class="qr-info">
+            <span class="qr-label">QR Code</span>
+            <span class="qr-desc">Cliquez pour télécharger</span>
+          </div>
+        </div>
+        <div class="link-container">
+          <i class="fas fa-link"></i>
+          <span class="link-text">https://survey.app/restaurant</span>
+          <button class="copy-btn">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn primary">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn warning" disabled>
+          <i class="fas fa-paper-plane"></i>
+          <span>Publier</span>
+        </button>
+        <button class="action-btn success">
+          <i class="fas fa-chart-bar"></i>
+          <span>Statistiques</span>
+        </button>
+        <button class="action-btn danger">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte 4 - Publiée / Connecté -->
+    <div class="survey-card">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Application mobile v2 - Bêta</h3>
+          <div class="card-meta">
+            <span class="badge published">Publiée</span>
+            <span class="survey-id">ENQ-004</span>
+          </div>
+        </div>
+        <div class="card-progress">
+          <div class="progress-ring">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#e9ecf0" stroke-width="4"/>
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#9D50BB" stroke-width="4" 
+                      stroke-dasharray="37" stroke-dashoffset="88" transform="rotate(-90 25 25)"/>
+            </svg>
+            <span class="progress-text">30%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <p class="description">Retours utilisateurs pour la version bêta de l'application mobile. Tests de fonctionnalités et UX.</p>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="far fa-calendar-alt"></i>
+            <div>
+              <span class="info-label">Création</span>
+              <span class="info-value">20 févr. 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="far fa-calendar-times"></i>
+            <div>
+              <span class="info-label">Date fin</span>
+              <span class="info-value">1 avr. 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-users"></i>
+            <div>
+              <span class="info-label">Participation</span>
+              <span class="info-value">57 / 200</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-question-circle"></i>
+            <div>
+              <span class="info-label">Questions</span>
+              <span class="info-value">10</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="participation-type">
+          <span class="type-badge">
+            <i class="fas fa-user-check"></i> Connecté
+          </span>
+          <span class="completion-rate">
+            <i class="fas fa-chart-pie"></i> 30% complété
+          </span>
+        </div>
+      </div>
+
+      <!-- QR Code et Lien -->
+      <div class="qr-link-section">
+        <div class="qr-code-container">
+          <div class="qr-code">
+            <i class="fas fa-qrcode"></i>
+          </div>
+          <div class="qr-info">
+            <span class="qr-label">QR Code</span>
+            <span class="qr-desc">Cliquez pour télécharger</span>
+          </div>
+        </div>
+        <div class="link-container">
+          <i class="fas fa-link"></i>
+          <span class="link-text">https://survey.app/appbeta</span>
+          <button class="copy-btn">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn primary">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn warning" disabled>
+          <i class="fas fa-paper-plane"></i>
+          <span>Publier</span>
+        </button>
+        <button class="action-btn success">
+          <i class="fas fa-chart-bar"></i>
+          <span>Statistiques</span>
+        </button>
+        <button class="action-btn danger">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte 5 - Brouillon / Mixte -->
+    <div class="survey-card draft">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Site web corporate</h3>
+          <div class="card-meta">
+            <span class="badge draft">Brouillon</span>
+            <span class="survey-id">ENQ-005</span>
+          </div>
+        </div>
+        <div class="card-progress">
+          <div class="progress-ring">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#e9ecf0" stroke-width="4"/>
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#f39c12" stroke-width="4" 
+                      stroke-dasharray="0" stroke-dashoffset="125" transform="rotate(-90 25 25)"/>
+            </svg>
+            <span class="progress-text">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <p class="description">Expérience utilisateur sur le site web. Navigation, contenu et design.</p>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="far fa-calendar-alt"></i>
+            <div>
+              <span class="info-label">Création</span>
+              <span class="info-value">15 mars 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="far fa-calendar-times"></i>
+            <div>
+              <span class="info-label">Date fin</span>
+              <span class="info-value">Non définie</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-users"></i>
+            <div>
+              <span class="info-label">Participation</span>
+              <span class="info-value">0 / 500</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-question-circle"></i>
+            <div>
+              <span class="info-label">Questions</span>
+              <span class="info-value">8/12</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="participation-type">
+          <span class="type-badge">
+            <i class="fas fa-users"></i> Mixte
+          </span>
+          <span class="completion-rate warning">
+            <i class="fas fa-exclamation-triangle"></i> 0% complété
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn primary">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn warning">
+          <i class="fas fa-paper-plane"></i>
+          <span>Publier</span>
+        </button>
+        <button class="action-btn success" disabled>
+          <i class="fas fa-chart-bar"></i>
+          <span>Statistiques</span>
+        </button>
+        <button class="action-btn danger">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte 6 - Archivée / Connecté -->
+    <div class="survey-card closed">
+      <div class="card-header">
+        <div class="card-title-section">
+          <h3>Formation en ligne</h3>
+          <div class="card-meta">
+            <span class="badge closed">Archivée</span>
+            <span class="survey-id">ENQ-006</span>
+          </div>
+        </div>
+        <div class="card-progress">
+          <div class="progress-ring">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#e9ecf0" stroke-width="4"/>
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#2ecc71" stroke-width="4" 
+                      stroke-dasharray="114" stroke-dashoffset="11" transform="rotate(-90 25 25)"/>
+            </svg>
+            <span class="progress-text">91%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <p class="description">Évaluation des modules de formation et des formateurs. Satisfaction des apprenants.</p>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="far fa-calendar-alt"></i>
+            <div>
+              <span class="info-label">Création</span>
+              <span class="info-value">1 déc. 2024</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="far fa-calendar-times"></i>
+            <div>
+              <span class="info-label">Date fin</span>
+              <span class="info-value">15 janv. 2025</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-users"></i>
+            <div>
+              <span class="info-label">Participation</span>
+              <span class="info-value">456 / 500</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-question-circle"></i>
+            <div>
+              <span class="info-label">Questions</span>
+              <span class="info-value">20</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="participation-type">
+          <span class="type-badge">
+            <i class="fas fa-user-check"></i> Connecté
+          </span>
+          <span class="completion-rate success">
+            <i class="fas fa-check-circle"></i> 91% complété
+          </span>
+        </div>
+      </div>
+
+      <!-- QR Code et Lien -->
+      <div class="qr-link-section">
+        <div class="qr-code-container">
+          <div class="qr-code">
+            <i class="fas fa-qrcode"></i>
+          </div>
+          <div class="qr-info">
+            <span class="qr-label">QR Code</span>
+            <span class="qr-desc">Cliquez pour télécharger</span>
+          </div>
+        </div>
+        <div class="link-container">
+          <i class="fas fa-link"></i>
+          <span class="link-text">https://survey.app/formation</span>
+          <button class="copy-btn">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn primary">
+          <i class="fas fa-edit"></i>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn warning" disabled>
+          <i class="fas fa-paper-plane"></i>
+          <span>Publier</span>
+        </button>
+        <button class="action-btn success">
+          <i class="fas fa-chart-bar"></i>
+          <span>Statistiques</span>
+        </button>
+        <button class="action-btn danger">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Statistiques -->
+  <h2 class="section-title">
+    <i class="fas fa-chart-pie"></i> Analyse & Performance
+  </h2>
+
+  <div class="advanced-stats">
+    <div class="stats-card">
+      <div class="stats-header">
+        <h4>Vue d'ensemble</h4>
+        <span class="stats-period">Derniers 30 jours</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-block">
+          <span class="stat-value">1,009</span>
+          <span class="stat-label">Réponses totales</span>
+          <span class="stat-trend positive">+12%</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">68%</span>
+          <span class="stat-label">Taux de réponse</span>
+          <span class="stat-trend positive">+5%</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">4.2</span>
+          <span class="stat-label">Score moyen</span>
+          <span class="stat-trend">/5</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">24</span>
+          <span class="stat-label">Jours restants</span>
+          <span class="stat-trend negative">-3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h4>Participation par type</h4>
+        <div class="chart-legend">
+          <span><i class="fas fa-circle" style="color: #9D50BB;"></i> Anonyme (68%)</span>
+          <span><i class="fas fa-circle" style="color: #b48ad4;"></i> Connecté (32%)</span>
+        </div>
+      </div>
+      <div class="participation-pie">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#9D50BB" stroke-width="20" stroke-dasharray="171" stroke-dashoffset="0"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#b48ad4" stroke-width="20" stroke-dasharray="80" stroke-dashoffset="171" transform="rotate(-90 50 50)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire Modal (caché par défaut) -->
+  <div class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-pen" style="color: #9D50BB;"></i>
+          Créer une nouvelle enquête
+        </h3>
+        <button class="modal-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <form>
+          <div class="form-row">
+            <div class="form-group large">
+              <label>Titre de l'enquête <span class="required">*</span></label>
+              <input type="text" placeholder="ex: Enquête de satisfaction clients 2025">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Description détaillée</label>
+              <textarea rows="3" placeholder="Décrivez l'objectif de cette enquête..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-row grid-2">
+            <div class="form-group">
+              <label>Date de début</label>
+              <input type="date">
+            </div>
+            <div class="form-group">
+              <label>Date de fin</label>
+              <input type="date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Type de participation <span class="required">*</span></label>
+              <div class="participation-options">
+                <label class="participation-option">
+                  <input type="radio" name="participationType" checked>
+                  <i class="fas fa-user-secret"></i>
+                  <div>
+                    <strong>Anonyme</strong>
+                    <small>Les participants ne sont pas identifiés</small>
+                  </div>
+                </label>
+                <label class="participation-option">
+                  <input type="radio" name="participationType">
+                  <i class="fas fa-user-check"></i>
+                  <div>
+                    <strong>Connecté</strong>
+                    <small>Les participants doivent se connecter</small>
+                  </div>
+                </label>
+                <label class="participation-option">
+                  <input type="radio" name="participationType">
+                  <i class="fas fa-users"></i>
+                  <div>
+                    <strong>Mixte</strong>
+                    <small>Les deux options disponibles</small>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aperçu QR Code (caché par défaut) -->
+          <div class="form-row" style="display: none;">
+            <div class="form-group">
+              <label>Aperçu QR Code</label>
+              <div class="qr-preview-section">
+                <div class="qr-preview">
+                  <i class="fas fa-qrcode"></i>
+                </div>
+                <div class="link-preview">
+                  <small>Le QR code sera généré après publication</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-actions-left">
+          <button class="btn btn-outline btn-icon">
+            <i class="fas fa-plus-circle"></i> Ajouter question
+          </button>
+          <button class="btn btn-primary btn-icon">
+            <i class="fas fa-robot"></i> Générer via IA
+          </button>
+        </div>
+        <div class="modal-actions-right">
+          <button class="btn btn-outline">Annuler</button>
+          <button class="btn btn-success">Brouillon</button>
+          <button class="btn btn-primary">Publier</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications (cachés par défaut) -->
+  <div class="toast-area">
+    <div class="toast success">
+      <i class="fas fa-check-circle"></i>
+      <div class="toast-content">
+        <span>Enquête publiée avec succès</span>
+      </div>
+    </div>
+  </div>
+</div>

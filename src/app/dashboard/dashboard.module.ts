@@ -6,13 +6,15 @@ import { DashboardRoutingModule } from './dashboard-routing.module';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { SuperAdminDashboardComponent } from './super-admin-dashboard/super-admin-dashboard.component';
 import { UsersManagementComponent } from './users-management/users-management.component';
+import { GestionEnquetesComponent } from './gestion-enquetes/gestion-enquetes.component';
 
 
 @NgModule({
   declarations: [
     AdminDashboardComponent,
     SuperAdminDashboardComponent,
-    UsersManagementComponent
+    UsersManagementComponent,
+    GestionEnquetesComponent
   ],
   imports: [
     CommonModule,
