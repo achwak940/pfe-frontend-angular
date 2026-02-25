@@ -20,12 +20,7 @@
             Utilisateurs
           </a>
         </li>
-        <li routerLinkActive="active">
-          <a routerLink="/admins">
-            <i class="fas fa-user-shield"></i>
-            Administrateurs
-          </a>
-        </li>
+   
         <li routerLinkActive="active">
           <a routerLink="/surveys">
             <i class="fas fa-poll"></i>
@@ -106,12 +101,8 @@
             <span class="stat-label">{{ stat.label }}</span>
             <span class="stat-value">{{ stat.value }}</span>
             <span class="stat-trend" [class.positive]="stat.trend > 0" [class.neutral]="stat.trend === 0">
-              <i class="fas" [ngClass]="{
-                'fa-arrow-up': stat.trend > 0,
-                'fa-minus': stat.trend === 0,
-                'fa-arrow-down': stat.trend < 0
-              }"></i>
-              {{ stat.trendText }}
+           
+            
             </span>
           </div>
         </article>
@@ -177,31 +168,7 @@
         </div>
       </section>
 
-      <!-- filtres et actions -->
-      <div class="utility-row">
-        <div class="filter-card">
-          <span class="filter-label"><i class="fas fa-sliders-h"></i> Filtres rapides</span>
-          <div class="filter-group">
-            <select class="form-select" aria-label="Rôle" [(ngModel)]="selectedRole">
-              <option value="all">Tous les rôles</option>
-              <option value="admin">Admin</option>
-              <option value="user">Utilisateur</option>
-            </select>
-            <input type="text" class="form-input" placeholder="ID" [(ngModel)]="searchId">
-            <button class="btn-primary btn-small" (click)="applyAIFilters()">
-              <i class="fas fa-magic"></i> Appliquer IA
-            </button>
-          </div>
-        </div>
-        <div class="buttons-demo">
-          <button class="btn-primary" (click)="createNewSurvey()">
-            <i class="fas fa-plus-circle"></i> Nouveau sondage
-          </button>
-          <button class="btn-secondary" (click)="syncData()">
-            <i class="fas fa-sync-alt"></i> Synchroniser
-          </button>
-        </div>
-      </div>
+   
     </div>
   </main>
 </div>
