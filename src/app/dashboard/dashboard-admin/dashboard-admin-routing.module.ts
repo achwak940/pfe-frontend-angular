@@ -7,6 +7,7 @@ import { FeedbackSupportComponent } from './feedback-support/feedback-support.co
 import { GestionIaQuestionsComponent } from './gestion-ia-questions/gestion-ia-questions.component';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import * as path from 'path';
+import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
 
 const routes: Routes = [
   { 
@@ -18,6 +19,7 @@ const routes: Routes = [
       { path: 'AnalyseReporting', component: AnalyseReportingComponent },
       { path: 'feedback', component: FeedbackSupportComponent },
       { path: 'QuestionIA', component: GestionIaQuestionsComponent },
+        { path: 'AjoutEnquete', component: AjoutEnqueteComponent },
     ] 
   }
 ];

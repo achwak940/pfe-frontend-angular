@@ -8,7 +8,8 @@ import { AnalyseReportingComponent } from './analyse-reporting/analyse-reporting
 import { FeedbackSupportComponent } from './feedback-support/feedback-support.component';
 import { GestionQuestionsComponent } from './gestion-questions/gestion-questions.component';
 import { AdminDashboardComponent } from './admin-dashboard.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
 
 
 @NgModule({
@@ -18,12 +19,14 @@ import { FormsModule } from '@angular/forms';
     GestionQuestionsComponent,
     AnalyseReportingComponent,
     FeedbackSupportComponent,
-    GestionIaQuestionsComponent
+    GestionIaQuestionsComponent,
+    AjoutEnqueteComponent
   ],
   imports: [
     CommonModule,
     DashboardAdminRoutingModule,
      FormsModule,   
+       ReactiveFormsModule
   ],
     exports: [
     AdminDashboardComponent

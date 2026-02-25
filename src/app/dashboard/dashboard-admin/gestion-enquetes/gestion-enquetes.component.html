@@ -19,7 +19,7 @@
           <span>{{ stats.brouillons }} brouillons</span>
         </span>
       </div>
-      <button class="btn btn-primary">
+      <button class="btn btn-primary" routerLink="/AjoutEnquete">
         <i class="fas fa-plus"></i> Nouvelle enquête
       </button>
     </div>
@@ -99,7 +99,7 @@
               <i class="fas fa-users"></i>
               <div>
                 <span class="info-label">Participation</span>
-                <span class="info-value">{{ enquete.participants }}Connecté{{ enquete.totalParticipants }}</span>
+                <span class="info-value">{{ enquete.typeParticipation }}</span>
               </div>
             </div>
             <div class="info-item">
@@ -118,7 +118,7 @@
                 'fa-user-check': enquete.typeParticipation === 'connecte' || !enquete.typeParticipation,
                 'fa-users': enquete.typeParticipation === 'mixte'
               }"></i>
-              {{ enquete.typeParticipation || 'Connecté' }}
+              {{ enquete.typeParticipation}}
             </span>
             <span class="completion-rate" [ngClass]="{
               'warning': enquete.progress < 50,
@@ -135,7 +135,6 @@
 
           <!-- QR Code et Lien pour les enquêtes publiées -->
           <div class="qr-link-section" *ngIf="enquete.statut === 'Publiée'">
-           
           
           </div>
         </div>
