@@ -135,22 +135,8 @@
 
           <!-- QR Code et Lien pour les enquêtes publiées -->
           <div class="qr-link-section" *ngIf="enquete.statut === 'Publiée'">
-            <div class="qr-code-container">
-              <div class="qr-code">
-                <i class="fas fa-qrcode"></i>
-              </div>
-              <div class="qr-info">
-                <span class="qr-label">QR Code</span>
-                <span class="qr-desc">Cliquez pour télécharger</span>
-              </div>
-            </div>
-            <div class="link-container">
-              <i class="fas fa-link"></i>
-              <span class="link-text">https://survey.app/{{ enquete.id | lowercase }}</span>
-              <button class="copy-btn" (click)="copyLink(enquete.id)">
-                <i class="fas fa-copy"></i>
-              </button>
-            </div>
+           
+          
           </div>
         </div>
 
