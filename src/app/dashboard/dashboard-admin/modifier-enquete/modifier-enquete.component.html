@@ -1,0 +1,233 @@
+<div class="dashboard">
+  <div class="header">
+    <div class="header-left">
+      <h1 class="section-title">
+        <i class="fas fa-edit"></i>
+        Modifier l'enquête
+      </h1>
+   
+    </div>
+    <div class="header-right">
+      <div class="stats-badge">
+        <div class="stat-item">
+          <i class="fas fa-pen"></i>
+          <span>Mode édition</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-history"></i>
+          <span>Dernière modif: aujourd'hui</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form [formGroup]="enqueteForm" (ngSubmit)="onSubmit()" class="survey-form">
+    <!-- En-tête de statut -->
+    <div class="form-status-header">
+      <div class="status-badge" [ngClass]="enqueteForm.get('statut')?.value?.toLowerCase()">
+        <i class="fas" [ngClass]="{
+          'fa-clock': enqueteForm.get('statut')?.value === 'Brouillon',
+          'fa-globe': enqueteForm.get('statut')?.value === 'Publiée',
+          'fa-lock': enqueteForm.get('statut')?.value === 'Fermée',
+          'fa-archive': enqueteForm.get('statut')?.value === 'Archivée'
+        }"></i>
+        <span>{{ enqueteForm.get('statut')?.value }}</span>
+      </div>
+      <div class="survey-id-badge">
+        <i class="fas fa-hashtag"></i>
+        <span>ENQ-2024-001</span>
+      </div>
+    </div>
+
+    <!-- Titre -->
+    <div class="form-group">
+      <label>
+        <i class="fas fa-heading"></i>
+        Titre <span class="required">*</span>
+      </label>
+      <div class="input-wrapper">
+        <i class="fas fa-pencil-alt input-icon"></i>
+        <input type="text" formControlName="titre" placeholder="Ex: Satisfaction client 2024">
+      </div>
+      <div *ngIf="isFieldInvalid('titre')" class="text-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        Titre requis
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label>
+        <i class="fas fa-align-left"></i>
+        Description
+      </label>
+      <div class="input-wrapper">
+        <i class="fas fa-file-alt input-icon"></i>
+        <textarea formControlName="description" rows="3" placeholder="Décrivez l'objectif..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-row grid-2">
+      <!-- Date Fin -->
+      <div class="form-group">
+        <label>
+          <i class="fas fa-calendar-alt"></i>
+          Date de fin
+        </label>
+        <div class="input-wrapper">
+          <i class="fas fa-calendar-check input-icon"></i>
+          <input type="date" formControlName="dateFin" [min]="today">
+        </div>
+        <small class="field-hint" *ngIf="enqueteForm.get('dateFin')?.value">
+          <i class="fas fa-info-circle"></i>
+          {{ getDaysRemaining() }} jours restants
+        </small>
+      </div>
+
+      <!-- Statut -->
+      <div class="form-group">
+        <label>
+          <i class="fas fa-tag"></i>
+          Statut
+        </label>
+        <div class="input-wrapper">
+          <i class="fas fa-chevron-down input-icon"></i>
+          <select formControlName="statut">
+            <option *ngFor="let item of statusOptions" [value]="item.value">
+              {{ item.value }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Type de participation -->
+    <div class="form-group large">
+      <label>
+        <i class="fas fa-users"></i>
+        Type de participation <span class="required">*</span>
+      </label>
+      <div class="participation-options">
+        <div *ngFor="let item of participationOptions" class="participation-option">
+          <input type="radio" 
+                 [value]="item.value" 
+                 formControlName="typeParticipation" 
+                 [id]="'part-' + item.key">
+          <i class="fas" [ngClass]="item.icon"></i>
+          <div>
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.description }}</small>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="isFieldInvalid('typeParticipation')" class="text-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        Sélection obligatoire
+      </div>
+    </div>
+
+    <!-- Section Questions (simulée pour l'exemple) -->
+    <div class="questions-section">
+      <div class="section-header">
+        <h3><i class="fas fa-list"></i> Questions ({{ questions.length }})</h3>
+        <button type="button" class="btn btn-outline btn-sm" (click)="manageQuestions()">
+          <i class="fas fa-cog"></i>
+          Gérer les questions
+        </button>
+      </div>
+      <div class="questions-preview">
+        <div class="question-item" *ngFor="let question of questions; let i = index">
+          <div class="question-number">{{ i + 1 }}</div>
+          <div class="question-content">
+            <span class="question-text">{{ question.text }}</span>
+            <span class="question-type">
+              <i class="fas" [ngClass]="question.icon"></i>
+              {{ question.type }}
+            </span>
+          </div>
+          <button type="button" class="btn-icon-only" (click)="editQuestion(i)">
+            <i class="fas fa-pen"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section de partage (visible seulement si publiée) -->
+    <div class="share-section" *ngIf="enqueteForm.get('statut')?.value === 'Publiée'">
+      <div class="section-header">
+        <h3><i class="fas fa-share-alt"></i> Partager l'enquête</h3>
+      </div>
+      <div class="qr-link-section">
+        <div class="qr-code-container">
+          <div class="qr-code">
+            <i class="fas fa-qrcode"></i>
+          </div>
+          <div class="qr-info">
+            <span class="qr-label">QR Code</span>
+            <span class="qr-desc">Scanner pour participer</span>
+          </div>
+        </div>
+        <div class="link-container">
+          <i class="fas fa-link"></i>
+          <span class="link-text">https://enquete.app/participate/ENQ-2024-001</span>
+          <button type="button" class="copy-btn" (click)="copyLink()">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques rapides (visible seulement si publiée/fermée) -->
+    <div class="stats-quick" *ngIf="enqueteForm.get('statut')?.value !== 'Brouillon'">
+      <div class="stat-card">
+        <i class="fas fa-users"></i>
+        <div class="stat-info">
+          <span class="stat-value">1,234</span>
+          <span class="stat-label">Participants</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-check-circle"></i>
+        <div class="stat-info">
+          <span class="stat-value">89%</span>
+          <span class="stat-label">Taux de complétion</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-clock"></i>
+        <div class="stat-info">
+          <span class="stat-value">15</span>
+          <span class="stat-label">Jours actifs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <div class="action-group left">
+        <button type="button" class="btn btn-outline btn-icon" (click)="cancel()">
+          <i class="fas fa-times"></i>
+          Annuler
+        </button>
+        <button type="button" class="btn btn-outline btn-icon" (click)="saveAsDraft()" *ngIf="enqueteForm.get('statut')?.value !== 'Publiée'">
+          <i class="fas fa-save"></i>
+          Sauvegarder brouillon
+        </button>
+      </div>
+      <div class="action-group right">
+        <button type="button" class="btn btn-warning btn-icon" (click)="duplicate()" *ngIf="enqueteForm.get('statut')?.value === 'Publiée'">
+          <i class="fas fa-copy"></i>
+          Dupliquer
+        </button>
+        <button type="button" class="btn btn-danger btn-icon" (click)="delete()">
+          <i class="fas fa-trash"></i>
+          Supprimer
+        </button>
+        <button type="submit" class="btn btn-primary btn-icon" [disabled]="enqueteForm.invalid">
+          <i class="fas fa-check"></i>
+          Mettre à jour
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

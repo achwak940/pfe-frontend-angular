@@ -10,6 +10,7 @@ import { GestionQuestionsComponent } from './gestion-questions/gestion-questions
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
+import { ModifierEnqueteComponent } from './modifier-enquete/modifier-enquete.component';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
     AnalyseReportingComponent,
     FeedbackSupportComponent,
     GestionIaQuestionsComponent,
-    AjoutEnqueteComponent
+    AjoutEnqueteComponent,
+    ModifierEnqueteComponent
   ],
   imports: [
     CommonModule,
