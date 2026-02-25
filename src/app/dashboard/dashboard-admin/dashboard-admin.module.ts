@@ -8,6 +8,7 @@ import { AnalyseReportingComponent } from './analyse-reporting/analyse-reporting
 import { FeedbackSupportComponent } from './feedback-support/feedback-support.component';
 import { GestionQuestionsComponent } from './gestion-questions/gestion-questions.component';
 import { AdminDashboardComponent } from './admin-dashboard.component';
+import { FormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -21,7 +22,8 @@ import { AdminDashboardComponent } from './admin-dashboard.component';
   ],
   imports: [
     CommonModule,
-    DashboardAdminRoutingModule
+    DashboardAdminRoutingModule,
+     FormsModule,   
   ],
     exports: [
     AdminDashboardComponent
