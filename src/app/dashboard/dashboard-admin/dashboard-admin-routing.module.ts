@@ -22,7 +22,7 @@ const routes: Routes = [
       { path: 'feedback', component: FeedbackSupportComponent },
       { path: 'QuestionIA', component: GestionIaQuestionsComponent },
       { path: 'AjoutEnquete', component: AjoutEnqueteComponent },
-      { path: 'ModifierEnquete', component: ModifierEnqueteComponent },
+      { path: 'ModifierEnquete/:id', component: ModifierEnqueteComponent },
       { path: 'gestionReclamation', component: GestionReclamationComponent },
     ] 
   }

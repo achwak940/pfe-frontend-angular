@@ -3,21 +3,15 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EnqueteService } from '../enquete.service';
 import { error } from 'console';
 import Swal from 'sweetalert2';
-
 @Component({
   selector: 'app-ajout-enquete',
   templateUrl: './ajout-enquete.component.html',
   styleUrls: ['./ajout-enquete.component.css']
 })
 export class AjoutEnqueteComponent implements OnInit {
-
   enqueteForm!: FormGroup;
   today = new Date().toISOString().split('T')[0];
   msgScusses =""
-  
-
-
-
   participationType: { [key: string]: string } = {
     connecte: 'CONNECTE',
     anonyme: 'ANONYME'
@@ -33,9 +27,6 @@ export class AjoutEnqueteComponent implements OnInit {
      
     });
   }
-
-  
-
  addenquete(){
     const values=this.enqueteForm.value
    

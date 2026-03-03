@@ -130,12 +130,11 @@
           
           </div>
         </div>
-
         <div class="card-actions">
-          <button class="action-btn primary">
-            <i class="fas fa-edit"></i>
-            <span>Modifier</span>
-          </button>
+<a [routerLink]="['/ModifierEnquete', enquete.id]" class="edit-link">
+  <i class="fas fa-edit"></i>
+  <span>Modifier</span>
+</a>
           <button class="action-btn warning" [disabled]="enquete.statut === 'Publiée'">
             <i class="fas fa-paper-plane"></i>
             <span>Publier</span>
