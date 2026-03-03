@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { EnqueteService } from '../enquete.service';
+import { error } from 'console';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-ajout-enquete',
@@ -10,54 +13,69 @@ export class AjoutEnqueteComponent implements OnInit {
 
   enqueteForm!: FormGroup;
   today = new Date().toISOString().split('T')[0];
+  msgScusses =""
+  
 
-  // enums côté Angular avec type index signature
-  status: { [key: string]: string } = {
-    Brouillon: 'Brouillon',
-    Publiee: 'Publiee',
-    Fermee: 'Fermee',
-    Archive: 'Archivée'
-  };
+
 
   participationType: { [key: string]: string } = {
     connecte: 'CONNECTE',
     anonyme: 'ANONYME'
   };
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder,private service :EnqueteService) {}
 
   ngOnInit(): void {
     this.enqueteForm = this.fb.group({
       titre: ['', Validators.required],
-      description: [''],
-      dateFin: [''],
-      statut: [this.status['Brouillon']],
-      typeParticipation: [this.participationType['connecte'], Validators.required]
+      description: ['',Validators.minLength(10)],
+      dateFin: ['',Validators.required],
+     
     });
   }
 
-  // Méthodes pour template
-  getStatusKeys(): string[] {
-    return Object.keys(this.status);
-  }
+  
 
-  getParticipationKeys(): string[] {
-    return Object.keys(this.participationType);
-  }
+ addenquete(){
+    const values=this.enqueteForm.value
+   
 
-  isFieldInvalid(field: string): boolean {
-    const control = this.enqueteForm.get(field);
-    return !!(control && control.invalid && (control.dirty || control.touched));
+    this.service.addNewEnqueteVide(values).subscribe(
+      {
+        next:res=>{
+          if(res && res.data){
+            this.msgScusses =res.message
+               Swal.fire({
+          icon: 'success',
+          title: 'Succès 🎉',
+          text: res.message,
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'OK'
+        });
+            this.enqueteForm.reset()
+
+            //swwetalert
+          }
+        },
+        error:err=>{
+            Swal.fire({
+        icon: 'error',
+        title: 'Erreur ❌',
+        text: err.error?.message || 'Une erreur est survenue',
+        confirmButtonColor: '#d33'
+      });
+        }
+
+      
+      }
+    )
+
   }
 
   onSubmit() {
     if (this.enqueteForm.invalid) return;
-    console.log('Enquête créée:', this.enqueteForm.value);
-    alert('Enquête créée avec succès !');
+    this.addenquete()
   }
 
-  saveAsDraft() {
-    console.log('Brouillon sauvegardé:', this.enqueteForm.value);
-    alert('Brouillon sauvegardé !');
-  }
+ 
 }

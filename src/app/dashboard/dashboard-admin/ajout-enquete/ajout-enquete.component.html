@@ -5,14 +5,12 @@
         <i class="fas fa-clipboard-list"></i>
         Créer une nouvelle enquête
       </h1>
-   
     </div>
-    
   </div>
 
   <form [formGroup]="enqueteForm" (ngSubmit)="onSubmit()" class="survey-form">
     <!-- Titre -->
-    <div class="form-group">
+    <div class="form-group" [class.has-error]="enqueteForm.get('titre')?.touched && enqueteForm.get('titre')?.invalid">
       <label>
         <i class="fas fa-heading"></i>
         Titre <span class="required">*</span>
@@ -21,14 +19,16 @@
         <i class="fas fa-pencil-alt input-icon"></i>
         <input type="text" formControlName="titre" placeholder="Ex: Satisfaction client 2024">
       </div>
-      <div *ngIf="isFieldInvalid('titre')" class="text-danger">
+      <div class="error-message" *ngIf="enqueteForm.get('titre')?.touched && enqueteForm.get('titre')?.invalid">
         <i class="fas fa-exclamation-circle"></i>
-        Titre requis
+        <span *ngIf="enqueteForm.get('titre')?.errors?.['required']">
+          Le titre est obligatoire
+        </span>
       </div>
     </div>
 
     <!-- Description -->
-    <div class="form-group">
+    <div class="form-group" [class.has-error]="enqueteForm.get('description')?.touched && enqueteForm.get('description')?.invalid">
       <label>
         <i class="fas fa-align-left"></i>
         Description
@@ -37,10 +37,16 @@
         <i class="fas fa-file-alt input-icon"></i>
         <textarea formControlName="description" rows="3" placeholder="Décrivez l'objectif..."></textarea>
       </div>
+      <div class="error-message" *ngIf="enqueteForm.get('description')?.touched && enqueteForm.get('description')?.invalid">
+        <i class="fas fa-exclamation-circle"></i>
+        <span *ngIf="enqueteForm.get('description')?.errors?.['minlength']">
+          Minimum 10 caractères ({{enqueteForm.get('description')?.value?.length || 0}}/10)
+        </span>
+      </div>
     </div>
 
     <!-- Date Fin -->
-    <div class="form-group">
+    <div class="form-group" [class.has-error]="enqueteForm.get('dateFin')?.touched && enqueteForm.get('dateFin')?.invalid">
       <label>
         <i class="fas fa-calendar-alt"></i>
         Date de fin
@@ -49,66 +55,19 @@
         <i class="fas fa-calendar-check input-icon"></i>
         <input type="date" formControlName="dateFin" [min]="today">
       </div>
-    </div>
-
-    <!-- Statut -->
-    <div class="form-group">
-      <label>
-        <i class="fas fa-tag"></i>
-        Statut
-      </label>
-      <div class="input-wrapper">
-        <i class="fas fa-chevron-down input-icon"></i>
-        <select formControlName="statut">
-          <option *ngFor="let key of getStatusKeys()" [value]="status[key]">{{ status[key] }}</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Type de participation -->
-    <div class="form-group large">
-      <label>
-        <i class="fas fa-users"></i>
-        Type de participation <span class="required">*</span>
-      </label>
-      <div class="participation-options">
-        <div *ngFor="let key of getParticipationKeys()" class="participation-option">
-          <input type="radio" [value]="participationType[key]" formControlName="typeParticipation" [id]="'part-' + key">
-          <i class="fas" [ngClass]="{
-            'fa-user-secret': participationType[key] === 'Anonyme',
-            'fa-user-check': participationType[key] === 'Identifiée',
-            'fa-user-friends': participationType[key] === 'Mixte'
-          }"></i>
-          <div>
-            <strong>{{ participationType[key] }}</strong>
-            <small>
-              <ng-container [ngSwitch]="participationType[key]">
-                <span *ngSwitchCase="'Anonyme'">Réponses totalement anonymes</span>
-                <span *ngSwitchCase="'Identifiée'">Participants identifiés</span>
-                <span *ngSwitchCase="'Mixte'">Choix anonyme ou identifié</span>
-              </ng-container>
-            </small>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="isFieldInvalid('typeParticipation')" class="text-danger">
+      <div class="error-message" *ngIf="enqueteForm.get('dateFin')?.touched && enqueteForm.get('dateFin')?.invalid">
         <i class="fas fa-exclamation-circle"></i>
-        Sélection obligatoire
+        <span *ngIf="enqueteForm.get('dateFin')?.errors?.['required']">
+          Date de fin obligatoire
+        </span>
       </div>
     </div>
 
-    <!-- Actions -->
     <div class="form-actions">
-      <button type="button" class="btn btn-outline btn-icon" (click)="saveAsDraft()">
-        <i class="fas fa-save"></i>
-        Sauvegarder brouillon
-      </button>
       <button type="submit" class="btn btn-primary btn-icon" [disabled]="enqueteForm.invalid">
         <i class="fas fa-plus-circle"></i>
         Créer l'enquête
       </button>
     </div>
-
-
   </form>
 </div>

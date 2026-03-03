@@ -11,6 +11,7 @@ import { AdminDashboardComponent } from './admin-dashboard.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
 import { ModifierEnqueteComponent } from './modifier-enquete/modifier-enquete.component';
+import { GestionReclamationComponent } from './gestion-reclamation/gestion-reclamation.component';
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { ModifierEnqueteComponent } from './modifier-enquete/modifier-enquete.co
     FeedbackSupportComponent,
     GestionIaQuestionsComponent,
     AjoutEnqueteComponent,
-    ModifierEnqueteComponent
+    ModifierEnqueteComponent,
+    GestionReclamationComponent
   ],
   imports: [
     CommonModule,

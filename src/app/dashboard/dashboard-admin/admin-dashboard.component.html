@@ -3,7 +3,6 @@
   <aside class="sidebar" 
          [class.sidebar-collapsed]="sidebarCollapsed" 
          [class.mobile-open]="mobileMenuOpen">
-    
     <div class="sidebar-header">
       <div class="logo" (click)="navigateTo('/admin-dashboard')">
         <i class="fas fa-chart-pie" style="color: #9D50BB; font-size: 1.8rem;"></i>
@@ -13,7 +12,6 @@
         <i class="fas" [class.fa-chevron-left]="!sidebarCollapsed" [class.fa-chevron-right]="sidebarCollapsed"></i>
       </button>
     </div>
-
     <div class="user-info" *ngIf="!sidebarCollapsed">
       <div class="user-avatar">
         <i class="fas fa-user-circle"></i>
@@ -23,7 +21,6 @@
         <span class="user-role">Administrateur</span>
       </div>
     </div>
-
     <nav class="sidebar-nav">
       <ul>
         <li [class.active]="isActive('/admin-dashboard')">
@@ -32,20 +29,24 @@
             <span *ngIf="!sidebarCollapsed">Dashboard Admin</span>
           </a>
         </li>
-     
         <li [class.active]="isActive('/gestionEnquete')">
           <a (click)="navigateTo('/gestionEnquete')">
             <i class="fas fa-poll"></i>
             <span *ngIf="!sidebarCollapsed">Gestion des enquêtes</span>
           </a>
         </li>
-        
         <li [class.active]="isActive('/gestionQuestions')">
           <a (click)="navigateTo('/gestionQuestions')">
             <i class="fas fa-question-circle"></i>
             <span *ngIf="!sidebarCollapsed">Gestion des questions</span>
           </a>
         </li>
+        <li [class.active]="isActive('/gestionReclamation')">
+  <a (click)="navigateTo('/gestionReclamation')">
+  <i class="fas fa-clipboard-list"></i> 
+    <span *ngIf="!sidebarCollapsed">Gestion Réclamations</span>
+  </a>
+</li>
         
         <li [class.active]="isActive('/AnalyseReporting')">
           <a (click)="navigateTo('/AnalyseReporting')">
@@ -71,10 +72,7 @@
     </nav>
 
     <div class="sidebar-footer" *ngIf="!sidebarCollapsed">
-      <div class="footer-item" (click)="navigateTo('/parametres')">
-        <i class="fas fa-cog"></i>
-        <span>Paramètres</span>
-      </div>
+    
       <div class="footer-item" (click)="confirmLogout()">
         <i class="fas fa-sign-out-alt"></i>
         <span>Déconnexion</span>
@@ -169,18 +167,18 @@
               </div>
             </div>
 
-            <div class="stat-card info">
-              <div class="stat-icon">
-                <i class="fas fa-star"></i>
-              </div>
-              <div class="stat-content">
-                <span class="stat-value">4.8</span>
-                <span class="stat-label">Note moyenne</span>
-              </div>
-              <div class="stat-trend positive">
-                <i class="fas fa-arrow-up"></i> +0.3 vs mois dernier
-              </div>
-            </div>
+      <div class="stat-card danger">
+  <div class="stat-icon">
+    <i class="fas fa-exclamation-triangle"></i>
+  </div>
+  <div class="stat-content">
+    <span class="stat-value">12</span>
+    <span class="stat-label">Réclamations</span>
+  </div>
+  <div class="stat-trend warning">
+    <i class="fas fa-exclamation-circle"></i> 3 nouvelles aujourd'hui
+  </div>
+</div>
           </div>
 
           <!-- Graphiques et analyses -->

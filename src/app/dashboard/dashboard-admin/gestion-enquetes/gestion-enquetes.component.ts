@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DashboardAdminService } from '../dashboard-admin.service';
+import { EnqueteService } from '../enquete.service';
 
 @Component({
   selector: 'app-gestion-enquetes',
@@ -19,7 +20,7 @@ export class GestionEnquetesComponent implements OnInit {
   searchText: string = '';
   selectedFilter: string = 'Toutes';
 
-  constructor(private service: DashboardAdminService) { }
+  constructor(private service: EnqueteService) { }
 
   ngOnInit(): void {
     const userID = 6; // remplacer par l'ID réel connecté
@@ -35,6 +36,7 @@ export class GestionEnquetesComponent implements OnInit {
       (err) => console.error("Erreur de récupération des enquêtes", err)
     );
   }
+ 
 
   // Filtrer les enquêtes par statut
   filterByStatut(statut: string) {
@@ -58,16 +60,7 @@ export class GestionEnquetesComponent implements OnInit {
   }
 
   // Supprimer une enquête (juste mock ici)
-  deleteEnquete(id: number) {
-    if (confirm('Voulez-vous vraiment supprimer cette enquête ?')) {
-      this.enquetes = this.enquetes.filter(e => e.id !== id);
 
-      // Recalcul des stats
-      this.stats.actives = this.enquetes.filter(e => e.statut === 'Fermee').length;
-      this.stats.publiees = this.enquetes.filter(e => e.statut === 'Publiée').length;
-      this.stats.brouillons = this.enquetes.filter(e => e.statut === 'Brouillon').length;
-    }
-  }
   // Propriétés à ajouter
 showModal = false;
 showToast = false;
@@ -113,30 +106,6 @@ getConnecteDashOffset(): string {
   return (anonymePercentage / 100 * circumference).toString();
 }
 
-// Méthodes utilitaires
-copyLink(enqueteId: string): void {
-  navigator.clipboard.writeText(`https://survey.app/${enqueteId.toLowerCase()}`);
-  this.showToastMessage('Lien copié dans le presse-papier !', 'success');
-}
 
-closeModal(event: MouseEvent): void {
-  if (event.target === event.currentTarget) {
-    this.showModal = false;
-  }
-}
 
-showToastMessage(message: string, type: string = 'success'): void {
-  this.toastMessage = message;
-  this.toastType = type;
-  this.showToast = true;
-  
-  setTimeout(() => {
-    this.showToast = false;
-  }, 3000);
-}
-
-// Pour ouvrir le modal
-openNewSurveyModal(): void {
-  this.showModal = true;
-}
 }

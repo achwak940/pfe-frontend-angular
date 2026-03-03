@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des réclamations - Analyse IA des défauts produits</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ===== VARIABLES ===== */
+        :root {
+            --purple: #9D50BB;
+            --purple-light: #b46fd3;
+            --purple-dark: #7a3b9a;
+            --purple-soft: #f3e5f5;
+            --bg-light: #ffffff;
+            --surface: #f8f9fe;
+            --border: #eef2f6;
+            --text-dark: #1a1a2c;
+            --text-soft: #4f5b6b;
+            --text-light: #7c8a9a;
+            --success: #2ecc71;
+            --success-light: #d5f5e3;
+            --warning: #f39c12;
+            --warning-light: #fef5e7;
+            --danger: #e74c3c;
+            --danger-light: #fdedec;
+            --info: #3498db;
+            --info-light: #e8f0fe;
+            --gray-badge: #f1f3f6;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 8px 24px rgba(157, 80, 187, 0.08);
+            --shadow-lg: 0 20px 40px -12px rgba(157, 80, 187, 0.2);
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            color: var(--text-dark);
+            width: 100%;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100%;
+            padding: 24px 32px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-left h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-left h1 i {
+            background: var(--purple);
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: white;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            padding: 12px;
+            border-radius: var(--radius-lg);
+            font-size: 1.8rem;
+        }
+
+        .header-left .subtitle {
+            color: var(--text-soft);
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 400;
+            padding-left: 16px;
+            border-left: 4px solid var(--purple-light);
+            background: rgba(194, 176, 240, 0.15);
+            border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+            width: fit-content;
+            padding: 10px 24px;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stats-badge {
+            display: flex;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-xl);
+            background: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .stat-item i {
+            color: var(--purple);
+            font-size: 0.9rem;
+        }
+
+        /* ===== BOUTONS ===== */
+        .btn {
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: var(--radius-xl);
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: white;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid var(--border);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-light) 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 20px -8px rgba(157, 80, 187, 0.5);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 100%);
+        }
+
+        /* ===== SECTION RECHERCHE ===== */
+        .search-section {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 1.5rem 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 0.2rem 0.2rem 0.2rem 1.5rem;
+            border: 1px solid var(--border);
+            flex: 2 1 400px;
+            transition: var(--transition);
+        }
+
+        .search-wrapper:focus-within {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 4px rgba(157, 80, 187, 0.1);
+        }
+
+        .search-wrapper i {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .search-wrapper input {
+            border: none;
+            background: transparent;
+            padding: 1rem 1.2rem;
+            font-size: 1rem;
+            width: 100%;
+            outline: none;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 0.7rem 1.6rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-soft);
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .filter-btn:hover {
+            background: var(--purple-soft);
+            border-color: var(--purple-light);
+            color: var(--purple);
+        }
+
+        .filter-btn.active {
+            background: var(--purple);
+            border-color: var(--purple);
+            color: white;
+        }
+
+        /* ===== STATISTIQUES GLOBALES ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card-large {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 25px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+            border: 1px solid var(--border);
+        }
+
+        .stat-card-large:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--purple-soft), white);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--purple);
+            border: 1px solid var(--border);
+        }
+
+        .stat-content h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+
+        .stat-content p {
+            color: var(--text-soft);
+            font-weight: 500;
+        }
+
+        /* ===== ANALYSE IA GLOBALE ===== */
+        .ia-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: var(--radius-xl);
+            padding: 30px;
+            margin: 30px 0;
+            color: white;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .ia-summary-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .ia-summary-item i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .ia-summary-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .ia-summary-item .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .ia-summary-item .trend {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* ===== SECTION STATISTIQUES DÉTAILLÉES ===== */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin: 30px 0;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-title i {
+            color: var(--purple);
+            font-size: 1.2rem;
+        }
+
+        .chart-container {
+            height: 250px;
+            position: relative;
+        }
+
+        /* ===== GRILLE DES RÉCLAMATIONS ===== */
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 40px 0 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-dark);
+        }
+
+        .section-title i {
+            color: var(--purple);
+            font-size: 2rem;
+        }
+
+        .section-title span {
+            font-size: 1rem;
+            background: var(--purple-soft);
+            padding: 6px 18px;
+            border-radius: 40px;
+            color: var(--purple);
+            margin-left: 15px;
+            font-weight: 600;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 30px;
+            margin: 30px 0 50px;
+        }
+
+        .claim-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 25px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .claim-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--purple), var(--purple-light));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .claim-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .claim-card:hover::before {
+            opacity: 1;
+        }
+
+        .claim-card.elevee::before {
+            background: linear-gradient(90deg, var(--danger), #ff6b6b);
+        }
+
+        .claim-card.moyenne::before {
+            background: linear-gradient(90deg, var(--warning), #f1c40f);
+        }
+
+        .claim-card.faible::before {
+            background: linear-gradient(90deg, var(--success), #27ae60);
+        }
+
+        /* Header */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .claim-id {
+            background: var(--surface);
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .claim-id i {
+            color: var(--purple);
+        }
+
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-badge.attente { 
+            background: var(--warning-light); 
+            color: var(--warning); 
+        }
+
+        .status-badge.traitee { 
+            background: var(--success-light); 
+            color: var(--success); 
+        }
+
+        /* Date info */
+        .date-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 8px 12px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+        }
+
+        .date-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-soft);
+        }
+
+        .date-item i {
+            color: var(--purple);
+        }
+
+        .date-item strong {
+            color: var(--text-dark);
+            margin-right: 3px;
+        }
+
+        /* User info - AVEC INITIALES AU LIEU DES PHOTOS */
+        .user-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .user-initials-large {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 3px solid var(--purple-soft);
+            flex-shrink: 0;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .user-email {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .user-meta {
+            display: flex;
+            gap: 15px;
+        }
+
+        .user-meta span {
+            font-size: 0.85rem;
+            color: var(--text-soft);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .user-meta i {
+            color: var(--purple);
+        }
+
+        /* Product info */
+        .product-section {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 15px;
+        }
+
+        .product-icon-large {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--purple);
+            border: 1px solid var(--border);
+        }
+
+        .product-details {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .product-ref {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+
+        .product-tags {
+            display: flex;
+            gap: 10px;
+        }
+
+        .product-tag {
+            background: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--purple);
+            border: 1px solid var(--border);
+        }
+
+        /* Enquête section (MODIFIÉ : affichage des réponses déjà données) */
+        .survey-section {
+            background: var(--info-light);
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--info);
+        }
+
+        .survey-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .survey-header i {
+            color: var(--info);
+            font-size: 1.2rem;
+        }
+
+        .survey-header h5 {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .survey-response {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .survey-answers {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .survey-answer {
+            background: white;
+            padding: 6px 15px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .survey-answer i {
+            color: var(--info);
+        }
+
+        .survey-answer.yes {
+            background: var(--success-light);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .survey-answer.no {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .survey-answer.neutral {
+            background: var(--warning-light);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        /* Analyse IA */
+        .ia-analysis {
+            background: linear-gradient(135deg, #f6f9fc 0%, #f1f4fe 100%);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .ia-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .ia-header i {
+            font-size: 1.5rem;
+            color: var(--purple);
+        }
+
+        .ia-header h4 {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 1rem;
+        }
+
+        .ia-badge {
+            margin-left: auto;
+            background: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--purple);
+        }
+
+        .ia-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metric-item {
+            background: white;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .metric-unit {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--purple), var(--purple-light));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.elevee {
+            background: linear-gradient(90deg, var(--danger), #ff6b6b);
+        }
+
+        .progress-fill.moyenne {
+            background: linear-gradient(90deg, var(--warning), #f1c40f);
+        }
+
+        .progress-fill.faible {
+            background: linear-gradient(90deg, var(--success), #27ae60);
+        }
+
+        .ia-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ia-tag {
+            background: white;
+            padding: 6px 15px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ia-tag i {
+            color: var(--purple);
+        }
+
+        .ia-tag.high {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .ia-tag.medium {
+            background: var(--warning-light);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .ia-tag.low {
+            background: var(--success-light);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        /* Image section */
+        .image-section {
+            margin: 20px 0;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .claim-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .claim-image:hover {
+            transform: scale(1.05);
+        }
+
+        .image-caption {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: white;
+            border-top: 1px solid var(--border);
+        }
+
+        .image-name {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .image-name i {
+            color: var(--purple);
+        }
+
+        .image-size {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .image-analysis {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Réponse */
+        .response-section {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid var(--purple);
+        }
+
+        .response-section strong {
+            color: var(--purple);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .response-section p {
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Actions */
+        .card-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            border: none;
+            background: var(--surface);
+            padding: 12px 0;
+            border-radius: var(--radius-lg);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-soft);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid var(--border);
+            text-decoration: none;
+        }
+
+        .action-btn i {
+            font-size: 1.2rem;
+        }
+
+        .action-btn:hover {
+            background: var(--purple-soft);
+            color: var(--purple);
+            transform: translateY(-3px);
+            border-color: var(--purple);
+        }
+
+        .action-btn.correct-ia:hover {
+            background: var(--warning-light);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .action-btn.check:hover {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .action-btn.repondre:hover {  /* MODIFIÉ : "survey" -> "repondre" */
+            background: var(--info-light);
+            color: var(--info);
+            border-color: var(--info);
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .ia-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .container { padding: 16px; }
+            .header { flex-direction: column; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .charts-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header amélioré -->
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-robot"></i> 
+                    Analyse IA des Réclamations
+                </h1>
+            </div>
+            <div class="header-right">
+                <div class="stats-badge">
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="attente-count">8 en attente</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="traitee-count">16 traitées</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>IA active</span>
+                    </div>
+                </div>
+         
+            </div>
+        </div>
+
+        <!-- Statistiques globales -->
+        <div class="stats-grid">
+            <div class="stat-card-large">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>24</h3>
+                    <p>Réclamations totales</p>
+                </div>
+            </div>
+            <div class="stat-card-large">
+                <div class="stat-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>87%</h3>
+                    <p>Précision IA</p>
+                </div>
+            </div>
+            <div class="stat-card-large">
+                <div class="stat-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>4.2</h3>
+                    <p>Taux gravité moyen</p>
+                </div>
+            </div>
+      
+        </div>
+
+        <!-- Section recherche et filtrage améliorée -->
+        <div class="search-section">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Rechercher par ID, client, produit..." onkeyup="filterClaims()">
+            </div>
+            <div class="filter-group" id="filterGroup">
+                <button class="filter-btn active" onclick="filterByStatus('all')">Tous</button>
+                <button class="filter-btn" onclick="filterByStatus('attente')">En attente</button>
+                <button class="filter-btn" onclick="filterByStatus('traitee')">Traitées</button>
+                <button class="filter-btn" onclick="filterByGravity('faible')">Gravité faible</button>
+                <button class="filter-btn" onclick="filterByGravity('moyenne')">Gravité moyenne</button>
+                <button class="filter-btn" onclick="filterByGravity('elevee')">Gravité élevée</button>
+            </div>
+        </div>
+
+        <!-- Grille des réclamations avec dates de soumission et enquêtes déjà répondus -->
+        <div class="cards-grid" id="claimsGrid">
+            <!-- Carte 1 - TV pixels morts - Gravité Faible -->
+            <div class="claim-card faible" data-status="traitee" data-gravity="faible">
+                <div class="card-header">
+                    <span class="claim-id">
+                        <i class="far fa-id-card"></i> #RCL-5233
+                    </span>
+                    <span class="status-badge traitee">Traitée</span>
+                </div>
+                
+                <!-- SECTION DATES AVEC DURÉE AJOUTÉE -->
+                <div class="date-info">
+                    <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 11/03/2024</span>
+                    <span class="date-item"><i class="far fa-clock"></i> <strong>Traitement:</strong> 14/03/2024</span>
+                    <span class="date-item"><i class="fas fa-hourglass-half"></i> <strong>Durée:</strong> 3 jours</span>
+                </div>
+                
+                <div class="user-section">
+                    <!-- INITIALES AU LIEU DE LA PHOTO : CA RO = Camille Rousseau -->
+                    <div class="user-initials-large">CA</div>
+                    <div class="user-details">
+                        <div class="user-name">Camille Rousseau</div>
+                        <div class="user-email">camille.rousseau@email.com</div>
+                     
+                    </div>
+                </div>
+
+                <!-- SECTION ENQUÊTE DÉJÀ RÉPONDUE -->
+                <div class="survey-section">
+                    <div class="survey-header">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h5>Réponse à l'enquête</h5>
+                    </div>
+                    <div class="survey-response">"Comment évaluez-vous la prise en charge ?"</div>
+                  
+                </div>
+
+                <div class="product-section">
+                    <div class="product-icon-large">
+                        <i class="fas fa-tv"></i>
+                    </div>
+                    <div class="product-details">
+                        <div class="product-name">TV LED 4K 55" UHD</div>
+                        <div class="product-ref">Réf: TV-4K-55 • Acheté le 01/03/2024</div>
+                        <div class="product-tags">
+                            <span class="product-tag">Pixels</span>
+                            <span class="product-tag">Écran</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ia-analysis">
+                    <div class="ia-header">
+                        <i class="fas fa-microchip"></i>
+                        <h4>Analyse IA du défaut</h4>
+                        <span class="ia-badge">Confiance 92%</span>
+                    </div>
+                    
+                    <div class="ia-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">
+                                <i class="fas fa-bolt"></i> Gravité IA
+                            </div>
+                            <div class="metric-value">3.2 <span class="metric-unit">/10</span></div>
+                            <div class="progress-bar">
+                                <div class="progress-fill faible" style="width: 32%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">
+                                <i class="fas fa-clock"></i> Urgence
+                            </div>
+                            <div class="metric-value">Faible</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill faible" style="width: 30%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ia-tags">
+                        <span class="ia-tag low"><i class="fas fa-microchip"></i> 5 pixels morts</span>
+                        <span class="ia-tag low"><i class="fas fa-microchip"></i> Défaut mineur</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Sous garantie</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Échange standard</span>
+                    </div>
+                </div>
+
+                <div class="image-section">
+                    <img src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800&h=600&fit=crop" alt="TV pixels morts" class="claim-image" onclick="window.open(this.src, '_blank')">
+                    <div class="image-analysis">
+                        <i class="fas fa-microchip"></i> Analyse: Pixels défectueux
+                    </div>
+                    <div class="image-caption">
+                        <span class="image-name">
+                            <i class="fas fa-camera"></i> pixels_morts_tv.jpg
+                        </span>
+                        <span class="image-size">2.3 MB • 11/03/2024</span>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <a href="#" class="action-btn correct-ia" onclick="correctIA('#RCL-5233'); return false;">
+                        <i class="fas fa-microchip"></i>
+                        <span>Corriger IA</span>
+                    </a>
+                    <a href="#" class="action-btn check" onclick="alert('Réouvrir réclamation #RCL-5233'); return false;">
+                        <i class="fas fa-undo"></i>
+                        <span>Réouvrir</span>
+                    </a>
+                    <!-- MODIFIÉ : "Enquête" -> "Répondre" (car enquête déjà faite) -->
+                    <a href="#" class="action-btn repondre" onclick="alert('Répondre au client #RCL-5233'); return false;">
+                        <i class="fas fa-reply"></i>
+                        <span>Répondre</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Carte 2 - PC portable surchauffe - Gravité Moyenne -->
+            <div class="claim-card moyenne" data-status="attente" data-gravity="moyenne">
+                <div class="card-header">
+                    <span class="claim-id">
+                        <i class="far fa-id-card"></i> #RCL-6341
+                    </span>
+                    <span class="status-badge attente">En attente</span>
+                </div>
+                
+                <!-- SECTION DATES AVEC DURÉE AJOUTÉE -->
+                <div class="date-info">
+                    <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 12/03/2024</span>
+                    <span class="date-item"><i class="far fa-clock"></i> <strong>En attente</strong></span>
+                    <span class="date-item"><i class="fas fa-hourglass-half"></i> <strong>Durée:</strong> 4 jours</span>
+                </div>
+                
+                <div class="user-section">
+                    <!-- INITIALES AU LIEU DE LA PHOTO : NI PE = Nicolas Petit -->
+                    <div class="user-initials-large">NI</div>
+                    <div class="user-details">
+                        <div class="user-name">Nicolas Petit</div>
+                        <div class="user-email">nicolas.petit@email.com</div>
+                       
+                    </div>
+                </div>
+
+                <!-- SECTION ENQUÊTE DÉJÀ RÉPONDUE -->
+                <div class="survey-section">
+                    <div class="survey-header">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h5>Réponse à l'enquête</h5>
+                    </div>
+                    <div class="survey-response">"Avez-vous reçu une réponse à votre réclamation ?"</div>
+                  
+                </div>
+
+                <div class="product-section">
+                    <div class="product-icon-large">
+                        <i class="fas fa-laptop"></i>
+                    </div>
+                    <div class="product-details">
+                        <div class="product-name">PC Portable ProBook</div>
+                        <div class="product-ref">Réf: PB-15-i7 • Acheté le 20/01/2024</div>
+                        <div class="product-tags">
+                            <span class="product-tag">Surchauffe</span>
+                            <span class="product-tag">Ventilation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ia-analysis">
+                    <div class="ia-header">
+                        <i class="fas fa-microchip"></i>
+                        <h4>Analyse IA du défaut</h4>
+                        <span class="ia-badge">Confiance 88%</span>
+                    </div>
+                    
+                    <div class="ia-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">
+                                <i class="fas fa-bolt"></i> Gravité IA
+                            </div>
+                            <div class="metric-value">6.5 <span class="metric-unit">/10</span></div>
+                            <div class="progress-bar">
+                                <div class="progress-fill moyenne" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">
+                                <i class="fas fa-clock"></i> Urgence
+                            </div>
+                            <div class="metric-value">Moyenne</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill moyenne" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ia-tags">
+                        <span class="ia-tag medium"><i class="fas fa-microchip"></i> Surchauffe CPU</span>
+                        <span class="ia-tag medium"><i class="fas fa-microchip"></i> Ventilateur HS</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Sous garantie</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Nettoyage nécessaire</span>
+                    </div>
+                </div>
+
+                <div class="image-section">
+                    <img src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&h=600&fit=crop" alt="PC portable" class="claim-image" onclick="window.open(this.src, '_blank')">
+                    <div class="image-analysis">
+                        <i class="fas fa-microchip"></i> Analyse: Température excessive
+                    </div>
+                    <div class="image-caption">
+                        <span class="image-name">
+                            <i class="fas fa-camera"></i> pc_surchauffe.jpg
+                        </span>
+                        <span class="image-size">2.6 MB • 12/03/2024</span>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <a href="#" class="action-btn correct-ia" onclick="correctIA('#RCL-6341'); return false;">
+                        <i class="fas fa-microchip"></i>
+                        <span>Corriger IA</span>
+                    </a>
+                    <a href="#" class="action-btn check" onclick="alert('Traiter réclamation #RCL-6341'); return false;">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Traiter</span>
+                    </a>
+                    <!-- MODIFIÉ : "Enquête" -> "Répondre" -->
+                    <a href="#" class="action-btn repondre" onclick="alert('Répondre à Nicolas Petit'); return false;">
+                        <i class="fas fa-reply"></i>
+                        <span>Répondre</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Carte 3 - Aspirateur sans puissance - Gravité Moyenne -->
+            <div class="claim-card moyenne" data-status="traitee" data-gravity="moyenne">
+                <div class="card-header">
+                    <span class="claim-id">
+                        <i class="far fa-id-card"></i> #RCL-7452
+                    </span>
+                    <span class="status-badge traitee">Traitée</span>
+                </div>
+                
+                <!-- SECTION DATES AVEC DURÉE AJOUTÉE -->
+                <div class="date-info">
+                    <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 07/03/2024</span>
+                    <span class="date-item"><i class="far fa-clock"></i> <strong>Traitement:</strong> 10/03/2024</span>
+                    <span class="date-item"><i class="fas fa-hourglass-half"></i> <strong>Durée:</strong> 3 jours</span>
+                </div>
+                
+                <div class="user-section">
+                    <!-- INITIALES AU LIEU DE LA PHOTO : JU MO = Julie Moreau -->
+                    <div class="user-initials-large">JU</div>
+                    <div class="user-details">
+                        <div class="user-name">Julie Moreau</div>
+                        <div class="user-email">julie.moreau@email.com</div>
+                       
+                    </div>
+                </div>
+
+                <!-- SECTION ENQUÊTE DÉJÀ RÉPONDUE -->
+                <div class="survey-section">
+                    <div class="survey-header">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h5>Réponse à l'enquête</h5>
+                    </div>
+                    <div class="survey-response">"Comment évaluez-vous le remboursement proposé ?"</div>
+                  
+                </div>
+
+                <div class="product-section">
+                    <div class="product-icon-large">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <div class="product-details">
+                        <div class="product-name">Aspirateur CycloForce</div>
+                        <div class="product-ref">Réf: ASP-3000-R • Acheté le 15/02/2024</div>
+                        <div class="product-tags">
+                            <span class="product-tag">Puissance</span>
+                            <span class="product-tag">Moteur</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ia-analysis">
+                    <div class="ia-header">
+                        <i class="fas fa-microchip"></i>
+                        <h4>Analyse IA du défaut</h4>
+                        <span class="ia-badge">Confiance 86%</span>
+                    </div>
+                    
+                    <div class="ia-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">
+                                <i class="fas fa-bolt"></i> Gravité IA
+                            </div>
+                            <div class="metric-value">5.5 <span class="metric-unit">/10</span></div>
+                            <div class="progress-bar">
+                                <div class="progress-fill moyenne" style="width: 55%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">
+                                <i class="fas fa-clock"></i> Urgence
+                            </div>
+                            <div class="metric-value">Moyenne</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill moyenne" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ia-tags">
+                        <span class="ia-tag medium"><i class="fas fa-microchip"></i> Perte aspiration</span>
+                        <span class="ia-tag medium"><i class="fas fa-microchip"></i> Moteur fatigué</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Filtres propres</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Remboursé</span>
+                    </div>
+                </div>
+
+                <div class="image-section">
+                    <img src="https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800&h=600&fit=crop" alt="Aspirateur" class="claim-image" onclick="window.open(this.src, '_blank')">
+                    <div class="image-analysis">
+                        <i class="fas fa-microchip"></i> Analyse: Moteur défectueux
+                    </div>
+                    <div class="image-caption">
+                        <span class="image-name">
+                            <i class="fas fa-camera"></i> aspirateur_defaut.jpg
+                        </span>
+                        <span class="image-size">2.1 MB • 07/03/2024</span>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <a href="#" class="action-btn correct-ia" onclick="correctIA('#RCL-7452'); return false;">
+                        <i class="fas fa-microchip"></i>
+                        <span>Corriger IA</span>
+                    </a>
+                    <a href="#" class="action-btn check" onclick="alert('Réouvrir réclamation #RCL-7452'); return false;">
+                        <i class="fas fa-undo"></i>
+                        <span>Réouvrir</span>
+                    </a>
+                    <!-- MODIFIÉ : "Enquête" -> "Répondre" -->
+                    <a href="#" class="action-btn repondre" onclick="alert('Répondre à Julie Moreau'); return false;">
+                        <i class="fas fa-reply"></i>
+                        <span>Répondre</span>
+                    </a>
+                </div>
+            </div>
+
+       
+        </div>
+    </div>
+   
+</body>
+</html>

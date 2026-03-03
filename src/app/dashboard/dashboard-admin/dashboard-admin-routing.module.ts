@@ -9,6 +9,7 @@ import { AdminDashboardComponent } from './admin-dashboard.component';
 import * as path from 'path';
 import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
 import { ModifierEnqueteComponent } from './modifier-enquete/modifier-enquete.component';
+import { GestionReclamationComponent } from './gestion-reclamation/gestion-reclamation.component';
 
 const routes: Routes = [
   { 
@@ -20,8 +21,9 @@ const routes: Routes = [
       { path: 'AnalyseReporting', component: AnalyseReportingComponent },
       { path: 'feedback', component: FeedbackSupportComponent },
       { path: 'QuestionIA', component: GestionIaQuestionsComponent },
-        { path: 'AjoutEnquete', component: AjoutEnqueteComponent },
-         { path: 'ModifierEnquete', component: ModifierEnqueteComponent },
+      { path: 'AjoutEnquete', component: AjoutEnqueteComponent },
+      { path: 'ModifierEnquete', component: ModifierEnqueteComponent },
+      { path: 'gestionReclamation', component: GestionReclamationComponent },
     ] 
   }
 ];
