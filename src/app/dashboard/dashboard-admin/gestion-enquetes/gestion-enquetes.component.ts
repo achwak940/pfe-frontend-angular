@@ -8,6 +8,8 @@ import { EnqueteService } from '../enquete.service';
   styleUrls: ['./gestion-enquetes.component.css']
 })
 export class GestionEnquetesComponent implements OnInit {
+ currentUser!:any
+  userID!:number
 
   enquetes: any[] = [];
   stats = {
@@ -23,8 +25,13 @@ export class GestionEnquetesComponent implements OnInit {
   constructor(private service: EnqueteService) { }
 
   ngOnInit(): void {
-    const userID = 6; // remplacer par l'ID réel connecté
-    this.service.getAllEnquete(userID).subscribe(
+    const user=localStorage.getItem('currentUser')
+    if(user){
+      this.currentUser=JSON.parse(user)
+      this.userID=this.currentUser.id
+  
+    }
+    this.service.getAllEnquete(this.userID).subscribe(
       (res: any[]) => {
         this.enquetes = res;
 
