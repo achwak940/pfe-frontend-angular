@@ -1,13 +1,18 @@
 <div class="questions-dashboard">
 
+  <!-- Toast message -->
+  <div id="toast" [ngClass]="{'show': showToast}">
+    Question ajoutée avec succès !
+  </div>
+
+  <!-- Header -->
   <div class="header">
-    <div class="header-left">
-    </div>
+    <div class="header-left"></div>
     <div class="header-right">
       <div class="stats-badge">
         <span class="stat-item">
           <i class="fas fa-question-circle"></i>
-          <span>12 questions</span>
+          <span>{{ questions.length }} questions</span>
         </span>
         <span class="stat-item">
           <i class="fas fa-robot"></i>
@@ -21,7 +26,7 @@
     </div>
   </div>
 
-  <!-- Barre d'actions et contrôle IA -->
+  <!-- Barre d'actions -->
   <div class="action-bar">
     <div class="ia-toggle-container">
       <div class="toggle-wrapper">
@@ -29,108 +34,81 @@
           <input type="checkbox" id="iaToggle" checked>
           <span class="toggle-slider"></span>
         </label>
-        <span class="toggle-label">
-          <i class="fas fa-robot"></i>
-          Génération IA activée
-        </span>
+        <span class="toggle-label"><i class="fas fa-robot"></i> Génération IA activée</span>
       </div>
       <span class="ia-badge">IA prête</span>
     </div>
-    <button class="btn btn-primary" id="addQuestionBtn">
+    <button class="btn btn-primary" (click)="resetForm()">
       <i class="fas fa-plus-circle"></i> Nouvelle question
     </button>
   </div>
 
-  <!-- Formulaire de création de question -->
-  <div class="question-form-card" id="questionForm">
+  <!-- Formulaire création question -->
+  <div class="question-form-card">
     <div class="form-header">
       <h3><i class="fas fa-pen" style="color: #9D50BB;"></i> Créer une nouvelle question</h3>
     </div>
-    
+
     <div class="form-body">
+      <!-- Titre question -->
       <div class="form-row">
         <div class="form-group large">
-          <label>Titre / Énoncé de la question <span class="required">*</span></label>
-          <input type="text" id="questionTitle" placeholder="ex: Comment évaluez-vous notre service ?" value="Comment évaluez-vous la qualité du service ?">
+          <label>Titre / Énoncé <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="questionTitle" placeholder="ex: Comment évaluez-vous notre service ?">
         </div>
       </div>
 
+      <!-- Type et statut -->
       <div class="form-row grid-2">
         <div class="form-group">
           <label>Type de question <span class="required">*</span></label>
-          <select id="questionType">
-            <option value="multiple" selected>Choix multiple</option>
+          <select [(ngModel)]="questionType">
+            <option value="multiple">Choix multiple</option>
             <option value="unique">Choix unique</option>
             <option value="text">Texte libre</option>
           </select>
         </div>
         <div class="form-group">
           <label>Statut</label>
-          <select id="questionStatus">
-            <option value="active" selected>Active</option>
+          <select [(ngModel)]="questionStatus">
+            <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
         </div>
       </div>
 
-      <!-- Options de réponse (visible seulement pour choix multiple/unique) -->
-      <div class="form-row" id="optionsSection">
+      <!-- Options -->
+      <div class="form-row" *ngIf="questionType !== 'text'">
         <div class="form-group">
           <label>Options de réponse <span class="required">*</span> <small>(minimum 2 options)</small></label>
-          <div class="options-list" id="optionsList">
-            <div class="option-item">
-              <input type="text" value="Très satisfait" placeholder="Option 1">
-              <button class="remove-option"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="option-item">
-              <input type="text" value="Satisfait" placeholder="Option 2">
-              <button class="remove-option"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="option-item">
-              <input type="text" value="Neutre" placeholder="Option 3">
-              <button class="remove-option"><i class="fas fa-times"></i></button>
+          <div class="options-list">
+            <div class="option-item" *ngFor="let opt of options; let i = index">
+              <input type="text" [(ngModel)]="options[i]" placeholder="Option {{i+1}}">
+              <button class="remove-option" type="button" (click)="removeOptions(i)">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
           </div>
-          <button class="btn btn-outline btn-sm add-option-btn">
+          <button class="btn btn-outline btn-sm" type="button" (click)="addOptions()">
             <i class="fas fa-plus"></i> Ajouter une option
           </button>
         </div>
       </div>
 
+      <!-- Question obligatoire -->
       <div class="form-row">
         <div class="form-group checkbox-group">
           <label class="checkbox-label">
-            <input type="checkbox" id="requiredCheckbox" checked>
-            <span class="checkbox-custom"></span>
-            Question obligatoire
+            <input type="checkbox" [(ngModel)]="required">
+            <span class="checkbox-custom"></span> Question obligatoire
           </label>
         </div>
       </div>
 
-      <!-- Section génération IA -->
-      <div class="ia-generation-section">
-        <div class="ia-header">
-          <i class="fas fa-robot" style="color: #9D50BB;"></i>
-          <span>Générer une question avec l'IA</span>
-        </div>
-        <div class="ia-content">
-          <div class="ia-preview">
-            <p class="ia-question">"Quelles sont les principales raisons de votre satisfaction concernant notre service ?"</p>
-            <div class="ia-actions">
-              <button class="btn btn-outline btn-sm">
-                <i class="fas fa-sync-alt"></i> Régénérer
-              </button>
-              <button class="btn btn-primary btn-sm" id="useIaQuestion">
-                <i class="fas fa-plus"></i> Utiliser cette question
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- Actions -->
       <div class="form-actions">
-        <button class="btn btn-outline" id="cancelForm">Annuler</button>
-        <button class="btn btn-primary" id="addQuestion">
+        <button class="btn btn-outline" type="button" (click)="resetForm()">Annuler</button>
+        <button class="btn btn-primary" type="button" (click)="addQuestion()">
           <i class="fas fa-check"></i> Ajouter la question
         </button>
       </div>
@@ -141,42 +119,36 @@
   <div class="questions-header">
     <h2 class="section-title">
       <i class="fas fa-list"></i> Liste des questions
-      <span class="questions-count">12 questions</span>
+      <span class="questions-count">{{ questions.length }} questions</span>
     </h2>
-    <div class="questions-filter">
-      <select class="filter-select">
-        <option>Toutes les questions</option>
-        <option>Actives uniquement</option>
-        <option>Inactives uniquement</option>
-        <option>Générées par IA</option>
-      </select>
-    </div>
   </div>
-<div class="questions-grid">
-  <div class="question-card" *ngFor="let q of questions">
-    <div class="card-header">
-      <h3>{{ q.texte }}</h3>
-      <div class="card-badges">
-        <span class="badge type-badge">{{ q.type }}</span>
-        <span class="badge status-badge" [ngClass]="{'active': q.active, 'inactive': !q.active}">
-          {{ q.active ? 'Active' : 'Inactive' }}
-        </span>
-      </div>
-    </div>
 
-    <div class="card-content">
-      <strong>Options :</strong>
-      <div class="options-chips">
-        <span class="option-chip" *ngFor="let o of q.options">{{ o.texte }}</span>
+  <div class="questions-grid">
+    <div class="question-card" *ngFor="let q of questions">
+      <div class="card-header">
+        <h3>{{ q.texte }}</h3>
+        <div class="card-badges">
+          <span class="badge type-badge">{{ q.type }}</span>
+          <span class="badge status-badge" [ngClass]="{'active': q.active, 'inactive': !q.active}">
+            {{ q.active ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
       </div>
-      <div *ngIf="q.obligatoire">
-        <i class="fas fa-exclamation-circle"></i> Obligatoire
-      </div>
-    </div>
 
-    <div class="card-actions">
-      <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Modifier</button>
-      <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Supprimer</button>
+      <div class="card-content">
+        <strong>Options :</strong>
+        <div class="options-chips">
+          <span class="option-chip" *ngFor="let o of q.options">{{ o.texte }}</span>
+        </div>
+        <div *ngIf="q.obligatoire">
+          <i class="fas fa-exclamation-circle"></i> Obligatoire
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Modifier</button>
+        <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Supprimer</button>
+      </div>
     </div>
   </div>
 </div>

@@ -29,6 +29,48 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ===== TOAST MESSAGE ===== */
+#toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background: var(--bg-light);
+  color: var(--text-dark);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border-left: 4px solid var(--success);
+  font-weight: 500;
+  transform: translateX(400px);
+  opacity: 0;
+  transition: var(--transition);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 300px;
+  border: 1px solid var(--border);
+}
+
+#toast::before {
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--success-light);
+  color: var(--success);
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
 /* ===== BASE ===== */
 .questions-dashboard {
   max-width: 100%;
@@ -961,6 +1003,14 @@ input:checked + .toggle-slider:before {
   .action-btn {
     flex-direction: row;
     justify-content: center;
+  }
+  
+  /* ===== RESPONSIVE TOAST ===== */
+  #toast {
+    left: 1rem;
+    right: 1rem;
+    top: 1rem;
+    min-width: auto;
   }
 }
 

@@ -14,5 +14,9 @@ export class QuestionService {
     const apiurl = `http://localhost:3000/question/user/${id}/question`;
     return this.http.get<any>(apiurl);
   }
+  ajoutquestionAvecDesOptions(data:any){
+    const apiurl='http://localhost:3000/question/add/options'
+    return this.http.post(apiurl,data)
+  }
  
 }
