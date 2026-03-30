@@ -1,596 +1,520 @@
 <div class="feedback-dashboard">
-  <!-- 1️⃣ EN-TÊTE / HEADER -->
-  <div class="header">
+  <!-- HEADER AVEC ANIMATION -->
+  <div class="header animate-slide-down">
     <div class="header-left">
-      <p class="subtitle">Gérez les retours utilisateurs et les demandes de support · 23 nouveaux messages</p>
+      <div class="title-badge">
+        <span class="badge-glow">✨ Feedback Center</span>
+      </div>
+      <h1>
+        Gestion des feedbacks
+        <span class="wave-emoji">👋</span>
+      </h1>
+      <p class="subtitle">
+        <i class="fas fa-chart-line"></i>
+        Gérez les retours utilisateurs et les demandes de support · 
+        <span class="new-count pulse">{{nouveaux}}</span> nouveaux messages
+      </p>
     </div>
     <div class="header-right">
-      <div class="stats-badge">
-        <span class="stat-item">
-          <i class="fas fa-envelope"></i>
-          <span>45 total</span>
-        </span>
-        <span class="stat-item">
-          <i class="fas fa-clock"></i>
-          <span>12 en cours</span>
-        </span>
-        <span class="stat-item">
-          <i class="fas fa-check-circle"></i>
-          <span>28 résolus</span>
-        </span>
+      <div class="stats-badge glass-effect">
+        <div class="stat-item" *ngFor="let stat of statsData">
+          <i [class]="stat.icon"></i>
+          <div class="stat-info">
+            <span class="stat-value">{{stat.value}}</span>
+            <span class="stat-label">{{stat.label}}</span>
+          </div>
+        </div>
       </div>
-      <button class="btn btn-primary" id="newTicketBtn">
-        <i class="fas fa-plus-circle"></i> Nouveau ticket
+      <button class="btn btn-primary btn-ripple" (click)="openNewTicket()">
+        <i class="fas fa-plus-circle"></i>
+        <span>Nouveau ticket</span>
       </button>
     </div>
   </div>
 
-  <!-- 2️⃣ SECTION FILTRES ET RECHERCHE -->
-  <div class="filters-section">
+  <!-- FILTRES SECTION AVEC DESIGN MODERNE -->
+  <div class="filters-section glass-effect animate-slide-up">
+    <div class="filters-header">
+      <div class="filters-title">
+        <i class="fas fa-sliders-h"></i>
+        <span>Filtres avancés</span>
+      </div>
+      <button class="btn-clear" (click)="resetFilters()" *ngIf="hasActiveFilters()">
+        <i class="fas fa-undo-alt"></i> Réinitialiser
+      </button>
+    </div>
     <div class="filters-row">
-      <div class="search-wrapper">
+      <div class="search-wrapper floating">
         <i class="fas fa-search"></i>
-        <input type="text" placeholder="Rechercher par utilisateur, message, email...">
+        <input 
+          type="text" 
+          placeholder="Rechercher par utilisateur, email ou message..." 
+          [(ngModel)]="searchText" 
+          (input)="applyFilters()"
+        >
+        <div class="search-shortcut">⌘K</div>
       </div>
-      
       <div class="filter-group">
-        <select class="filter-select">
-          <option>Tous les types</option>
-          <option>Suggestion</option>
-          <option>Problème technique</option>
-          <option>Question</option>
-          <option>Autre</option>
-        </select>
-        
-        <select class="filter-select">
-          <option>Tous les statuts</option>
-          <option>Nouveau</option>
-          <option>En cours</option>
-          <option>Résolu</option>
-          <option>Ignoré</option>
-        </select>
-        
-        <select class="filter-select">
-          <option>Toutes les enquêtes</option>
-          <option>Expérience d'achat</option>
-          <option>Support client</option>
-          <option>Application mobile</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="filters-row advanced">
-      <div class="date-range">
-        <div class="date-input">
-          <i class="fas fa-calendar-alt"></i>
-          <input type="date" placeholder="Date début">
+        <div class="filter-item">
+          <i class="fas fa-tag"></i>
+          <select class="filter-select modern" [(ngModel)]="filterType" (change)="applyFilters()">
+            <option value="">📋 Tous les types</option>
+            <option value="suggestion">💡 Suggestion</option>
+            <option value="probleme_technique">🐛 Problème technique</option>
+            <option value="question">❓ Question</option>
+            <option value="autre">📝 Autre</option>
+          </select>
         </div>
-        <span class="date-separator">—</span>
-        <div class="date-input">
-          <i class="fas fa-calendar-alt"></i>
-          <input type="date" placeholder="Date fin">
+
+        <div class="filter-item">
+          <i class="fas fa-flag-checkered"></i>
+          <select class="filter-select modern" [(ngModel)]="filterStatut" (change)="applyFilters()">
+            <option value="">🎯 Tous les statuts</option>
+            <option value="nouveau">🆕 Nouveau</option>
+            <option value="en_cours">⏳ En cours</option>
+            <option value="resolu">✅ Résolu</option>
+            <option value="ignore">⏭️ Ignoré</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <i class="fas fa-poll"></i>
+          <select class="filter-select modern" [(ngModel)]="filterEnquete" (change)="applyFilters()">
+            <option value="">📊 Toutes les enquêtes</option>
+            <option *ngFor="let enquete of getUniqueEnquetes()" [value]="enquete.titre">
+              {{enquete.titre}}
+            </option>
+          </select>
         </div>
       </div>
-
-      <button class="btn btn-primary btn-sm">
-        <i class="fas fa-filter"></i> Appliquer filtres
-      </button>
-      <button class="btn btn-outline btn-sm">
-        <i class="fas fa-redo-alt"></i> Réinitialiser
-      </button>
     </div>
   </div>
 
-  <!-- 3️⃣ TABLEAU DES FEEDBACKS -->
-  <div class="table-container">
-    <div class="table-header">
-      <h2 class="section-title">
-        <i class="fas fa-list"></i> Liste des feedbacks
-      </h2>
-      <div class="table-actions">
-        <span class="results-count">45 résultats · 23 nouveaux</span>
-        <button class="btn btn-outline btn-sm">
-          <i class="fas fa-download"></i> Exporter
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <!-- TABLEAU PRINCIPAL -->
+    <div class="table-container glass-effect animate-fade-in">
+      <div class="table-header">
+        <div class="section-title">
+          <div class="title-icon">
+            <i class="fas fa-list-ul"></i>
+          </div>
+          <span>Liste des feedbacks</span>
+          <div class="title-badge-modern">
+            {{filteredFeedbacks.length}} résultats
+          </div>
+        </div>
+        <div class="table-actions">
+          <button class="btn-icon" (click)="refreshData()" title="Actualiser">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+          <button class="btn-icon" (click)="exportData()" title="Exporter">
+            <i class="fas fa-download"></i>
+          </button>
+          <button class="btn-icon" (click)="printTable()" title="Imprimer">
+            <i class="fas fa-print"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>
+                <div class="th-content">
+                  <i class="fas fa-user"></i> Utilisateur
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <i class="fas fa-tag"></i> Type
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <i class="fas fa-poll"></i> Enquête
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <i class="fas fa-comment"></i> Message
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <i class="fas fa-calendar"></i> Date
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <i class="fas fa-flag"></i> Statut
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <i class="fas fa-cog"></i> Actions
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let fb of getPaginatedFeedbacks()" [class.new-feedback]="fb.statut === 'nouveau'" class="hover-effect">
+              <td>
+                <div class="user-info">
+                  <div class="user-avatar">
+                    {{(fb.utilisateur?.nom || 'A')[0] | uppercase}}
+                  </div>
+                  <div class="user-details">
+                    <strong class="user-name">{{fb.utilisateur?.nom || 'Anonyme'}}</strong>
+                    <span class="user-email">{{fb.utilisateur?.email || '-'}}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge type" [ngClass]="getTypeClass(fb.type)">
+                  {{getTypeIcon(fb.type)}} {{getTypeLabel(fb.type)}}
+                </span>
+              </td>
+              <td>
+                <div class="enquete-info">
+                  <i class="fas fa-poll-h"></i>
+                  {{fb.enquete?.titre || '-'}}
+                </div>
+              </td>
+              <td>
+                <div class="message-preview" [title]="fb.message">
+                  <i class="fas fa-quote-left"></i>
+                  {{fb.message | slice:0:60}}{{fb.message.length > 60 ? '...' : ''}}
+                </div>
+              </td>
+              <td>
+                <div class="date-info">
+                  <i class="far fa-clock"></i>
+                  {{fb.date_creation | date:'dd/MM/yyyy HH:mm'}}
+                </div>
+              </td>
+              <td>
+                <span class="badge status" [ngClass]="getStatusClass(fb.statut)">
+                  <span class="status-dot"></span>
+                  {{getStatusLabel(fb.statut)}}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn view" (click)="viewDetails(fb)" title="Voir détails">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn resolve" (click)="markResolved(fb)" 
+                          *ngIf="fb.statut !== 'resolu'" title="Marquer comme résolu">
+                    <i class="fas fa-check-circle"></i>
+                  </button>
+                  <button class="action-btn delete" (click)="deleteFeedback(fb)" title="Supprimer">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredFeedbacks.length === 0">
+              <td colspan="7" class="empty-state">
+                <div class="empty-state-content">
+                  <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                  </div>
+                  <h4>Aucun feedback trouvé</h4>
+                  <p>Aucun feedback ne correspond à vos critères de recherche</p>
+                  <button class="btn btn-outline" (click)="resetFilters()">
+                    <i class="fas fa-redo-alt"></i> Réinitialiser les filtres
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION MODERNE -->
+      <div class="pagination-modern" *ngIf="totalPages > 1">
+        <div class="pagination-info">
+          Affichage de {{(currentPage-1)*itemsPerPage+1}} à {{Math.min(currentPage*itemsPerPage, filteredFeedbacks.length)}} sur {{filteredFeedbacks.length}} résultats
+        </div>
+        <div class="pagination-controls">
+          <button class="page-btn-nav" (click)="previousPage()" [disabled]="currentPage === 1">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="page-btn-number" *ngFor="let page of getPages()" 
+                  (click)="goToPage(page)" 
+                  [class.active]="page === currentPage">
+            {{page}}
+          </button>
+          <button class="page-btn-nav" (click)="nextPage()" [disabled]="currentPage === totalPages">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY SIDEBAR MODERNE -->
+    <div class="activity-sidebar glass-effect animate-slide-right">
+      <div class="sidebar-header">
+        <h3>
+          <div class="header-icon-pulse">
+            <i class="fas fa-bell"></i>
+            <span class="pulse-ring"></span>
+          </div>
+          Activité récente
+        </h3>
+        <button class="view-all-btn" (click)="viewAllActivities()" *ngIf="recentActivities.length > 5">
+          Voir tout <i class="fas fa-arrow-right"></i>
         </button>
       </div>
-    </div>
-
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th>Utilisateur</th>
-            <th>Type</th>
-            <th>Enquête concernée</th>
-            <th>Message</th>
-            <th>Date</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="new-feedback">
-            <td>
-              <div class="user-info">
-                <span class="user-name">Marie D.</span>
-                <span class="user-email">marie.d@email.com</span>
+      <div class="activity-timeline">
+        <div class="timeline-line"></div>
+        <div class="activity-list">
+          <div class="activity-item" *ngFor="let activity of displayActivities; let i = index" 
+               [class.new]="activity.isNew"
+               [style.animation-delay]="i * 0.05 + 's'">
+            <div class="timeline-dot" [class.new]="activity.isNew"></div>
+            <div class="activity-icon-wrapper">
+              <div class="activity-icon" [class]="activity.isNew ? 'new' : ''">
+                <i [class]="activity.icon"></i>
               </div>
-            </td>
-            <td><span class="badge type suggestion">Suggestion</span></td>
-            <td>Expérience d'achat 2025</td>
-            <td>
-              <div class="message-preview">
-                Ajouter une question sur la livraison...
-                <span class="attachment-indicator"><i class="fas fa-paperclip"></i> 1</span>
+            </div>
+            <div class="activity-content">
+              <div class="activity-text">{{activity.text}}</div>
+              <div class="activity-time">
+                <i class="far fa-clock"></i>
+                {{formatTimeAgo(activity.time)}}
               </div>
-            </td>
-            <td>12/03/2025</td>
-            <td><span class="badge status new">Nouveau</span></td>
-            <td>
-              <div class="table-actions">
-                <button class="action-icon" title="Voir détail"><i class="fas fa-eye"></i></button>
-                <button class="action-icon" title="Répondre"><i class="fas fa-reply"></i></button>
-                <button class="action-icon" title="Marquer comme résolu"><i class="fas fa-check-circle"></i></button>
-                <button class="action-icon" title="Supprimer"><i class="fas fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div class="user-info">
-                <span class="user-name">Anonyme</span>
-                <span class="user-email">-</span>
-              </div>
-            </td>
-            <td><span class="badge type issue">Problème technique</span></td>
-            <td>Support client NPS</td>
-            <td>
-              <div class="message-preview">
-                Impossible de soumettre le formulaire...
-              </div>
-            </td>
-            <td>11/03/2025</td>
-            <td><span class="badge status in-progress">En cours</span></td>
-            <td>
-              <div class="table-actions">
-                <button class="action-icon"><i class="fas fa-eye"></i></button>
-                <button class="action-icon"><i class="fas fa-reply"></i></button>
-                <button class="action-icon"><i class="fas fa-check-circle"></i></button>
-                <button class="action-icon"><i class="fas fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div class="user-info">
-                <span class="user-name">Thomas L.</span>
-                <span class="user-email">thomas.l@email.com</span>
-              </div>
-            </td>
-            <td><span class="badge type question">Question</span></td>
-            <td>Application mobile v2</td>
-            <td>
-              <div class="message-preview">
-                Comment voir mes réponses précédentes ?
-              </div>
-            </td>
-            <td>10/03/2025</td>
-            <td><span class="badge status resolved">Résolu</span></td>
-            <td>
-              <div class="table-actions">
-                <button class="action-icon"><i class="fas fa-eye"></i></button>
-                <button class="action-icon"><i class="fas fa-reply"></i></button>
-                <button class="action-icon"><i class="fas fa-check-circle"></i></button>
-                <button class="action-icon"><i class="fas fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr class="new-feedback">
-            <td>
-              <div class="user-info">
-                <span class="user-name">Sophie M.</span>
-                <span class="user-email">sophie.m@email.com</span>
-              </div>
-            </td>
-            <td><span class="badge type suggestion">Suggestion</span></td>
-            <td>Restaurant Le Select</td>
-            <td>
-              <div class="message-preview">
-                Ajouter des options végétariennes...
-                <span class="attachment-indicator"><i class="fas fa-paperclip"></i> 2</span>
-              </div>
-            </td>
-            <td>09/03/2025</td>
-            <td><span class="badge status new">Nouveau</span></td>
-            <td>
-              <div class="table-actions">
-                <button class="action-icon"><i class="fas fa-eye"></i></button>
-                <button class="action-icon"><i class="fas fa-reply"></i></button>
-                <button class="action-icon"><i class="fas fa-check-circle"></i></button>
-                <button class="action-icon"><i class="fas fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div class="user-info">
-                <span class="user-name">Pierre B.</span>
-                <span class="user-email">pierre.b@email.com</span>
-              </div>
-            </td>
-            <td><span class="badge type issue">Problème technique</span></td>
-            <td>-</td>
-            <td>
-              <div class="message-preview">
-                La page ne charge pas sur mobile...
-              </div>
-            </td>
-            <td>08/03/2025</td>
-            <td><span class="badge status ignored">Ignoré</span></td>
-            <td>
-              <div class="table-actions">
-                <button class="action-icon"><i class="fas fa-eye"></i></button>
-                <button class="action-icon"><i class="fas fa-reply"></i></button>
-                <button class="action-icon"><i class="fas fa-check-circle"></i></button>
-                <button class="action-icon"><i class="fas fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination">
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn">4</button>
-      <span class="page-dots">...</span>
-      <button class="page-btn">8</button>
+            </div>
+          </div>
+          <div *ngIf="displayActivities.length === 0" class="activity-item">
+            <div class="activity-content">
+              <div class="activity-text">Aucune activité récente</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 4️⃣ STATISTIQUES & REPORTING -->
-  <h2 class="section-title">
-    <i class="fas fa-chart-pie"></i> Statistiques & Reporting
-  </h2>
-
+  <!-- STATISTIQUES GRID AVEC DESIGN MODERNE -->
   <div class="stats-grid">
-    <!-- Carte: Feedbacks par type -->
-    <div class="stats-card">
+    <div class="stats-card glass-effect animate-scale-in" style="animation-delay: 0s">
       <div class="card-header">
-        <h3>Feedbacks par type</h3>
-        <i class="fas fa-ellipsis-h"></i>
+        <h3>
+          <i class="fas fa-chart-pie"></i>
+          Répartition par type
+        </h3>
+        <div class="card-tooltip">
+          <i class="fas fa-info-circle"></i>
+          <span class="tooltip-text">Distribution des feedbacks par catégorie</span>
+        </div>
       </div>
       <div class="card-content">
-        <div class="pie-chart-small">
-          <svg viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#eef2f6" stroke-width="20"/>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#9D50BB" stroke-width="20" 
-                    stroke-dasharray="126" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#f39c12" stroke-width="20" 
-                    stroke-dasharray="88" stroke-dashoffset="126" transform="rotate(-90 50 50)"/>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#3498db" stroke-width="20" 
-                    stroke-dasharray="38" stroke-dashoffset="214" transform="rotate(-90 50 50)"/>
-          </svg>
-        </div>
-        <div class="legend">
-          <div><span class="dot purple"></span> Suggestions (45%)</div>
-          <div><span class="dot orange"></span> Problèmes (35%)</div>
-          <div><span class="dot blue"></span> Questions (20%)</div>
+        <div class="pie-chart-container">
+          <div class="pie-chart-small">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#f3e5f5" stroke-width="10"/>
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#9D50BB" stroke-width="10" 
+                      [attr.stroke-dasharray]="283" [attr.stroke-dashoffset]="getTypeOffset()" 
+                      transform="rotate(-90 50 50)"/>
+            </svg>
+          </div>
+          <div class="legend-modern">
+            <div class="legend-item" *ngFor="let type of typeStats">
+              <span class="legend-dot" [style.backgroundColor]="type.color"></span>
+              <span class="legend-label">{{type.label}}</span>
+              <span class="legend-value">{{type.count}}</span>
+              <span class="legend-percent">{{type.percent}}%</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Carte: Résolus vs Non résolus -->
-    <div class="stats-card">
+    <div class="stats-card glass-effect animate-scale-in" style="animation-delay: 0.1s">
       <div class="card-header">
-        <h3>Statut des feedbacks</h3>
-        <i class="fas fa-ellipsis-h"></i>
+        <h3>
+          <i class="fas fa-chart-line"></i>
+          Taux de résolution
+        </h3>
+        <div class="card-tooltip">
+          <i class="fas fa-info-circle"></i>
+          <span class="tooltip-text">Pourcentage de feedbacks résolus</span>
+        </div>
       </div>
       <div class="card-content">
-        <div class="progress-circle">
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="50" fill="none" stroke="#eef2f6" stroke-width="10"/>
-            <circle cx="60" cy="60" r="50" fill="none" stroke="#2ecc71" stroke-width="10" 
-                    stroke-dasharray="314" stroke-dashoffset="94" transform="rotate(-90 60 60)"/>
-          </svg>
-          <span class="progress-text">62%</span>
-        </div>
-        <div class="stats-numbers">
-          <div><span class="label">Résolus:</span> <span class="value">28</span></div>
-          <div><span class="label">En cours:</span> <span class="value">12</span></div>
-          <div><span class="label">Nouveaux:</span> <span class="value">5</span></div>
+        <div class="progress-container">
+          <div class="progress-circle-large">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(157, 80, 187, 0.1)" stroke-width="12"/>
+              <circle class="progress-ring" cx="60" cy="60" r="54" fill="none" stroke="url(#gradient)" stroke-width="12" 
+                      [attr.stroke-dasharray]="339" [attr.stroke-dashoffset]="getResolutionOffset()" 
+                      transform="rotate(-90 60 60)"/>
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#9D50BB"/>
+                  <stop offset="100%" stop-color="#b46fd3"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="progress-text">
+              <span class="progress-value">{{getResolutionRate()}}%</span>
+              <span class="progress-label">Résolu</span>
+            </div>
+          </div>
+          <div class="stats-numbers-modern">
+            <div class="stat-number-item">
+              <div class="stat-number-value">{{resolus}}</div>
+              <div class="stat-number-label">Résolus</div>
+            </div>
+            <div class="stat-number-item">
+              <div class="stat-number-value">{{enCours}}</div>
+              <div class="stat-number-label">En cours</div>
+            </div>
+            <div class="stat-number-item">
+              <div class="stat-number-value">{{nouveaux}}</div>
+              <div class="stat-number-label">Nouveaux</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Carte: Feedbacks par période -->
-    <div class="stats-card">
+    <div class="stats-card glass-effect animate-scale-in" style="animation-delay: 0.2s">
       <div class="card-header">
-        <h3>Feedbacks par période</h3>
-        <select class="period-select">
-          <option>Semaine</option>
-          <option>Mois</option>
-          <option>Trimestre</option>
+        <h3>
+          <i class="fas fa-chart-bar"></i>
+          Activité hebdomadaire
+        </h3>
+        <select class="period-select-modern" [(ngModel)]="activityPeriod" (change)="updateActivity()">
+          <option value="7">7 derniers jours</option>
+          <option value="30">30 derniers jours</option>
+          <option value="90">90 derniers jours</option>
         </select>
       </div>
       <div class="card-content">
-        <div class="mini-bar-chart">
-          <div class="bar-group">
-            <div class="bar" style="height: 45px"></div>
-            <span class="bar-label">L</span>
-          </div>
-          <div class="bar-group">
-            <div class="bar" style="height: 68px"></div>
-            <span class="bar-label">M</span>
-          </div>
-          <div class="bar-group">
-            <div class="bar" style="height: 52px"></div>
-            <span class="bar-label">M</span>
-          </div>
-          <div class="bar-group">
-            <div class="bar" style="height: 82px"></div>
-            <span class="bar-label">J</span>
-          </div>
-          <div class="bar-group">
-            <div class="bar" style="height: 38px"></div>
-            <span class="bar-label">V</span>
-          </div>
-          <div class="bar-group">
-            <div class="bar" style="height: 22px"></div>
-            <span class="bar-label">S</span>
-          </div>
-          <div class="bar-group">
-            <div class="bar" style="height: 15px"></div>
-            <span class="bar-label">D</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Carte: Feedbacks par enquête -->
-    <div class="stats-card">
-      <div class="card-header">
-        <h3>Feedbacks par enquête</h3>
-        <i class="fas fa-ellipsis-h"></i>
-      </div>
-      <div class="card-content">
-        <div class="survey-stats">
-          <div class="survey-stat">
-            <span class="survey-name">Expérience d'achat</span>
-            <span class="survey-count">18</span>
-          </div>
-          <div class="survey-stat">
-            <span class="survey-name">Support client</span>
-            <span class="survey-count">12</span>
-          </div>
-          <div class="survey-stat">
-            <span class="survey-name">Application mobile</span>
-            <span class="survey-count">9</span>
-          </div>
-          <div class="survey-stat">
-            <span class="survey-name">Restaurant</span>
-            <span class="survey-count">6</span>
+        <div class="bar-chart-modern">
+          <div class="bar-group" *ngFor="let day of getActivityData()">
+            <div class="bar-wrapper">
+              <div class="bar" [style.height.px]="day.count * 3" [style.animation-delay]="'0.' + i + 's'" *ngFor="let day of getActivityData(); let i = index"></div>
+            </div>
+            <div class="bar-label">{{day.label}}</div>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- 5️⃣ MODAL DÉTAIL FEEDBACK -->
-  <div class="modal-overlay" id="feedbackDetailModal" style="display: none;">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3><i class="fas fa-comment" style="color: #9D50BB;"></i> Détail du feedback</h3>
-        <button class="modal-close">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        <div class="feedback-detail">
-          <div class="detail-row">
-            <div class="detail-label">Utilisateur:</div>
-            <div class="detail-value">
-              <strong>Marie D.</strong> · marie.d@email.com
-            </div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Type:</div>
-            <div class="detail-value"><span class="badge type suggestion">Suggestion</span></div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Enquête:</div>
-            <div class="detail-value">Expérience d'achat 2025</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Date:</div>
-            <div class="detail-value">12 mars 2025 · 14:32</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Statut:</div>
-            <div class="detail-value">
-              <select class="status-select">
-                <option selected>Nouveau</option>
-                <option>En cours</option>
-                <option>Résolu</option>
-                <option>Ignoré</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="message-box">
-            <div class="message-label">Message:</div>
-            <div class="message-content">
-              Bonjour, je trouve que l'enquête est très complète mais j'aimerais suggérer 
-              l'ajout d'une question sur la livraison. C'est un aspect important pour moi 
-              et je pense que cela intéresserait d'autres clients. Merci !
-            </div>
-          </div>
-
-          <div class="attachments">
-            <div class="attachments-label">Pièces jointes:</div>
-            <div class="attachment-list">
-              <div class="attachment-item">
-                <i class="fas fa-image"></i>
-                <span>capture-ecran.png</span>
-                <span class="attachment-size">245 KB</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="reply-section">
-            <div class="reply-label">Répondre à l'utilisateur:</div>
-            <textarea rows="4" placeholder="Votre réponse..."></textarea>
-            <div class="reply-actions">
-              <button class="btn btn-outline btn-sm">
-                <i class="fas fa-paperclip"></i> Joindre
-              </button>
-              <button class="btn btn-primary btn-sm">
-                <i class="fas fa-paper-plane"></i> Envoyer
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-outline">Fermer</button>
-        <button class="btn btn-success">Marquer comme résolu</button>
-        <button class="btn btn-danger">Supprimer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 6️⃣ MODAL NOUVEAU TICKET INTERNE -->
-  <div class="modal-overlay" id="newTicketModal" style="display: none;">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3><i class="fas fa-ticket-alt" style="color: #9D50BB;"></i> Nouveau ticket interne</h3>
-        <button class="modal-close">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        <form>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Sujet <span class="required">*</span></label>
-              <input type="text" placeholder="Court résumé du problème">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Description détaillée</label>
-              <textarea rows="4" placeholder="Décrivez le problème ou la demande..."></textarea>
-            </div>
-          </div>
-
-          <div class="form-row grid-2">
-            <div class="form-group">
-              <label>Priorité</label>
-              <select>
-                <option>Basse</option>
-                <option selected>Moyenne</option>
-                <option>Haute</option>
-                <option>Urgente</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Assigner à</label>
-              <select>
-                <option>Moi-même</option>
-                <option>Support technique</option>
-                <option>Admin</option>
-                <option>Développement</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row grid-2">
-            <div class="form-group">
-              <label>Date limite (optionnel)</label>
-              <input type="date">
-            </div>
-            <div class="form-group">
-              <label>Type</label>
-              <select>
-                <option>Support technique</option>
-                <option>Demande fonctionnelle</option>
-                <option>Bug</option>
-                <option>Amélioration</option>
-              </select>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-outline">Annuler</button>
-        <button class="btn btn-primary">Créer le ticket</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 7️⃣ NOTIFICATIONS & HISTORIQUE -->
-  <div class="activity-sidebar">
-    <div class="sidebar-header">
-      <h3><i class="fas fa-history"></i> Activité récente</h3>
-      <button class="btn btn-outline btn-sm">
-        <i class="fas fa-bell"></i> 3
+<!-- MODAL DÉTAILS FEEDBACK AVEC DESIGN MODERNE -->
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeModal()">
+  <div class="modal-container glass-effect" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-info-circle"></i>
+        Détail du feedback
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
       </button>
     </div>
-    <div class="activity-list">
-      <div class="activity-item new">
-        <div class="activity-icon"><i class="fas fa-comment"></i></div>
-        <div class="activity-content">
-          <div class="activity-text">Nouveau feedback de <strong>Marie D.</strong></div>
-          <div class="activity-time">Il y a 5 minutes</div>
+    <div class="modal-body" *ngIf="selectedFeedback">
+      <div class="feedback-detail-modern">
+        <div class="detail-header">
+          <div class="user-info-large">
+            <div class="user-avatar-large">
+              {{(selectedFeedback.utilisateur?.nom || 'A')[0] | uppercase}}
+            </div>
+            <div class="user-info-text">
+              <h4>{{selectedFeedback.utilisateur?.nom || 'Anonyme'}}</h4>
+              <span>{{selectedFeedback.utilisateur?.email || '-'}}</span>
+            </div>
+          </div>
+          <div class="status-badge-large" [ngClass]="getStatusClass(selectedFeedback.statut)">
+            <i [class]="getStatusIcon(selectedFeedback.statut)"></i>
+            {{getStatusLabel(selectedFeedback.statut)}}
+          </div>
         </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-icon"><i class="fas fa-check-circle"></i></div>
-        <div class="activity-content">
-          <div class="activity-text">Ticket #124 résolu par <strong>Thomas</strong></div>
-          <div class="activity-time">Il y a 25 minutes</div>
+
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-label">
+              <i class="fas fa-tag"></i> Type
+            </div>
+            <div class="detail-value">
+              <span class="badge type" [ngClass]="getTypeClass(selectedFeedback.type)">
+                {{getTypeIcon(selectedFeedback.type)}} {{getTypeLabel(selectedFeedback.type)}}
+              </span>
+            </div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">
+              <i class="fas fa-poll"></i> Enquête
+            </div>
+            <div class="detail-value">{{selectedFeedback.enquete?.titre || '-'}}</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">
+              <i class="fas fa-calendar"></i> Date
+            </div>
+            <div class="detail-value">{{selectedFeedback.date_creation | date:'dd/MM/yyyy HH:mm'}}</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">
+              <i class="fas fa-flag"></i> Statut
+            </div>
+            <div class="detail-value">
+              <select class="status-select-modern" [(ngModel)]="selectedFeedback.statut" 
+                      (change)="updateStatus(selectedFeedback)">
+                <option value="nouveau">🆕 Nouveau</option>
+                <option value="en_cours">⏳ En cours</option>
+                <option value="resolu">✅ Résolu</option>
+                <option value="ignore">⏭️ Ignoré</option>
+              </select>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-icon"><i class="fas fa-reply"></i></div>
-        <div class="activity-content">
-          <div class="activity-text">Réponse envoyée à <strong>Sophie M.</strong></div>
-          <div class="activity-time">Il y a 1 heure</div>
+
+        <div class="message-card">
+          <div class="message-label">
+            <i class="fas fa-comment-dots"></i> Message
+          </div>
+          <div class="message-content">{{selectedFeedback.message}}</div>
         </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-icon"><i class="fas fa-ticket-alt"></i></div>
-        <div class="activity-content">
-          <div class="activity-text">Nouveau ticket interne créé</div>
-          <div class="activity-time">Il y a 2 heures</div>
+
+        <div class="reply-card" *ngIf="selectedFeedback.statut !== 'resolu'">
+          <div class="reply-label">
+            <i class="fas fa-reply-all"></i> Réponse
+          </div>
+          <textarea rows="4" placeholder="Écrire une réponse..." [(ngModel)]="replyText" class="reply-textarea"></textarea>
+          <div class="reply-actions">
+            <button class="btn btn-outline" (click)="closeModal()">Annuler</button>
+            <button class="btn btn-primary" (click)="sendReply()">
+              <i class="fas fa-paper-plane"></i> Envoyer la réponse
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- 8️⃣ TOAST NOTIFICATIONS -->
-  <div class="toast-area">
-    <div class="toast success">
-      <i class="fas fa-check-circle"></i>
-      <div class="toast-content">
-        <strong>Réponse envoyée</strong>
-        <span>Votre réponse a été envoyée à l'utilisateur</span>
-      </div>
+<!-- TOAST NOTIFICATIONS MODERNES -->
+<div class="toast-container">
+  <div class="toast-modern" *ngFor="let toast of toasts" [class]="toast.type" 
+       (click)="removeToast(toast)">
+    <div class="toast-icon">
+      <i [class]="toast.icon"></i>
     </div>
-    <div class="toast info">
-      <i class="fas fa-bell"></i>
-      <div class="toast-content">
-        <strong>Nouveau feedback</strong>
-        <span>2 nouveaux messages reçus</span>
-      </div>
+    <div class="toast-content">
+      <strong>{{toast.title}}</strong>
+      <span>{{toast.message}}</span>
     </div>
+    <button class="toast-close">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="toast-progress" [style.animationDuration]="'5s'"></div>
   </div>
 </div>

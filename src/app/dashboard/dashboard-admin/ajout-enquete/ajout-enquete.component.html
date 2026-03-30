@@ -21,9 +21,7 @@
       </div>
       <div class="error-message" *ngIf="enqueteForm.get('titre')?.touched && enqueteForm.get('titre')?.invalid">
         <i class="fas fa-exclamation-circle"></i>
-        <span *ngIf="enqueteForm.get('titre')?.errors?.['required']">
-          Le titre est obligatoire
-        </span>
+        <span>Le titre est obligatoire</span>
       </div>
     </div>
 
@@ -35,13 +33,11 @@
       </label>
       <div class="input-wrapper">
         <i class="fas fa-file-alt input-icon"></i>
-        <textarea formControlName="description" rows="3" placeholder="Décrivez l'objectif..."></textarea>
+        <textarea formControlName="description" rows="3" placeholder="Décrivez l'objectif de l'enquête..."></textarea>
       </div>
       <div class="error-message" *ngIf="enqueteForm.get('description')?.touched && enqueteForm.get('description')?.invalid">
         <i class="fas fa-exclamation-circle"></i>
-        <span *ngIf="enqueteForm.get('description')?.errors?.['minlength']">
-          Minimum 10 caractères ({{enqueteForm.get('description')?.value?.length || 0}}/10)
-        </span>
+        <span>Minimum 10 caractères ({{enqueteForm.get('description')?.value?.length || 0}}/10)</span>
       </div>
     </div>
 
@@ -49,7 +45,7 @@
     <div class="form-group" [class.has-error]="enqueteForm.get('dateFin')?.touched && enqueteForm.get('dateFin')?.invalid">
       <label>
         <i class="fas fa-calendar-alt"></i>
-        Date de fin
+        Date de fin <span class="required">*</span>
       </label>
       <div class="input-wrapper">
         <i class="fas fa-calendar-check input-icon"></i>
@@ -57,12 +53,137 @@
       </div>
       <div class="error-message" *ngIf="enqueteForm.get('dateFin')?.touched && enqueteForm.get('dateFin')?.invalid">
         <i class="fas fa-exclamation-circle"></i>
-        <span *ngIf="enqueteForm.get('dateFin')?.errors?.['required']">
-          Date de fin obligatoire
-        </span>
+        <span>Date de fin obligatoire</span>
       </div>
     </div>
 
+    <!-- Section Questions -->
+    <div class="form-section">
+      <h2 class="section-subtitle">
+        <i class="fas fa-question-circle"></i>
+        Questions de l'enquête
+        <span class="badge">{{selectedQuestions.length}} question(s)</span>
+      </h2>
+
+      <!-- Questions existantes -->
+      <div class="available-questions" *ngIf="availableQuestions.length > 0">
+        <h3>
+          <i class="fas fa-database"></i>
+          Questions existantes
+        </h3>
+        <div class="questions-grid">
+          <div class="question-card" *ngFor="let question of availableQuestions" 
+               [class.selected]="isQuestionSelected(question)">
+            <div class="question-header">
+              <i class="fas" [ngClass]="{
+                'fa-font': question.type === 'TEXTE',
+                'fa-circle-dot': question.type === 'CHOIX_UNIQUE',
+                'fa-check-square': question.type === 'CHOIX_MULTIPLE',
+                'fa-star': question.type === 'NOTE'
+              }"></i>
+              <span class="question-type">{{question.type}}</span>
+            </div>
+            <p class="question-text">{{question.texte}}</p>
+            <button type="button" class="btn-add" (click)="addExistingQuestion(question)" 
+                    *ngIf="!isQuestionSelected(question)">
+              <i class="fas fa-plus"></i> Ajouter
+            </button>
+            <span class="badge-added" *ngIf="isQuestionSelected(question)">
+              <i class="fas fa-check"></i> Ajoutée
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton nouvelle question -->
+      <div class="new-question-toggle">
+        <button type="button" class="btn-outline" (click)="toggleNewQuestionForm()">
+          <i class="fas" [ngClass]="showNewQuestionForm ? 'fa-times' : 'fa-plus'"></i>
+          {{showNewQuestionForm ? 'Annuler' : 'Créer une nouvelle question'}}
+        </button>
+      </div>
+
+      <!-- Formulaire nouvelle question -->
+      <div class="new-question-form" *ngIf="showNewQuestionForm" [formGroup]="newQuestionForm">
+        <h3>
+          <i class="fas fa-pen"></i>
+          Nouvelle question
+        </h3>
+
+        <div class="form-group">
+          <label>Texte de la question <span class="required">*</span></label>
+          <input type="text" formControlName="texte" placeholder="Ex: Comment trouvez-vous notre service ?">
+        </div>
+
+        <div class="form-group">
+          <label>Type de question <span class="required">*</span></label>
+          <select formControlName="type">
+            <option *ngFor="let type of questionTypes" [value]="type.value">
+              {{type.label}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Options pour les questions à choix -->
+        <div class="options-section" *ngIf="newQuestionForm.get('type')?.value === 'CHOIX_UNIQUE' || newQuestionForm.get('type')?.value === 'CHOIX_MULTIPLE'">
+          <label>
+            <i class="fas fa-list"></i>
+            Options
+          </label>
+          
+          <div formArrayName="options">
+            <div class="option-item" *ngFor="let option of optionsFormArray.controls; let i = index">
+              <input type="text" [formControlName]="i" placeholder="Option {{i+1}}">
+              <button type="button" class="btn-icon-small" (click)="removeOption(i)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="button" class="btn-add-option" (click)="addOption()">
+            <i class="fas fa-plus"></i> Ajouter une option
+          </button>
+        </div>
+
+        <div class="form-actions-small">
+          <button type="button" class="btn-primary" (click)="saveNewQuestion()" [disabled]="newQuestionForm.invalid">
+            <i class="fas fa-save"></i> Enregistrer la question
+          </button>
+        </div>
+      </div>
+
+      <!-- Liste des questions sélectionnées -->
+      <div class="selected-questions" *ngIf="selectedQuestions.length > 0">
+        <h3>
+          <i class="fas fa-check-circle"></i>
+          Questions sélectionnées
+        </h3>
+        <div class="selected-list">
+          <div class="selected-item" *ngFor="let question of selectedQuestions; let i = index">
+            <div class="item-info">
+              <i class="fas" [ngClass]="{
+                'fa-font': question.type === 'TEXTE',
+                'fa-circle-dot': question.type === 'CHOIX_UNIQUE',
+                'fa-check-square': question.type === 'CHOIX_MULTIPLE',
+                'fa-star': question.type === 'NOTE'
+              }"></i>
+              <span class="item-text">{{question.texte}}</span>
+              <span class="item-badge" *ngIf="question.id">Existante</span>
+              <span class="item-badge new" *ngIf="!question.id">Nouvelle</span>
+            </div>
+            <button type="button" class="btn-remove" (click)="removeExistingQuestion(i)">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-questions" *ngIf="selectedQuestions.length === 0">
+        <i class="fas fa-info-circle"></i>
+        Aucune question sélectionnée. Vous pourrez ajouter des questions plus tard.
+      </div>
+    </div>
+    <!-- Actions -->
     <div class="form-actions">
       <button type="submit" class="btn btn-primary btn-icon" [disabled]="enqueteForm.invalid">
         <i class="fas fa-plus-circle"></i>

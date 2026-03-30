@@ -1,0 +1,307 @@
+<div class="dashboard responses-page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>
+        <i class="fas fa-comment-dots"></i>
+        Réponses des utilisateurs
+      </h1>
+      <p class="subtitle">Consultez et analysez les retours</p>
+    </div>
+
+    <div class="header-right">
+      <div class="stats-badge">
+        <span>
+          <i class="fas fa-check-circle"></i>
+          {{ nombreReponses || 0 }} réponses
+        </span>
+      </div>
+
+      <!-- EXPORT -->
+      <div class="export-dropdown">
+        <button class="btn btn-primary" (click)="toggleExportDropdown()">
+          <i class="fas fa-download"></i> Exporter
+        </button>
+
+        <div class="dropdown-menu" [class.show]="exportDropdownVisible">
+          <button class="dropdown-item" (click)="downloadExcel()">
+            <i class="fas fa-file-excel"></i>
+            <span>Excel</span>
+          </button>
+
+          <button class="dropdown-item" (click)="telechargementPdf()">
+            <i class="fas fa-file-pdf"></i>
+            <span>PDF</span>
+          </button>
+
+          <button class="dropdown-item" (click)="downloadCSV()">
+            <i class="fas fa-file-csv"></i>
+            <span>CSV</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS SECTION -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+          placeholder="Rechercher par nom, prénom ou email..."
+        >
+      </div>
+
+      <div class="filter-group">
+        <button 
+          class="filter-btn" 
+          [class.active]="filterType === 'all'"
+          (click)="setFilter('all')">
+          Tous
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="filterType === 'recent'"
+          (click)="setFilter('recent')">
+          Récents
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="filterType === 'oldest'"
+          (click)="setFilter('oldest')">
+          Anciens
+        </button>
+      </div>
+
+      <select class="sort-select" [(ngModel)]="sortBy" (change)="applyFilters()">
+        <option value="date_desc">Plus récent</option>
+        <option value="date_asc">Plus ancien</option>
+        <option value="name_asc">Nom A-Z</option>
+        <option value="name_desc">Nom Z-A</option>
+      </select>
+    </div>
+
+    <div class="filters-row advanced">
+      <div class="date-range">
+        <div class="date-input">
+          <i class="fas fa-calendar"></i>
+          <input type="date" [(ngModel)]="dateDebut" (change)="applyFilters()">
+        </div>
+        <span class="date-separator">-</span>
+        <div class="date-input">
+          <i class="fas fa-calendar"></i>
+          <input type="date" [(ngModel)]="dateFin" (change)="applyFilters()">
+        </div>
+      </div>
+
+      <div class="filter-select-group">
+        <select class="filter-select" [(ngModel)]="surveyFilter" (change)="applyFilters()">
+          <option value="">Tous les questionnaires</option>
+          <option *ngFor="let survey of surveysList" [value]="survey.id">
+            {{ survey.titre }}
+          </option>
+        </select>
+      </div>
+
+      <button class="btn btn-outline btn-sm" (click)="resetFilters()">
+        <i class="fas fa-undo-alt"></i> Réinitialiser
+      </button>
+    </div>
+  </div>
+
+  <!-- LISTE DES RÉPONSES -->
+  <div class="responses-list">
+    <!-- EMPTY STATE -->
+    <div *ngIf="filteredReponses.length === 0" class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <p>Aucune réponse trouvée</p>
+      <button class="btn btn-outline" (click)="resetFilters()">
+        Réinitialiser les filtres
+      </button>
+    </div>
+
+    <!-- CARDS GRID -->
+    <div class="surveys-grid">
+      <div class="survey-card"
+           *ngFor="let rep of paginatedReponses"
+           (click)="openModal(rep.reponse_id)">
+        
+        <div class="card-header">
+          <div class="card-title-section">
+            <div class="user-avatar">
+              <ng-container *ngIf="rep.photo_profil; else defaultIcon">
+                <img [src]="'http://localhost:3000/' + rep.photo_profil" class="user-image">
+              </ng-container>
+              <ng-template #defaultIcon>
+                <i class="fas fa-user"></i>
+              </ng-template>
+            </div>
+            <h3>{{ rep.prenom }} {{ rep.nom }}</h3>
+            <p class="survey-id">{{ rep.email }}</p>
+            <div class="card-meta">
+              <span class="badge">
+                <i class="fas fa-calendar-alt"></i>
+                {{ rep.date_creation | date:'dd/MM/yyyy' }}
+              </span>
+              <span class="badge" [class.publiee]="rep.titre">
+                {{ rep.titre }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <div class="response-content">
+            <p class="response-text">
+              "{{ rep.reponseTexte || 'Aucune réponse textuelle' }}"
+            </p>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="action-btn" (click)="openModal(rep.reponse_id); $event.stopPropagation()">
+            <i class="fas fa-eye"></i>
+            <span>Voir détails</span>
+          </button>
+          <button class="action-btn" (click)="copyToClipboard(rep.email); $event.stopPropagation()">
+            <i class="fas fa-copy"></i>
+            <span>Copier email</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" *ngIf="filteredReponses.length > 0">
+      <div class="pagination-info">
+        Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à 
+        {{ min(currentPage * itemsPerPage, filteredReponses.length) }} 
+        sur {{ filteredReponses.length }} réponses
+      </div>
+      
+      <div class="pagination-controls">
+        <button class="page-btn" (click)="previousPage()" [disabled]="currentPage === 1">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <button class="page-btn" 
+                *ngFor="let page of getPageNumbers()"
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)">
+          {{ page }}
+        </button>
+        
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <select class="items-per-page" [(ngModel)]="itemsPerPage" (change)="changeItemsPerPage()">
+        <option [value]="5">5 par page</option>
+        <option [value]="10">10 par page</option>
+        <option [value]="20">20 par page</option>
+        <option [value]="50">50 par page</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- MODAL DÉTAILS -->
+  <div class="modal-overlay" *ngIf="modalVisible" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-user-circle"></i>
+          {{ selectedReponse?.prenom }} {{ selectedReponse?.nom }}
+        </h3>
+        <button class="modal-close" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="user-info" *ngIf="selectedReponse">
+          <div class="user-avatar large">
+            <ng-container *ngIf="selectedReponse.photo_profil; else modalDefaultIcon">
+              <img [src]="'http://localhost:3000/' + selectedReponse.photo_profil" class="user-image">
+            </ng-container>
+            <ng-template #modalDefaultIcon>
+              <i class="fas fa-user"></i>
+            </ng-template>
+          </div>
+          <div class="user-details">
+            <p><i class="fas fa-envelope"></i> <strong>Email:</strong> {{ selectedReponse.email }}</p>
+            <p><i class="fas fa-calendar"></i> <strong>Date:</strong> {{ selectedReponse.date_creation | date:'dd/MM/yyyy HH:mm' }}</p>
+            <p><i class="fas fa-file-alt"></i> <strong>Questionnaire:</strong> {{ selectedReponse.titre }}</p>
+          </div>
+        </div>
+
+        <div class="response-details" *ngIf="selectedReponse?.reponses?.length > 0">
+          <h4>Détails des réponses</h4>
+          
+          <div class="question-item" *ngFor="let rep of selectedReponse.reponses; let i = index">
+            <div class="question-header">
+              <span class="question-number">Q{{ i + 1 }}</span>
+              <h5>{{ rep.question }}</h5>
+            </div>
+            
+            <div class="answer-content" [ngSwitch]="rep.type">
+              <div *ngSwitchCase="'texte'" class="text-answer">
+                <i class="fas fa-comment"></i>
+                <p>{{ rep.reponse }}</p>
+              </div>
+              
+              <div *ngSwitchCase="'note'" class="rating-answer">
+                <div class="stars-display">
+                  <i *ngFor="let star of getStars(rep.reponse)" 
+                     class="fas fa-star" 
+                     [class.filled]="star <= rep.reponse"></i>
+                </div>
+                <span class="rating-value">{{ rep.reponse }}/5</span>
+              </div>
+              
+              <div *ngSwitchCase="'choix'" class="choice-answer">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ rep.reponse }}</span>
+              </div>
+              
+              <div *ngSwitchDefault class="default-answer">
+                {{ rep.reponse }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-actions-left">
+          <button class="btn btn-outline" (click)="closeModal()">
+            <i class="fas fa-times"></i> Fermer
+          </button>
+        </div>
+        <div class="modal-actions-right">
+          <button class="btn btn-outline" (click)="copyToClipboard(selectedReponse?.email)">
+            <i class="fas fa-copy"></i> Copier email
+          </button>
+          <button class="btn btn-primary" >
+            <i class="fas fa-download"></i> Exporter cette réponse
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-area">
+    <div *ngFor="let toast of toasts" class="toast" [class]="toast.type">
+      <i [class]="toast.icon"></i>
+      <div class="toast-content">
+        <span>{{ toast.message }}</span>
+      </div>
+    </div>
+  </div>
+</div>

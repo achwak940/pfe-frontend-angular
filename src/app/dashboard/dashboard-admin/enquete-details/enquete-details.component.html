@@ -1,0 +1,366 @@
+<div class="details-container">
+  <!-- En-tête avec navigation -->
+  <div class="details-header">
+    <div class="header-left">
+      <a href="javascript:void(0)" (click)="goBack()" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Retour à la liste</span>
+      </a>
+      <h1>Détails de l'enquête</h1>
+    </div>
+    <div class="header-actions" *ngIf="enquetesDetailes">
+      <button class="btn btn-outline" [routerLink]="['/ModifierEnquete', EnqueteId]">
+        <i class="fas fa-edit"></i> Modifier
+      </button>
+      <button class="btn btn-primary" *ngIf="enquetesDetailes.statut === 'Brouillon'" (click)="publishEnquete()">
+        <i class="fas fa-paper-plane"></i> Publier
+      </button>
+      <button class="btn btn-warning" *ngIf="enquetesDetailes.statut === 'Publiée'" (click)="archiveEnquete()">
+        <i class="fas fa-archive"></i> Archiver
+      </button>
+    </div>
+  </div>
+
+  <!-- Message de chargement -->
+  <div class="loading-state" *ngIf="!enquetesDetailes">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Chargement des détails...</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="details-content" id="details-content" *ngIf="enquetesDetailes">
+    <!-- Carte d'informations générales -->
+    <div class="info-card">
+      <div class="card-title">
+        <i class="fas fa-info-circle"></i>
+        <h2>Informations générales</h2>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-row">
+          <span class="info-label">Titre</span>
+          <span class="info-value">{{enquetesDetailes.titre}}</span>
+        </div>
+        
+        <div class="info-row">
+          <span class="info-label">Description</span>
+          <span class="info-value">{{enquetesDetailes.description}}</span>
+        </div>
+        
+        <div class="info-row">
+          <span class="info-label">Statut</span>
+          <span class="status-badge" [ngClass]="enquetesDetailes.statut?.toLowerCase()">
+            <i class="fas" [ngClass]="{
+              'fa-pencil-alt': enquetesDetailes.statut === 'Brouillon',
+              'fa-paper-plane': enquetesDetailes.statut === 'Publiée',
+              'fa-lock': enquetesDetailes.statut === 'Fermee',
+              'fa-archive': enquetesDetailes.statut === 'Archivée'
+            }"></i>
+            {{enquetesDetailes.statut}}
+          </span>
+        </div>
+        
+        <div class="info-row">
+          <span class="info-label">Type de participation</span>
+          <span class="type-badge" [ngClass]="enquetesDetailes.typeParticipation?.toLowerCase()">
+            <i class="fas" [ngClass]="{
+              'fa-user-secret': enquetesDetailes.typeParticipation === 'ANONYME',
+              'fa-user-check': enquetesDetailes.typeParticipation === 'CONNECTE'
+            }"></i>
+            {{enquetesDetailes.typeParticipation}}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte des dates -->
+    <div class="dates-card">
+      <div class="card-title">
+        <i class="fas fa-calendar-alt"></i>
+        <h2>Dates</h2>
+      </div>
+      
+      <div class="dates-grid">
+        <div class="date-item">
+          <i class="far fa-calendar-plus"></i>
+          <div>
+            <span class="date-label">Date de création</span>
+            <span class="date-value">{{enquetesDetailes.createAt | date:'dd/MM/yyyy à HH:mm'}}</span>
+          </div>
+        </div>
+        
+        <div class="date-item">
+          <i class="far fa-calendar-times"></i>
+          <div>
+            <span class="date-label">Date de fin</span>
+            <span class="date-value">{{enquetesDetailes.dateFin | date:'dd/MM/yyyy'}}</span>
+          </div>
+        </div>
+        
+        <div class="date-item" *ngIf="enquetesDetailes.updateAt">
+          <i class="fas fa-sync-alt"></i>
+          <div>
+            <span class="date-label">Dernière modification</span>
+            <span class="date-value">{{enquetesDetailes.updateAt | date:'dd/MM/yyyy à HH:mm'}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Statistiques Dynamiques (uniquement si publiée) -->
+    <div class="stats-section" *ngIf="enquetesDetailes.statut === 'Publiée'">
+      <div class="section-header">
+        <div class="section-title">
+          <i class="fas fa-chart-line"></i>
+          <h2>Analyse & Performance</h2>
+        </div>
+        <button class="btn btn-sm btn-outline" (click)="exportToPDF()">
+          <i class="fas fa-file-pdf"></i> Exporter PDF
+        </button>
+      </div>
+
+      <div *ngIf="loadingStats" class="loading-stats">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Chargement des statistiques...</span>
+      </div>
+
+      <div *ngIf="!loadingStats" class="stats-grid-dynamic">
+        <!-- Cartes de statistiques -->
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{stats.totalReponses || 0}}</span>
+            <span class="stat-label">Réponses totales</span>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-percent"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{stats.tauxReponse || 0}}%</span>
+            <span class="stat-label">Taux de réponse</span>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="stats.tauxReponse || 0"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{formatDuration(stats.tempsMoyenReponse || 0)}}</span>
+            <span class="stat-label">Temps moyen de réponse</span>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-question-circle"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{enquetesDetailes.questions?.length || 0}}</span>
+            <span class="stat-label">Questions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphique d'évolution -->
+      <div class="chart-card" *ngIf="evolutionChartData">
+        <h3>Évolution des réponses</h3>
+        <canvas id="evolutionChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Section des questions avec statistiques -->
+    <div class="questions-section">
+      <div class="section-header">
+        <div class="section-title">
+          <i class="fas fa-question-circle"></i>
+          <h2>Questions ({{enquetesDetailes.questions?.length || 0}})</h2>
+        </div>
+      </div>
+
+      <!-- Message si aucune question -->
+      <div class="no-questions" *ngIf="!enquetesDetailes.questions || enquetesDetailes.questions.length === 0">
+        <i class="fas fa-file-alt"></i>
+        <p>Aucune question dans cette enquête</p>
+        <button class="btn btn-primary" [routerLink]="['/ModifierEnquete', EnqueteId]">
+          <i class="fas fa-plus"></i> Ajouter des questions
+        </button>
+      </div>
+
+      <!-- Liste des questions avec statistiques -->
+      <div class="questions-list" *ngIf="enquetesDetailes.questions && enquetesDetailes.questions.length > 0">
+        <div class="question-card" *ngFor="let question of enquetesDetailes.questions; let i = index">
+          <div class="question-header">
+            <div class="question-number">Question {{i + 1}}</div>
+            <div class="question-badges">
+              <span class="question-type" [ngClass]="question.type?.toLowerCase()">
+                <i class="fas" [ngClass]="{
+                  'fa-check-circle': question.type === 'unique',
+                  'fa-list': question.type === 'multiple',
+                  'fa-font': question.type === 'text',
+                  'fa-star': question.type === 'rating',
+                  'fa-chart-line': question.type === 'scale',
+                  'fa-calendar': question.type === 'date'
+                }"></i>
+                {{getTypeLabel(question.type)}}
+              </span>
+              <span class="required-badge" [class.required]="question.obligatoire">
+                <i class="fas" [ngClass]="question.obligatoire ? 'fa-asterisk' : 'fa-minus'"></i>
+                {{question.obligatoire ? 'Obligatoire' : 'Optionnelle'}}
+              </span>
+            </div>
+          </div>
+
+          <div class="question-content">
+            <p class="question-text">{{question.texte}}</p>
+            
+            <!-- Options pour les questions à choix -->
+            <div class="options-section" *ngIf="question.options && question.options.length > 0">
+              <div class="options-title">
+                <i class="fas fa-list-ul"></i>
+                <span>Options de réponse ({{question.options.length}})</span>
+              </div>
+              <div class="options-grid">
+                <div class="option-item" *ngFor="let option of question.options">
+                  <i class="fas fa-circle"></i>
+                  <span class="option-text">{{option.texte}}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Aperçu pour rating -->
+            <div class="rating-preview" *ngIf="question.type === 'rating' && question.ratingConfig">
+              <div class="stars-preview">
+                <i class="fas fa-star" *ngFor="let star of getStarsArray(question.ratingConfig.maxStars)"></i>
+                <span class="rating-info">{{question.ratingConfig.maxStars}} étoiles</span>
+              </div>
+            </div>
+            
+            <!-- Aperçu pour scale -->
+            <div class="scale-preview" *ngIf="question.type === 'scale' && question.scaleConfig">
+              <div class="scale-bar-preview">
+                <span>{{question.scaleConfig.minLabel}}</span>
+                <div class="scale-steps-preview">
+                  <span *ngFor="let step of getScalePoints(question.scaleConfig.steps)">{{step + 1}}</span>
+                </div>
+                <span>{{question.scaleConfig.maxLabel}}</span>
+              </div>
+            </div>
+            
+            <!-- Statistiques de la question (si publiée) -->
+            <div class="question-stats" *ngIf="enquetesDetailes.statut === 'Publiée'">
+              <div class="stats-header">
+                <span class="stats-title">
+                  <i class="fas fa-chart-bar"></i> Statistiques
+                </span>
+                <button class="btn-details-stats" (click)="viewQuestionStats(question)">
+                  <i class="fas fa-chart-pie"></i> Voir détails
+                </button>
+              </div>
+              <div class="stats-progress">
+                <div class="progress-info">
+                  <span>Taux de réponse</span>
+                  <span>{{getProgressPercentage(question)}}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="getProgressPercentage(question)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="question-footer">
+            <span class="created-date">
+              <i class="far fa-clock"></i>
+              Créée le {{question.create_at | date:'dd/MM/yyyy'}}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions supplémentaires -->
+    <div class="actions-section">
+      <button class="btn btn-success" *ngIf="enquetesDetailes.statut === 'Publiée'" (click)="loadStatistics()">
+        <i class="fas fa-chart-bar"></i> Actualiser les stats
+      </button>
+      <button class="btn btn-outline" (click)="generateQRCode()">
+        <i class="fas fa-qrcode"></i> Générer QR Code
+      </button>
+      <button class="btn btn-outline" (click)="shareLink()">
+        <i class="fas fa-share-alt"></i> Partager le lien
+      </button>
+      <button class="btn btn-outline" (click)="exportToPDF()">
+        <i class="fas fa-file-pdf"></i> Exporter PDF
+      </button>
+      <button class="btn btn-danger" *ngIf="enquetesDetailes.statut !== 'Publiée'" (click)="removeEnquete()">
+        <i class="fas fa-trash"></i> Supprimer l'enquête
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal des statistiques détaillées -->
+<div class="modal" [class.show]="showStatsModal" (click)="closeStatsModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Statistiques détaillées</h3>
+      <button class="close-btn" (click)="closeStatsModal()">&times;</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedQuestionStats">
+      <h4>{{selectedQuestionStats.question.texte}}</h4>
+      <div class="stats-detailed">
+        <div class="stat-summary">
+          <div class="stat-item">
+            <span class="stat-label">Total réponses</span>
+            <span class="stat-number">{{selectedQuestionStats.stats.totalReponses || 0}}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Taux de réponse</span>
+            <span class="stat-number">{{selectedQuestionStats.stats.tauxReponse || 0}}%</span>
+          </div>
+        </div>
+        
+        <!-- Distribution des réponses pour les questions à choix -->
+        <div class="distribution" *ngIf="selectedQuestionStats.stats.distribution">
+          <h5>Distribution des réponses</h5>
+          <div class="distribution-list">
+            <div class="distribution-item" *ngFor="let dist of selectedQuestionStats.stats.distribution">
+              <span class="dist-label">{{dist.label}}</span>
+              <div class="dist-bar">
+                <div class="dist-fill" [style.width.%]="dist.percentage"></div>
+              </div>
+              <span class="dist-value">{{dist.count}} ({{dist.percentage}}%)</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Pour les questions rating -->
+        <div class="rating-distribution" *ngIf="selectedQuestionStats.question.type === 'rating'">
+          <h5>Distribution des notes</h5>
+          <div class="stars-distribution">
+            <div class="star-item" *ngFor="let star of getStarsArray(selectedQuestionStats.question.ratingConfig?.maxStars || 5); let i = index">
+              <span class="star-label">{{i + 1}} étoile(s)</span>
+              <div class="star-bar">
+                <div class="star-fill" [style.width.%]="selectedQuestionStats.stats.distribution?.[i]?.percentage || 0"></div>
+              </div>
+              <span class="star-count">{{selectedQuestionStats.stats.distribution?.[i]?.count || 0}}</span>
+            </div>
+          </div>
+          <div class="average-rating">
+            <i class="fas fa-star"></i>
+            Note moyenne: <strong>{{selectedQuestionStats.stats.moyenne || 0}}/{{selectedQuestionStats.question.ratingConfig?.maxStars || 5}}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

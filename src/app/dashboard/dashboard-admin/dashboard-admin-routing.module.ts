@@ -10,6 +10,9 @@ import * as path from 'path';
 import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
 import { ModifierEnqueteComponent } from './modifier-enquete/modifier-enquete.component';
 import { GestionReclamationComponent } from './gestion-reclamation/gestion-reclamation.component';
+import { EnqueteDetailsComponent } from './enquete-details/enquete-details.component';
+import { UserResponsesComponent } from './user-responses/user-responses.component';
+import { UsersComponent } from './users/users.component';
 
 const routes: Routes = [
   { 
@@ -24,6 +27,9 @@ const routes: Routes = [
       { path: 'AjoutEnquete', component: AjoutEnqueteComponent },
       { path: 'ModifierEnquete/:id', component: ModifierEnqueteComponent },
       { path: 'gestionReclamation', component: GestionReclamationComponent },
+       { path: 'DetailEnquete/:id', component: EnqueteDetailsComponent },
+         { path: 'userReponses', component: UserResponsesComponent },
+         { path: 'usersNotifier', component: UsersComponent },
     ] 
   }
 ];

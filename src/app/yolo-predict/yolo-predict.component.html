@@ -1,0 +1,111 @@
+<div class="yolo-container">
+  <h2>
+    <i class="fas fa-car"></i> 
+    Détection de Dommages YOLO
+  </h2>
+
+  <!-- Section téléchargement -->
+  <div class="upload-area">
+    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+    <input 
+      type="file" 
+      (change)="onFileSelected($event)" 
+      accept="image/*"
+      id="fileInput"
+    >
+    <label for="fileInput" class="file-label">
+      <i class="fas fa-folder-open"></i> Choisir une image
+    </label>
+    <div *ngIf="selectedFile" class="file-info">
+      <i class="fas fa-image"></i> {{ selectedFile.name }}
+    </div>
+  </div>
+  
+  <button (click)="uploadAndPredict()" [disabled]="!selectedFile">
+    <i class="fas fa-microscope"></i> Analyser l'image
+  </button>
+
+  <!-- État de chargement -->
+  <div *ngIf="loading" class="loading">
+    <i class="fas fa-spinner fa-pulse"></i> Analyse en cours...
+  </div>
+
+  <!-- Section des résultats -->
+  <div *ngIf="result" class="result-section">
+    
+    <!-- Carte de sévérité totale -->
+    <div class="total-damage">
+      <i class="fas fa-chart-line"></i>
+      <strong>Sévérité Totale des Dommages</strong>
+      <div class="damage-value">
+        <i class="fas fa-percent"></i>
+        {{ (result.total_damage * 100) | number:'1.0-1' }}%
+      </div>
+    </div>
+
+    <!-- Conteneur du canvas -->
+    <div class="canvas-container">
+      <canvas #canvas></canvas>
+    </div>
+
+    <!-- Section des détections -->
+    <div class="detections-section">
+      <h4>
+        <i class="fas fa-search"></i> 
+        Dommages Détectés
+        <span class="badge-count">{{ result.boxes.length }}</span>
+      </h4>
+      
+      <div class="boxes">
+        <div *ngFor="let box of result.boxes; let i = index" class="box-card">
+          <div class="card-header">
+            <i class="fas fa-map-marker-alt"></i>
+            <span class="damage-number">Dommage {{i + 1}}</span>
+            <span class="damage-badge">{{ box.damage | titlecase }}</span>
+          </div>
+          
+          <div class="card-content">
+            <p>
+              <i class="fas fa-chart-simple"></i>
+              <strong>Confiance:</strong>
+              {{ (box.confidence * 100) | number:'1.0-1' }}%
+              <i *ngIf="box.confidence > 0.8" class="fas fa-check-circle" style="color: #6b4eff;"></i>
+            </p>
+            <p>
+              <i class="fas fa-tachometer-alt"></i>
+              <strong>Gravité:</strong>
+              <span [ngStyle]="{
+                'color': box.gravite > 0.15 ? '#ff6b6b' : '#ffa64d',
+                'font-weight': 'bold'
+              }">
+                {{ (box.gravite * 100) | number:'1.0-1' }}%
+              </span>
+            </p>
+          </div>
+          
+          <div class="card-footer">
+            <i *ngIf="box.gravite > 0.15" class="fas fa-exclamation-triangle" style="color: #ff6b6b;"></i>
+            <p *ngIf="box.gravite > 0.15" style="color: #ff6b6b;">
+              <i class="fas fa-bolt"></i> Dommage grave détecté
+            </p>
+            <i *ngIf="box.gravite <= 0.15 && box.gravite > 0.05" class="fas fa-exclamation-circle" style="color: #ffa64d;"></i>
+            <p *ngIf="box.gravite <= 0.15 && box.gravite > 0.05" style="color: #ffa64d;">
+              <i class="fas fa-chart-line"></i> Dommage modéré
+            </p>
+            <i *ngIf="box.gravite <= 0.05" class="fas fa-smile" style="color: #6b4eff;"></i>
+            <p *ngIf="box.gravite <= 0.05" style="color: #6b4eff;">
+              <i class="fas fa-check-double"></i> Dommage mineur
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message aucun dommage -->
+      <div *ngIf="result.boxes.length === 0" class="no-damage">
+        <i class="fas fa-check-circle"></i>
+        <p>Aucun dommage détecté dans cette image</p>
+        <i class="fas fa-car-side"></i>
+      </div>
+    </div>
+  </div>
+</div>

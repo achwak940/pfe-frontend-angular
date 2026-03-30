@@ -1,131 +1,574 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { StatistiquesService } from './statistiques.service';
+import Chart from 'chart.js/auto';
 
 interface Enquete {
   titre: string;
   participants: number;
   dateFin: string;
-  statut: 'active' | 'brouillon' | 'terminee';
+  statut: string;
   icon?: string;
 }
 
+interface TopEnquete {
+  nom: string;
+  valeur: string;
+}
+
 interface Activity {
-  type: 'creation' | 'modification' | 'publication' | 'participation' | 'reclamation';
+  type: string;
   message: string;
   time: string;
   icon: string;
-  color: string;
+  background: string;
   isNew?: boolean;
+}
+
+interface SatisfactionData {
+  precedent: number;
+  actuel: number;
+  avis: number;
+}
+
+interface EvolutionData {
+  totalReponses: number;
+  tauxReponse: number;
+}
+
+interface SurveyStatusData {
+  actives: number;
+  brouillons: number;
+  terminees: number;
 }
 
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.css']
+  styleUrls: ['./admin-dashboard.component.css'],
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   sidebarCollapsed = false;
   mobileMenuOpen = false;
   currentPageTitle = 'Dashboard Admin';
   isMobile = false;
-  
-  // Rendre router public pour l'utiliser dans le template
+  currentUser: any = null;
+  userId: number = 0;
   public router: Router;
-  
-  // Données pour le dashboard d'accueil
   currentDate: Date = new Date();
-  
-  // Statistiques du dashboard
-  stats = {
-    enquetesActives: 24,
-    participants: 1284,
-    tauxReponse: 68,
-    noteMoyenne: 4.8
+  selectedPeriod: string = 'week';
+
+  // Données du dashboard
+  nombreEnquete: number = 0;
+  nombreParticicant: number = 0;
+  tauxReponse: number = 0;
+
+  satisfactionData: SatisfactionData = {
+    precedent: 0,
+    actuel: 0,
+    avis: 0
   };
-  
-  participationData = [
-    { label: 'Satisfaction client', value: 85, color: '#9D50BB' },
-    { label: 'Support NPS', value: 60, color: '#f39c12' },
-    { label: 'Application mobile', value: 45, color: '#2ecc71' },
-    { label: 'Formation', value: 92, color: '#3498db' },
-    { label: 'Événement', value: 30, color: '#e74c3c' }
-  ];
 
-  recentEnquetes: Enquete[] = [
-    {
-      titre: 'Satisfaction clients 2025',
-      participants: 145,
-      dateFin: '30 avr 2025',
-      statut: 'active',
-      icon: 'fa-poll'
-    },
-    {
-      titre: 'Support client NPS',
-      participants: 0,
-      dateFin: '15 mai 2025',
-      statut: 'brouillon',
-      icon: 'fa-file-alt'
-    },
-    {
-      titre: 'Application mobile v2',
-      participants: 57,
-      dateFin: '1 avr 2025',
-      statut: 'active',
-      icon: 'fa-poll'
-    },
-    {
-      titre: 'Évaluation formation',
-      participants: 456,
-      dateFin: '15 jan 2025',
-      statut: 'terminee',
-      icon: 'fa-check-circle'
-    }
-  ];
+  evolutionData: EvolutionData = {
+    totalReponses: 0,
+    tauxReponse: 0
+  };
 
-  // Activités récentes dynamiques
+  surveyStatusData: SurveyStatusData = {
+    actives: 0,
+    brouillons: 0,
+    terminees: 0
+  };
+
+  topEnquetes: TopEnquete[] = [];
+  weekDays: { name: string, value: number }[] = [];
+  participationData: { label: string, value: number, color: string }[] = [];
+  recentEnquetes: Enquete[] = [];
   recentActivities: Activity[] = [];
-  
-  // Données pour les graphiques
-  chartData = {
-    labels: ['Actives', 'Brouillons', 'Terminées'],
-    values: [50, 20, 30],
-    colors: ['#9D50BB', '#f39c12', '#2ecc71']
+
+  // Loading states
+  isLoading: boolean = true;
+  private loadingStates = {
+    basic: false,
+    evolution: false,
+    surveyStatus: false,
+    participation: false,
+    topEnquetes: false,
+    recentEnquetes: false,
+    recentActivities: false
   };
 
-  constructor(router: Router) {
+  // Chart instances
+  private responsesChart: any;
+  private surveyStatusChart: any;
+  private refreshInterval: any;
+
+  constructor(
+    router: Router, 
+    private service: StatistiquesService,
+    private cdr: ChangeDetectorRef
+  ) {
     this.router = router;
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.updatePageTitle();
-      if (this.isMobile) {
-        this.mobileMenuOpen = false;
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.updatePageTitle();
+        if (this.isMobile) {
+          this.mobileMenuOpen = false;
+        }
+      });
+  }
+
+  ngOnInit(): void {
+    this.getUserData();
+    this.checkScreenSize();
+    
+    // Rafraîchir les données toutes les 30 secondes
+    this.refreshInterval = setInterval(() => {
+      this.refreshAllData();
+    }, 30000);
+
+    // Mettre à jour la date toutes les minutes
+    setInterval(() => {
+      this.currentDate = new Date();
+      this.cdr.detectChanges();
+    }, 60000);
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.initializeCharts();
+    }, 500);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+    if (this.responsesChart) {
+      this.responsesChart.destroy();
+    }
+    if (this.surveyStatusChart) {
+      this.surveyStatusChart.destroy();
+    }
+  }
+
+  // ========== MÉTHODES DE CHARGEMENT DES DONNÉES ==========
+
+  getUserData(): void {
+    const user = localStorage.getItem('currentUser');
+    if (user) {
+      this.currentUser = JSON.parse(user);
+      this.userId = this.currentUser.id;
+    }
+    
+    this.loadAllData();
+  }
+
+  loadAllData(): void {
+    this.isLoading = true;
+    this.loadBasicStats();
+    this.loadDataForPeriod(this.selectedPeriod);
+  }
+
+  refreshAllData(): void {
+    this.loadBasicStats();
+    this.loadEvolutionData();
+    this.loadSurveyStatus();
+    this.loadParticipationData();
+    this.loadTopEnquetes();
+    this.loadRecentEnquetes();
+    this.loadRecentActivities();
+  }
+
+  loadBasicStats(): void {
+    this.loadingStates.basic = true;
+    
+    // Charger le nombre d'enquêtes
+    this.service.getNombreEnqueteByUser(this.userId).subscribe({
+      next: (res: any) => {
+        this.nombreEnquete = typeof res === 'number' ? res : (res.count || 0);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement enquêtes:", err);
+        this.nombreEnquete = 0;
+      }
+    });
+
+    // Charger le nombre de participants
+    this.service.getNombreParticipantsByUser(this.userId).subscribe({
+      next: (res: any) => {
+        this.nombreParticicant = res.totalusers || res.total || 0;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement participants:", err);
+        this.nombreParticicant = 0;
+      }
+    });
+
+    // Charger le taux de réponse
+    this.service.getTauxReponseTotal(this.userId).subscribe({
+      next: (res: any) => {
+        this.tauxReponse = res.taux_reponse || res.taux || 0;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement taux réponse:", err);
+        this.tauxReponse = 0;
+      },
+      complete: () => {
+        this.loadingStates.basic = false;
+        this.checkLoadingComplete();
       }
     });
   }
 
-  ngOnInit(): void {
-    this.checkScreenSize();
+  loadDataForPeriod(period: string): void {
+    this.loadEvolutionData();
+    this.loadSurveyStatus();
+    this.loadParticipationData();
+    this.loadTopEnquetes();
+    this.loadRecentEnquetes();
     this.loadRecentActivities();
-    
-    // Rafraîchir les activités toutes les 30 secondes
-    setInterval(() => {
-      this.loadRecentActivities();
-    }, 30000);
-    
-    // Mettre à jour la date toutes les minutes
-    setInterval(() => {
-      this.currentDate = new Date();
-    }, 60000);
   }
+
+  loadEvolutionData(): void {
+    this.loadingStates.evolution = true;
+    this.service.getEvolutionReponses(this.userId, this.selectedPeriod).subscribe({
+      next: (res: any) => {
+        this.evolutionData = {
+          totalReponses: res.totalReponses || 0,
+          tauxReponse: res.tauxReponse || 0
+        };
+        this.updateWeekDaysData(res.evolution || []);
+        this.updateCharts();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement évolution:", err);
+        this.setDefaultEvolutionData();
+      },
+      complete: () => {
+        this.loadingStates.evolution = false;
+        this.checkLoadingComplete();
+      }
+    });
+  }
+
+  loadSurveyStatus(): void {
+    this.loadingStates.surveyStatus = true;
+    this.service.getSurveyStatusStats(this.userId).subscribe({
+      next: (res: any) => {
+        this.surveyStatusData = {
+          actives: res.actives || 0,
+          brouillons: res.brouillons || 0,
+          terminees: res.terminees || 0
+        };
+        this.updateSurveyStatusChart();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement statut enquêtes:", err);
+        this.setDefaultSurveyStatusData();
+      },
+      complete: () => {
+        this.loadingStates.surveyStatus = false;
+        this.checkLoadingComplete();
+      }
+    });
+  }
+
+  loadParticipationData(): void {
+    this.loadingStates.participation = true;
+    this.service.getParticipationParEnquete(this.userId).subscribe({
+      next: (res: any) => {
+        if (Array.isArray(res) && res.length > 0) {
+          this.participationData = res;
+        } else {
+          this.setDefaultParticipationData();
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement participation:", err);
+        this.setDefaultParticipationData();
+      },
+      complete: () => {
+        this.loadingStates.participation = false;
+        this.checkLoadingComplete();
+      }
+    });
+  }
+
+  loadTopEnquetes(): void {
+    this.loadingStates.topEnquetes = true;
+    this.service.getTopEnquetes(this.userId, this.selectedPeriod, 5).subscribe({
+      next: (res: any) => {
+        if (Array.isArray(res) && res.length > 0) {
+          this.topEnquetes = res;
+        } else {
+          this.setDefaultTopEnquetes();
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement top enquêtes:", err);
+        this.setDefaultTopEnquetes();
+      },
+      complete: () => {
+        this.loadingStates.topEnquetes = false;
+        this.checkLoadingComplete();
+      }
+    });
+  }
+
+  loadRecentEnquetes(): void {
+    this.loadingStates.recentEnquetes = true;
+    this.service.getRecentEnquetes(this.userId, 3).subscribe({
+      next: (res: any) => {
+        if (Array.isArray(res) && res.length > 0) {
+          this.recentEnquetes = res;
+        } else {
+          this.setDefaultRecentEnquetes();
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement enquêtes récentes:", err);
+        this.setDefaultRecentEnquetes();
+      },
+      complete: () => {
+        this.loadingStates.recentEnquetes = false;
+        this.checkLoadingComplete();
+      }
+    });
+  }
+
+  loadRecentActivities(): void {
+    this.loadingStates.recentActivities = true;
+    this.service.getRecentActivities(this.userId, 5).subscribe({
+      next: (res: any) => {
+        if (Array.isArray(res) && res.length > 0) {
+          this.recentActivities = res;
+        } else {
+          this.setDefaultRecentActivities();
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement activités récentes:", err);
+        this.setDefaultRecentActivities();
+      },
+      complete: () => {
+        this.loadingStates.recentActivities = false;
+        this.checkLoadingComplete();
+      }
+    });
+  }
+
+  checkLoadingComplete(): void {
+    const allLoaded = !this.loadingStates.basic && 
+                      !this.loadingStates.evolution && 
+                      !this.loadingStates.surveyStatus &&
+                      !this.loadingStates.participation &&
+                      !this.loadingStates.topEnquetes &&
+                      !this.loadingStates.recentEnquetes &&
+                      !this.loadingStates.recentActivities;
+    
+    if (allLoaded) {
+      this.isLoading = false;
+    }
+  }
+
+  // ========== MÉTHODES DE DONNÉES PAR DÉFAUT ==========
+
+  setDefaultEvolutionData(): void {
+    this.evolutionData = {
+      totalReponses: 0,
+      tauxReponse: 0
+    };
+    this.weekDays = [
+      { name: 'Lun', value: 0 }, { name: 'Mar', value: 0 },
+      { name: 'Mer', value: 0 }, { name: 'Jeu', value: 0 },
+      { name: 'Ven', value: 0 }, { name: 'Sam', value: 0 },
+      { name: 'Dim', value: 0 }
+    ];
+  }
+
+  setDefaultSurveyStatusData(): void {
+    this.surveyStatusData = {
+      actives: 0,
+      brouillons: 0,
+      terminees: 0
+    };
+  }
+
+  setDefaultParticipationData(): void {
+    this.participationData = [];
+  }
+
+  setDefaultTopEnquetes(): void {
+    this.topEnquetes = [];
+  }
+
+  setDefaultRecentEnquetes(): void {
+    this.recentEnquetes = [];
+  }
+
+  setDefaultRecentActivities(): void {
+    this.recentActivities = [];
+  }
+
+  updateWeekDaysData(evolution: any[]): void {
+    if (!evolution || evolution.length === 0) {
+      this.weekDays = [
+        { name: 'Lun', value: 0 }, { name: 'Mar', value: 0 },
+        { name: 'Mer', value: 0 }, { name: 'Jeu', value: 0 },
+        { name: 'Ven', value: 0 }, { name: 'Sam', value: 0 },
+        { name: 'Dim', value: 0 }
+      ];
+      return;
+    }
+
+    const weekDayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    this.weekDays = weekDayNames.map((name, index) => {
+      const item = evolution.find((e: any) => parseInt(e.periode) === index + 1);
+      return {
+        name: name,
+        value: item ? parseInt(item.nombre) : 0
+      };
+    });
+  }
+
+  // ========== MÉTHODES D'INITIALISATION DES GRAPHIQUES ==========
+
+  initializeCharts(): void {
+    this.createResponsesChart();
+    this.createSurveyStatusChart();
+  }
+
+  createResponsesChart(): void {
+    const ctx = document.getElementById('responsesChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    if (this.responsesChart) {
+      this.responsesChart.destroy();
+    }
+
+    const data = this.weekDays.map(day => day.value);
+    const labels = this.weekDays.map(day => day.name);
+
+    this.responsesChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Réponses',
+          data: data,
+          borderColor: '#9D50BB',
+          backgroundColor: 'rgba(157, 80, 187, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#9D50BB',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'white',
+            titleColor: '#1a1a2c',
+            bodyColor: '#4f5b6b',
+            borderColor: '#eef2f6',
+            borderWidth: 1
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: { color: '#7c8a9a' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#7c8a9a' }
+          }
+        }
+      }
+    });
+  }
+
+  createSurveyStatusChart(): void {
+    const ctx = document.getElementById('surveyStatusChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    if (this.surveyStatusChart) {
+      this.surveyStatusChart.destroy();
+    }
+
+    this.surveyStatusChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Actives', 'Brouillons', 'Terminées'],
+        datasets: [{
+          data: [this.surveyStatusData.actives, this.surveyStatusData.brouillons, this.surveyStatusData.terminees],
+          backgroundColor: ['#9D50BB', '#f39c12', '#2ecc71'],
+          borderWidth: 0,
+          borderRadius: 10,
+          hoverOffset: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '70%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.label}: ${context.raw}%`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  updateCharts(): void {
+    if (this.responsesChart) {
+      this.responsesChart.data.datasets[0].data = this.weekDays.map(day => day.value);
+      this.responsesChart.update();
+    }
+  }
+
+  updateSurveyStatusChart(): void {
+    if (this.surveyStatusChart) {
+      this.surveyStatusChart.data.datasets[0].data = [
+        this.surveyStatusData.actives,
+        this.surveyStatusData.brouillons,
+        this.surveyStatusData.terminees
+      ];
+      this.surveyStatusChart.update();
+    }
+  }
+
+  // ========== MÉTHODES UI ==========
 
   @HostListener('window:resize', ['$event'])
-  onResize() {
+  onResize(): void {
     this.checkScreenSize();
   }
 
-  checkScreenSize() {
+  checkScreenSize(): void {
     this.isMobile = window.innerWidth <= 768;
     if (this.isMobile && !this.mobileMenuOpen) {
       this.sidebarCollapsed = true;
@@ -168,18 +611,10 @@ export class AdminDashboardComponent implements OnInit {
       this.currentPageTitle = 'Feedback & Support';
     } else if (url.includes('QuestionIA')) {
       this.currentPageTitle = 'Gestion IA';
+    } else if (url.includes('userReponses')) {
+      this.currentPageTitle = 'Réponses';
     } else if (url.includes('admin-dashboard') || url === '/admin-dashboard' || url === '/') {
       this.currentPageTitle = 'Dashboard Admin';
-    } else if (url.includes('super-admin-dashboard')) {
-      this.currentPageTitle = 'Dashboard Super Admin';
-    } else if (url.includes('users')) {
-      this.currentPageTitle = 'Gestion des utilisateurs';
-    } else if (url.includes('parametres')) {
-      this.currentPageTitle = 'Paramètres';
-    } else if (url.includes('profile')) {
-      this.currentPageTitle = 'Mon profil';
-    } else if (url.includes('notifications')) {
-      this.currentPageTitle = 'Notifications';
     } else {
       this.currentPageTitle = 'Dashboard';
     }
@@ -189,24 +624,63 @@ export class AdminDashboardComponent implements OnInit {
     return this.currentPageTitle;
   }
 
-  logout(): void {
-    // Ajouter la logique de déconnexion
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    this.router.navigate(['/login']);
-  }
-
-  // Méthode pour la recherche
-  onSearch(event: any): void {
-    const searchTerm = event.target.value;
-    if (searchTerm && searchTerm.length > 2) {
-      console.log('Recherche:', searchTerm);
-      // Implémenter la logique de recherche
-      // Vous pouvez émettre un événement ou appeler un service
+  getPeriodLabel(): string {
+    switch(this.selectedPeriod) {
+      case 'today': return "Aujourd'hui";
+      case 'week': return 'Cette semaine';
+      case 'month': return 'Ce mois';
+      case 'year': return 'Cette année';
+      default: return 'Cette semaine';
     }
   }
 
-  // Navigation vers une route
+  getAdminName(): string {
+    if (this.currentUser) {
+      if (this.currentUser.prenom && this.currentUser.nom) {
+        return `${this.currentUser.prenom} ${this.currentUser.nom}`;
+      }
+      return this.currentUser.nom || this.currentUser.email || 'Administrateur';
+    }
+    return 'Administrateur';
+  }
+
+  getPhotoProfil(): string | null {
+    return this.currentUser?.photo_profil || null;
+  }
+
+  getDashboardSummary(): string {
+    const totalEnquetes = this.nombreEnquete || 0;
+    const totalParticipants = this.nombreParticicant || 0;
+
+    if (totalEnquetes === 0 && totalParticipants === 0) {
+      return 'Bienvenue sur votre tableau de bord';
+    }
+    if (totalEnquetes > 0 && totalParticipants === 0) {
+      return `${totalEnquetes} enquête${totalEnquetes > 1 ? 's' : ''} créée${totalEnquetes > 1 ? 's' : ''}`;
+    }
+    if (totalParticipants > 0) {
+      return `${totalParticipants} participant${totalParticipants > 1 ? 's' : ''} ont répondu à ${totalEnquetes} enquête${totalEnquetes > 1 ? 's' : ''}`;
+    }
+    return 'Aucune activité récente';
+  }
+
+  getNotificationCount(): number {
+    return this.recentActivities.filter(a => a.time.includes('min') || a.time.includes("l'instant")).length;
+  }
+
+  getActivityIcon(activity: Activity): string {
+    return activity.icon || 'fa-bell';
+  }
+
+  getActivityBackground(activity: Activity): string {
+    return activity.background || '#f3e5f5';
+  }
+
+  changePeriod(period: string): void {
+    this.selectedPeriod = period;
+    this.loadDataForPeriod(period);
+  }
+
   navigateTo(route: string): void {
     this.router.navigate([route]);
     if (this.isMobile) {
@@ -214,226 +688,28 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  // Vérifier si une route est active
   isActive(route: string): boolean {
     return this.router.url.includes(route);
   }
 
-  // Vérifier si on est sur la page d'accueil du dashboard
-  isDashboardHome(): boolean {
-    return this.router.url === '/admin-dashboard' || this.router.url === '/';
-  }
-
-  // Confirmation de déconnexion
   confirmLogout(): void {
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      this.logout();
+      localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
+      this.router.navigate(['/login']);
     }
   }
 
-  /**
-   * Charge les activités récentes dynamiquement
-   */
-  loadRecentActivities(): void {
-    // Simuler le chargement depuis une API
-    // Dans un cas réel, vous feriez un appel HTTP ici
-    this.recentActivities = this.generateMockActivities();
-  }
-
-  /**
-   * Génère des activités mockées pour la démonstration
-   */
-  private generateMockActivities(): Activity[] {
-    const now = new Date();
-    const activities: Activity[] = [];
-
-    // Nouvelles participations
-    activities.push({
-      type: 'participation',
-      message: 'Nouvelle participation à l\'enquête "Satisfaction client"',
-      time: this.getTimeAgo(new Date(now.getTime() - 3 * 60000)), // 3 min
-      icon: 'fa-user',
-      color: '#9D50BB',
-      isNew: true
-    });
-
-    // Nouvelles réclamations
-    activities.push({
-      type: 'reclamation',
-      message: 'Nouvelle réclamation concernant le service client',
-      time: this.getTimeAgo(new Date(now.getTime() - 12 * 60000)), // 12 min
-      icon: 'fa-exclamation-triangle',
-      color: '#e74c3c',
-      isNew: true
-    });
-
-    activities.push({
-      type: 'reclamation',
-      message: 'Réclamation #1234 traitée avec succès',
-      time: this.getTimeAgo(new Date(now.getTime() - 35 * 60000)), // 35 min
-      icon: 'fa-check-circle',
-      color: '#2ecc71',
-      isNew: false
-    });
-
-    // Modifications de réponses
-    activities.push({
-      type: 'modification',
-      message: '3 réponses modifiées dans l\'enquête "Feedback produit"',
-      time: this.getTimeAgo(new Date(now.getTime() - 1.5 * 60 * 60000)), // 1.5h
-      icon: 'fa-edit',
-      color: '#f39c12',
-      isNew: false
-    });
-
-    // Nouvelles créations d'enquêtes
-    activities.push({
-      type: 'creation',
-      message: 'Nouvelle enquête créée: "Évaluation des performances 2025"',
-      time: this.getTimeAgo(new Date(now.getTime() - 2.5 * 60 * 60000)), // 2.5h
-      icon: 'fa-plus',
-      color: '#3498db',
-      isNew: false
-    });
-
-    // Publication d'enquête
-    activities.push({
-      type: 'publication',
-      message: 'Enquête "Formation en ligne" publiée',
-      time: this.getTimeAgo(new Date(now.getTime() - 4 * 60 * 60000)), // 4h
-      icon: 'fa-check',
-      color: '#2ecc71',
-      isNew: false
-    });
-
-    // Nouvelle participation
-    activities.push({
-      type: 'participation',
-      message: '15 nouvelles participations à l\'enquête "NPS Support"',
-      time: this.getTimeAgo(new Date(now.getTime() - 5 * 60 * 60000)), // 5h
-      icon: 'fa-users',
-      color: '#9D50BB',
-      isNew: false
-    });
-
-    // Nouvelle réclamation urgente
-    activities.push({
-      type: 'reclamation',
-      message: '⚠️ Réclamation urgente: problème technique',
-      time: this.getTimeAgo(new Date(now.getTime() - 6 * 60 * 60000)), // 6h
-      icon: 'fa-exclamation-circle',
-      color: '#e74c3c',
-      isNew: false
-    });
-
-    // Trier par date (plus récent d'abord)
-    return activities.sort((a, b) => {
-      const timeA = this.parseTimeAgo(a.time);
-      const timeB = this.parseTimeAgo(b.time);
-      return timeB - timeA;
-    });
-  }
-
-  /**
-   * Convertit une date en texte relatif (il y a X minutes, etc.)
-   */
-  getTimeAgo(date: Date): string {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'À l\'instant';
-    if (diffMins < 60) return `Il y a ${diffMins} min`;
-    if (diffHours < 24) return `Il y a ${diffHours} h`;
-    if (diffDays === 1) return 'Hier';
-    return `Il y a ${diffDays} j`;
-  }
-
-  /**
-   * Parse le texte relatif pour obtenir un timestamp (pour le tri)
-   */
-  private parseTimeAgo(timeAgo: string): number {
-    const now = new Date().getTime();
-    
-    if (timeAgo === 'À l\'instant') return now;
-    if (timeAgo === 'Hier') return now - 86400000;
-    
-    const match = timeAgo.match(/(\d+)/);
-    if (!match) return 0;
-    
-    const value = parseInt(match[0]);
-    
-    if (timeAgo.includes('min')) return now - value * 60000;
-    if (timeAgo.includes('h')) return now - value * 3600000;
-    if (timeAgo.includes('j')) return now - value * 86400000;
-    
-    return 0;
-  }
-
-  /**
-   * Rafraîchit manuellement les activités
-   */
-  refreshActivities(): void {
-    this.loadRecentActivities();
-    // Ajouter une animation ou un toast de confirmation
-    console.log('Activités rafraîchies');
-  }
-
-  /**
-   * Obtient l'icône pour une activité
-   */
-  getActivityIcon(activity: Activity): string {
-    switch (activity.type) {
-      case 'creation': return 'fa-plus';
-      case 'modification': return 'fa-edit';
-      case 'publication': return 'fa-check';
-      case 'participation': return activity.message.includes('15') ? 'fa-users' : 'fa-user';
-      case 'reclamation': 
-        return activity.message.includes('urgente') ? 'fa-exclamation-circle' : 
-               activity.message.includes('traitée') ? 'fa-check-circle' : 'fa-exclamation-triangle';
-      default: return 'fa-bell';
+  onSearch(event: any): void {
+    const searchTerm = event.target.value;
+    if (searchTerm && searchTerm.length > 2) {
+      console.log('Recherche:', searchTerm);
     }
   }
 
-  /**
-   * Obtient la couleur de fond pour une activité
-   */
-  getActivityBackground(activity: Activity): string {
-    switch (activity.type) {
-      case 'creation': return '#e8f0fe';
-      case 'modification': return '#fef5e7';
-      case 'publication': return '#d5f5e3';
-      case 'participation': return '#f3e5f5';
-      case 'reclamation': 
-        return activity.message.includes('urgente') ? '#fdedec' : '#fef5e7';
-      default: return '#f1f3f6';
-    }
-  }
-
-  /**
-   * Vérifie si une activité est nouvelle (moins de 30 minutes)
-   */
-  isNewActivity(activity: Activity): boolean {
-    return activity.time.includes('À l\'instant') || 
-           activity.time.includes('min') && !activity.time.includes('h');
-  }
-
-  /**
-   * Obtient le nombre de notifications non lues
-   */
-  getNotificationCount(): number {
-    return this.recentActivities.filter(a => this.isNewActivity(a)).length;
-  }
-
-  /**
-   * Marque toutes les activités comme lues
-   */
-  markAllAsRead(): void {
-    this.recentActivities = this.recentActivities.map(activity => ({
-      ...activity,
-      isNew: false
-    }));
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    this.router.navigate(['/login']);
   }
 }

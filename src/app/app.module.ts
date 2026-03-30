@@ -7,19 +7,24 @@ import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { FormsModule } from '@angular/forms';
 import { DashboardAdminModule } from './dashboard/dashboard-admin/dashboard-admin.module';
+import { YoloPredictComponent } from './yolo-predict/yolo-predict.component';
+
+// ✅ SUPPRIMEZ CETTE IMPORTATION
+// import { DashboardAdminModule } from './dashboard/dashboard-admin/dashboard-admin.module';
+
 @NgModule({
   declarations: [
     AppComponent,
-   
+    YoloPredictComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     AuthModule,
-    DashboardModule,
-    FormsModule,        // pour super-admin
-  DashboardAdminModule ,
-   FormsModule,    
+    DashboardModule,     // ✅ Gardez seulement Super Admin
+    FormsModule,  
+    DashboardAdminModule       // ✅ Une seule fois
+    // ✅ NE PAS METTRE DashboardAdminModule ICI
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,0 +1,406 @@
+/* Conteneur Principal */
+.yolo-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(106, 90, 205, 0.15);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Titre */
+.yolo-container h2 {
+  text-align: center;
+  color: #6b4eff;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #8b74ff, #6b4eff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+
+.yolo-container h2 i {
+  background: none;
+  -webkit-text-fill-color: #6b4eff;
+  margin-right: 0.5rem;
+}
+
+/* Zone de téléchargement */
+.upload-area {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #8b74ff;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  background: linear-gradient(135deg, #8b74ff, #6b4eff);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 40px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.file-label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 78, 255, 0.3);
+}
+
+.file-label i {
+  margin-right: 0.5rem;
+}
+
+.file-info {
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: inline-block;
+  color: #5b4c9f;
+  font-size: 0.9rem;
+  border: 1px solid #e0d9ff;
+}
+
+.file-info i {
+  margin-right: 0.5rem;
+  color: #6b4eff;
+}
+
+/* Bouton */
+button {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #8b74ff, #6b4eff);
+  color: white;
+  border: none;
+  border-radius: 40px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(107, 78, 255, 0.3);
+  letter-spacing: 0.5px;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 78, 255, 0.4);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button i {
+  margin-right: 0.5rem;
+}
+
+/* Spinner de chargement */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #8b74ff;
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.loading i {
+  font-size: 1.2rem;
+}
+
+/* Section des résultats */
+.result-section {
+  margin-top: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Carte du dommage total */
+.total-damage {
+  background: linear-gradient(135deg, #ffffff, #faf9ff);
+  padding: 1.5rem;
+  border-radius: 20px;
+  margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(139, 116, 255, 0.2);
+}
+
+.total-damage i {
+  font-size: 2rem;
+  color: #6b4eff;
+  margin-bottom: 0.5rem;
+}
+
+.total-damage strong {
+  color: #5b4c9f;
+  font-size: 1.1rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.damage-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #6b4eff;
+  background: linear-gradient(135deg, #8b74ff, #6b4eff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+
+.damage-value i {
+  font-size: 2rem;
+  background: none;
+  -webkit-text-fill-color: #6b4eff;
+  margin-right: 0.5rem;
+}
+
+/* Conteneur du canvas */
+.canvas-container {
+  background: white;
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  text-align: center;
+  border: 1px solid rgba(139, 116, 255, 0.2);
+  overflow-x: auto;
+}
+
+canvas {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Section des détections */
+.detections-section {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(139, 116, 255, 0.2);
+}
+
+.detections-section h4 {
+  color: #5b4c9f;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detections-section h4 i {
+  font-size: 1.3rem;
+}
+
+.badge-count {
+  background: linear-gradient(135deg, #8b74ff, #6b4eff);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
+/* Grille des boîtes de détection */
+.boxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.box-card {
+  background: linear-gradient(135deg, #faf9ff, #ffffff);
+  border-left: 4px solid #8b74ff;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.box-card:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(107, 78, 255, 0.15);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #f3f0ff, #ffffff);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e0d9ff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.card-header i {
+  color: #6b4eff;
+}
+
+.damage-number {
+  font-weight: 600;
+  color: #5b4c9f;
+}
+
+.damage-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, #8b74ff20, #6b4eff20);
+  color: #6b4eff;
+  margin-left: auto;
+}
+
+.card-content {
+  padding: 1rem;
+}
+
+.card-content p {
+  margin: 0.5rem 0;
+  color: #4a3f7a;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-content p i {
+  width: 1.2rem;
+  color: #6b4eff;
+}
+
+.card-content p strong {
+  color: #6b4eff;
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.card-footer {
+  padding: 0.75rem 1rem;
+  background: #faf9ff;
+  border-top: 1px solid #e0d9ff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-footer p {
+  margin: 0;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Message aucun dommage */
+.no-damage {
+  text-align: center;
+  padding: 3rem;
+  color: #5b4c9f;
+}
+
+.no-damage i {
+  font-size: 3rem;
+  color: #6b4eff;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.no-damage p {
+  font-size: 1.1rem;
+  margin: 1rem 0;
+}
+
+/* Design responsive */
+@media (max-width: 768px) {
+  .yolo-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .yolo-container h2 {
+    font-size: 1.8rem;
+  }
+
+  .boxes {
+    grid-template-columns: 1fr;
+  }
+
+  .damage-value {
+    font-size: 2rem;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .damage-badge {
+    margin-left: 0;
+  }
+}
+
+/* Barre de défilement personnalisée */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f3f0ff;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #8b74ff, #6b4eff);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b4eff;
+}

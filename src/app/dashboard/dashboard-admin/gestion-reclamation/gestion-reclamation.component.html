@@ -151,6 +151,50 @@
             font-size: 0.9rem;
         }
 
+        /* ===== ANALYSE IA GLOBALE AVEC GRAVITÉ TOTALE ===== */
+        .ia-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: var(--radius-xl);
+            padding: 30px;
+            margin: 30px 0;
+            color: white;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .ia-summary-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .ia-summary-item i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .ia-summary-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .ia-summary-item .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .ia-summary-item .trend {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
         /* ===== BOUTONS ===== */
         .btn {
             border: none;
@@ -313,83 +357,127 @@
             font-weight: 500;
         }
 
-        /* ===== ANALYSE IA GLOBALE ===== */
-        .ia-summary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: var(--radius-xl);
-            padding: 30px;
-            margin: 30px 0;
-            color: white;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 30px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .ia-summary-item {
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            backdrop-filter: blur(10px);
-        }
-
-        .ia-summary-item i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .ia-summary-item h4 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .ia-summary-item .value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .ia-summary-item .trend {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        /* ===== SECTION STATISTIQUES DÉTAILLÉES ===== */
-        .charts-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            margin: 30px 0;
-        }
-
-        .chart-card {
+        /* ===== SECTION RECOMMANDATIONS OLLAMA ===== */
+        .ollama-section {
             background: white;
             border-radius: var(--radius-xl);
-            padding: 20px;
+            padding: 25px;
+            margin: 30px 0;
             box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
         }
 
-        .chart-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-dark);
+        .ollama-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
             margin-bottom: 20px;
+        }
+
+        .ollama-header i {
+            font-size: 2rem;
+            color: var(--purple);
+            background: var(--purple-soft);
+            padding: 15px;
+            border-radius: 50%;
+        }
+
+        .ollama-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .ollama-header span {
+            background: var(--success-light);
+            color: var(--success);
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .rec-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            border-left: 4px solid;
+            transition: var(--transition);
+        }
+
+        .rec-card:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .rec-card.produit1 { border-left-color: var(--success); }
+        .rec-card.produit2 { border-left-color: var(--warning); }
+        .rec-card.produit3 { border-left-color: var(--danger); }
+
+        .rec-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .chart-title i {
+        .rec-title i {
             color: var(--purple);
-            font-size: 1.2rem;
         }
 
-        .chart-container {
-            height: 250px;
-            position: relative;
+        .rec-problem {
+            background: white;
+            padding: 10px 15px;
+            border-radius: var(--radius-md);
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .rec-solution {
+            margin: 15px 0;
+            padding: 10px;
+            background: var(--info-light);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+        }
+
+        .rec-cost {
+            display: inline-block;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-weight: 700;
+            color: var(--purple);
+            border: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        .rec-gravity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .gravity-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .gravity-fill {
+            height: 100%;
+            border-radius: 4px;
         }
 
         /* ===== GRILLE DES RÉCLAMATIONS ===== */
@@ -420,7 +508,7 @@
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
             gap: 30px;
             margin: 30px 0 50px;
         }
@@ -538,25 +626,18 @@
             margin-right: 3px;
         }
 
-        /* User info - AVEC INITIALES AU LIEU DES PHOTOS */
+        /* User info - AVEC IMAGES AU LIEU DES INITIALES */
         .user-section {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
         }
 
-        .user-initials-large {
+        .user-image {
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
+            object-fit: cover;
             border: 3px solid var(--purple-soft);
             flex-shrink: 0;
         }
@@ -651,81 +732,7 @@
             border: 1px solid var(--border);
         }
 
-        /* Enquête section (MODIFIÉ : affichage des réponses déjà données) */
-        .survey-section {
-            background: var(--info-light);
-            border-radius: var(--radius-lg);
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--info);
-        }
-
-        .survey-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .survey-header i {
-            color: var(--info);
-            font-size: 1.2rem;
-        }
-
-        .survey-header h5 {
-            font-weight: 700;
-            color: var(--text-dark);
-            font-size: 0.95rem;
-        }
-
-        .survey-response {
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .survey-answers {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .survey-answer {
-            background: white;
-            padding: 6px 15px;
-            border-radius: 25px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .survey-answer i {
-            color: var(--info);
-        }
-
-        .survey-answer.yes {
-            background: var(--success-light);
-            color: var(--success);
-            border-color: var(--success);
-        }
-
-        .survey-answer.no {
-            background: var(--danger-light);
-            color: var(--danger);
-            border-color: var(--danger);
-        }
-
-        .survey-answer.neutral {
-            background: var(--warning-light);
-            color: var(--warning);
-            border-color: var(--warning);
-        }
-
-        /* Analyse IA */
+        /* Analyse IA - CORRIGÉE AVEC PROBLÈME DÉTECTÉ */
         .ia-analysis {
             background: linear-gradient(135deg, #f6f9fc 0%, #f1f4fe 100%);
             border-radius: var(--radius-lg);
@@ -760,6 +767,27 @@
             font-size: 0.75rem;
             font-weight: 600;
             color: var(--purple);
+        }
+
+        .problem-detected {
+            background: var(--danger-light);
+            border-radius: var(--radius-md);
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .problem-detected i {
+            color: var(--danger);
+            font-size: 1.2rem;
+        }
+
+        .problem-detected span {
+            font-weight: 600;
+            color: var(--danger);
         }
 
         .ia-metrics {
@@ -928,24 +956,41 @@
             gap: 5px;
         }
 
-        /* Réponse */
-        .response-section {
-            background: var(--surface);
+        /* Section recommandation Ollama */
+        .ollama-recommendation {
+            background: linear-gradient(135deg, #f6f9fc 0%, #e8f0fe 100%);
             border-radius: var(--radius-lg);
-            padding: 15px;
+            padding: 20px;
             margin: 20px 0;
-            border-left: 4px solid var(--purple);
+            border: 2px solid var(--purple);
         }
 
-        .response-section strong {
+        .ollama-recommendation h5 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             color: var(--purple);
-            display: block;
-            margin-bottom: 8px;
+            font-weight: 700;
+            margin-bottom: 15px;
         }
 
-        .response-section p {
-            color: var(--text-dark);
+        .solution-text {
+            background: white;
+            padding: 15px;
+            border-radius: var(--radius-md);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
             line-height: 1.6;
+        }
+
+        .cost-estimate {
+            display: inline-block;
+            background: var(--success-light);
+            color: var(--success);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
         }
 
         /* Actions */
@@ -996,19 +1041,15 @@
             color: var(--success);
         }
 
-        .action-btn.repondre:hover {  /* MODIFIÉ : "survey" -> "repondre" */
-            background: var(--info-light);
-            color: var(--info);
-            border-color: var(--info);
+        .action-btn.ollama:hover {
+            background: linear-gradient(135deg, var(--purple-soft), var(--info-light));
+            color: var(--purple);
+            border-color: var(--purple);
         }
 
         /* Responsive */
         @media (max-width: 1400px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .charts-row {
+            .stats-grid, .ia-summary {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -1027,7 +1068,6 @@
             .container { padding: 16px; }
             .header { flex-direction: column; }
             .stats-grid { grid-template-columns: 1fr; }
-            .charts-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -1052,15 +1092,14 @@
                         <span id="traitee-count">16 traitées</span>
                     </div>
                     <div class="stat-item">
-                        <i class="fas fa-chart-line"></i>
-                        <span>IA active</span>
+                        <i class="fas fa-microchip"></i>
+                        <span>Ollama actif</span>
                     </div>
                 </div>
-         
             </div>
         </div>
 
-        <!-- Statistiques globales -->
+        <!-- Statistiques globales avec taux de gravité total -->
         <div class="stats-grid">
             <div class="stat-card-large">
                 <div class="stat-icon">
@@ -1076,8 +1115,8 @@
                     <i class="fas fa-microchip"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>87%</h3>
-                    <p>Précision IA</p>
+                    <h3>91%</h3>
+                    <p>Précision IA corrigée</p>
                 </div>
             </div>
             <div class="stat-card-large">
@@ -1085,11 +1124,31 @@
                     <i class="fas fa-tachometer-alt"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>4.2</h3>
-                    <p>Taux gravité moyen</p>
+                    <h3 id="gravite-totale">6.8</h3>
+                    <p>Taux gravité total /10</p>
                 </div>
             </div>
-      
+            <div class="stat-card-large">
+                <div class="stat-icon">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>2 450€</h3>
+                    <p>Coût estimation réparations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section recommandations Ollama globale -->
+        <div class="ollama-section">
+            <div class="ollama-header">
+                <i class="fas fa-microchip"></i>
+                <h2>Recommandations Ollama - Analyse des défauts</h2>
+                <span>IA Active</span>
+            </div>
+            <div class="recommendations-grid" id="recommendations-global">
+                <!-- Les recommandations seront chargées dynamiquement -->
+            </div>
         </div>
 
         <!-- Section recherche et filtrage améliorée -->
@@ -1108,10 +1167,10 @@
             </div>
         </div>
 
-        <!-- Grille des réclamations avec dates de soumission et enquêtes déjà répondus -->
+        <!-- Grille des réclamations avec images utilisateurs et analyses corrigées -->
         <div class="cards-grid" id="claimsGrid">
             <!-- Carte 1 - TV pixels morts - Gravité Faible -->
-            <div class="claim-card faible" data-status="traitee" data-gravity="faible">
+            <div class="claim-card faible" data-status="traitee" data-gravity="faible" id="claim1">
                 <div class="card-header">
                     <span class="claim-id">
                         <i class="far fa-id-card"></i> #RCL-5233
@@ -1119,7 +1178,6 @@
                     <span class="status-badge traitee">Traitée</span>
                 </div>
                 
-                <!-- SECTION DATES AVEC DURÉE AJOUTÉE -->
                 <div class="date-info">
                     <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 11/03/2024</span>
                     <span class="date-item"><i class="far fa-clock"></i> <strong>Traitement:</strong> 14/03/2024</span>
@@ -1127,23 +1185,16 @@
                 </div>
                 
                 <div class="user-section">
-                    <!-- INITIALES AU LIEU DE LA PHOTO : CA RO = Camille Rousseau -->
-                    <div class="user-initials-large">CA</div>
+                    <!-- IMAGE UTILISATEUR RÉELLE -->
+                    <img src="data:image/jpeg;base64,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" alt="Camille Rousseau" class="user-image">
                     <div class="user-details">
                         <div class="user-name">Camille Rousseau</div>
                         <div class="user-email">camille.rousseau@email.com</div>
-                     
+                        <div class="user-meta">
+                            <span><i class="fas fa-map-pin"></i> Paris</span>
+                            <span><i class="fas fa-phone"></i> 06 12 34 56 78</span>
+                        </div>
                     </div>
-                </div>
-
-                <!-- SECTION ENQUÊTE DÉJÀ RÉPONDUE -->
-                <div class="survey-section">
-                    <div class="survey-header">
-                        <i class="fas fa-clipboard-check"></i>
-                        <h5>Réponse à l'enquête</h5>
-                    </div>
-                    <div class="survey-response">"Comment évaluez-vous la prise en charge ?"</div>
-                  
                 </div>
 
                 <div class="product-section">
@@ -1160,28 +1211,34 @@
                     </div>
                 </div>
 
-                <div class="ia-analysis">
+                <div class="ia-analysis" id="analysis-5233">
                     <div class="ia-header">
                         <i class="fas fa-microchip"></i>
-                        <h4>Analyse IA du défaut</h4>
-                        <span class="ia-badge">Confiance 92%</span>
+                        <h4>Analyse IA du défaut - CORRIGÉE</h4>
+                        <span class="ia-badge">Confiance 94%</span>
+                    </div>
+                    
+                    <!-- PROBLÈME DÉTECTÉ -->
+                    <div class="problem-detected">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Problème détecté :</span> 5 pixels morts sur l'écran (zone centrale)
                     </div>
                     
                     <div class="ia-metrics">
                         <div class="metric-item">
                             <div class="metric-label">
-                                <i class="fas fa-bolt"></i> Gravité IA
+                                <i class="fas fa-bolt"></i> Gravité du problème
                             </div>
-                            <div class="metric-value">3.2 <span class="metric-unit">/10</span></div>
+                            <div class="metric-value">3.5 <span class="metric-unit">/10</span></div>
                             <div class="progress-bar">
-                                <div class="progress-fill faible" style="width: 32%"></div>
+                                <div class="progress-fill faible" style="width: 35%"></div>
                             </div>
                         </div>
                         <div class="metric-item">
                             <div class="metric-label">
-                                <i class="fas fa-clock"></i> Urgence
+                                <i class="fas fa-clock"></i> Impact utilisation
                             </div>
-                            <div class="metric-value">Faible</div>
+                            <div class="metric-value">Mineur</div>
                             <div class="progress-bar">
                                 <div class="progress-fill faible" style="width: 30%"></div>
                             </div>
@@ -1189,10 +1246,21 @@
                     </div>
 
                     <div class="ia-tags">
+                        <span class="ia-tag low"><i class="fas fa-check-circle"></i> Défaut visuel</span>
                         <span class="ia-tag low"><i class="fas fa-microchip"></i> 5 pixels morts</span>
-                        <span class="ia-tag low"><i class="fas fa-microchip"></i> Défaut mineur</span>
                         <span class="ia-tag"><i class="fas fa-microchip"></i> Sous garantie</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Échange standard</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Réparable</span>
+                    </div>
+                </div>
+
+                <!-- RECOMMANDATION OLLAMA -->
+                <div class="ollama-recommendation">
+                    <h5><i class="fas fa-microchip"></i> Recommandation Ollama</h5>
+                    <div class="solution-text">
+                        <strong>Solution proposée :</strong> Remplacement de la dalle sous garantie. Les pixels morts sont couverts par la garantie constructeur. Intervention à prévoir dans les 48h.
+                    </div>
+                    <div class="cost-estimate">
+                        <i class="fas fa-euro-sign"></i> Coût estimé : 0€ (garantie)
                     </div>
                 </div>
 
@@ -1214,12 +1282,11 @@
                         <i class="fas fa-microchip"></i>
                         <span>Corriger IA</span>
                     </a>
-                    <a href="#" class="action-btn check" onclick="alert('Réouvrir réclamation #RCL-5233'); return false;">
-                        <i class="fas fa-undo"></i>
-                        <span>Réouvrir</span>
+                    <a href="#" class="action-btn ollama" onclick="showOllamaRecommendation('#RCL-5233'); return false;">
+                        <i class="fas fa-microchip"></i>
+                        <span>Recommandation</span>
                     </a>
-                    <!-- MODIFIÉ : "Enquête" -> "Répondre" (car enquête déjà faite) -->
-                    <a href="#" class="action-btn repondre" onclick="alert('Répondre au client #RCL-5233'); return false;">
+                    <a href="#" class="action-btn check" onclick="repondreClient('#RCL-5233'); return false;">
                         <i class="fas fa-reply"></i>
                         <span>Répondre</span>
                     </a>
@@ -1227,7 +1294,7 @@
             </div>
 
             <!-- Carte 2 - PC portable surchauffe - Gravité Moyenne -->
-            <div class="claim-card moyenne" data-status="attente" data-gravity="moyenne">
+            <div class="claim-card moyenne" data-status="attente" data-gravity="moyenne" id="claim2">
                 <div class="card-header">
                     <span class="claim-id">
                         <i class="far fa-id-card"></i> #RCL-6341
@@ -1235,7 +1302,6 @@
                     <span class="status-badge attente">En attente</span>
                 </div>
                 
-                <!-- SECTION DATES AVEC DURÉE AJOUTÉE -->
                 <div class="date-info">
                     <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 12/03/2024</span>
                     <span class="date-item"><i class="far fa-clock"></i> <strong>En attente</strong></span>
@@ -1243,23 +1309,16 @@
                 </div>
                 
                 <div class="user-section">
-                    <!-- INITIALES AU LIEU DE LA PHOTO : NI PE = Nicolas Petit -->
-                    <div class="user-initials-large">NI</div>
+                    <!-- IMAGE UTILISATEUR RÉELLE -->
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop" alt="Nicolas Petit" class="user-image">
                     <div class="user-details">
                         <div class="user-name">Nicolas Petit</div>
                         <div class="user-email">nicolas.petit@email.com</div>
-                       
+                        <div class="user-meta">
+                            <span><i class="fas fa-map-pin"></i> Lyon</span>
+                            <span><i class="fas fa-phone"></i> 06 23 45 67 89</span>
+                        </div>
                     </div>
-                </div>
-
-                <!-- SECTION ENQUÊTE DÉJÀ RÉPONDUE -->
-                <div class="survey-section">
-                    <div class="survey-header">
-                        <i class="fas fa-clipboard-check"></i>
-                        <h5>Réponse à l'enquête</h5>
-                    </div>
-                    <div class="survey-response">"Avez-vous reçu une réponse à votre réclamation ?"</div>
-                  
                 </div>
 
                 <div class="product-section">
@@ -1267,7 +1326,7 @@
                         <i class="fas fa-laptop"></i>
                     </div>
                     <div class="product-details">
-                        <div class="product-name">PC Portable ProBook</div>
+                        <div class="product-name">PC Portable ProBook i7</div>
                         <div class="product-ref">Réf: PB-15-i7 • Acheté le 20/01/2024</div>
                         <div class="product-tags">
                             <span class="product-tag">Surchauffe</span>
@@ -1276,39 +1335,56 @@
                     </div>
                 </div>
 
-                <div class="ia-analysis">
+                <div class="ia-analysis" id="analysis-6341">
                     <div class="ia-header">
                         <i class="fas fa-microchip"></i>
-                        <h4>Analyse IA du défaut</h4>
-                        <span class="ia-badge">Confiance 88%</span>
+                        <h4>Analyse IA du défaut - CORRIGÉE</h4>
+                        <span class="ia-badge">Confiance 89%</span>
+                    </div>
+                    
+                    <!-- PROBLÈME DÉTECTÉ -->
+                    <div class="problem-detected">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Problème détecté :</span> Ventilateur défectueux causant une surchauffe CPU (95°C)
                     </div>
                     
                     <div class="ia-metrics">
                         <div class="metric-item">
                             <div class="metric-label">
-                                <i class="fas fa-bolt"></i> Gravité IA
+                                <i class="fas fa-bolt"></i> Gravité du problème
                             </div>
-                            <div class="metric-value">6.5 <span class="metric-unit">/10</span></div>
+                            <div class="metric-value">7.2 <span class="metric-unit">/10</span></div>
                             <div class="progress-bar">
-                                <div class="progress-fill moyenne" style="width: 65%"></div>
+                                <div class="progress-fill moyenne" style="width: 72%"></div>
                             </div>
                         </div>
                         <div class="metric-item">
                             <div class="metric-label">
-                                <i class="fas fa-clock"></i> Urgence
+                                <i class="fas fa-clock"></i> Impact utilisation
                             </div>
-                            <div class="metric-value">Moyenne</div>
+                            <div class="metric-value">Élevé</div>
                             <div class="progress-bar">
-                                <div class="progress-fill moyenne" style="width: 60%"></div>
+                                <div class="progress-fill moyenne" style="width: 70%"></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="ia-tags">
-                        <span class="ia-tag medium"><i class="fas fa-microchip"></i> Surchauffe CPU</span>
+                        <span class="ia-tag high"><i class="fas fa-exclamation-circle"></i> Surchauffe critique</span>
                         <span class="ia-tag medium"><i class="fas fa-microchip"></i> Ventilateur HS</span>
                         <span class="ia-tag"><i class="fas fa-microchip"></i> Sous garantie</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Nettoyage nécessaire</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Réparation urgente</span>
+                    </div>
+                </div>
+
+                <!-- RECOMMANDATION OLLAMA -->
+                <div class="ollama-recommendation">
+                    <h5><i class="fas fa-microchip"></i> Recommandation Ollama</h5>
+                    <div class="solution-text">
+                        <strong>Solution proposée :</strong> Remplacement du ventilateur et nettoyage du système de refroidissement. Risque de dommages permanents au CPU si non traité rapidement.
+                    </div>
+                    <div class="cost-estimate">
+                        <i class="fas fa-euro-sign"></i> Coût estimé : 89€ (pièce + main d'œuvre)
                     </div>
                 </div>
 
@@ -1330,52 +1406,43 @@
                         <i class="fas fa-microchip"></i>
                         <span>Corriger IA</span>
                     </a>
-                    <a href="#" class="action-btn check" onclick="alert('Traiter réclamation #RCL-6341'); return false;">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Traiter</span>
+                    <a href="#" class="action-btn ollama" onclick="showOllamaRecommendation('#RCL-6341'); return false;">
+                        <i class="fas fa-microchip"></i>
+                        <span>Recommandation</span>
                     </a>
-                    <!-- MODIFIÉ : "Enquête" -> "Répondre" -->
-                    <a href="#" class="action-btn repondre" onclick="alert('Répondre à Nicolas Petit'); return false;">
+                    <a href="#" class="action-btn check" onclick="repondreClient('#RCL-6341'); return false;">
                         <i class="fas fa-reply"></i>
                         <span>Répondre</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Carte 3 - Aspirateur sans puissance - Gravité Moyenne -->
-            <div class="claim-card moyenne" data-status="traitee" data-gravity="moyenne">
+            <!-- Carte 3 - Aspirateur sans puissance - Gravité Élevée -->
+            <div class="claim-card elevee" data-status="attente" data-gravity="elevee" id="claim3">
                 <div class="card-header">
                     <span class="claim-id">
                         <i class="far fa-id-card"></i> #RCL-7452
                     </span>
-                    <span class="status-badge traitee">Traitée</span>
+                    <span class="status-badge attente">En attente</span>
                 </div>
                 
-                <!-- SECTION DATES AVEC DURÉE AJOUTÉE -->
                 <div class="date-info">
-                    <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 07/03/2024</span>
-                    <span class="date-item"><i class="far fa-clock"></i> <strong>Traitement:</strong> 10/03/2024</span>
-                    <span class="date-item"><i class="fas fa-hourglass-half"></i> <strong>Durée:</strong> 3 jours</span>
+                    <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 15/03/2024</span>
+                    <span class="date-item"><i class="far fa-clock"></i> <strong>En attente</strong></span>
+                    <span class="date-item"><i class="fas fa-hourglass-half"></i> <strong>Durée:</strong> 1 jour</span>
                 </div>
                 
                 <div class="user-section">
-                    <!-- INITIALES AU LIEU DE LA PHOTO : JU MO = Julie Moreau -->
-                    <div class="user-initials-large">JU</div>
+                    <!-- IMAGE UTILISATEUR RÉELLE -->
+                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop" alt="Sophie Martin" class="user-image">
                     <div class="user-details">
-                        <div class="user-name">Julie Moreau</div>
-                        <div class="user-email">julie.moreau@email.com</div>
-                       
+                        <div class="user-name">Sophie Martin</div>
+                        <div class="user-email">sophie.martin@email.com</div>
+                        <div class="user-meta">
+                            <span><i class="fas fa-map-pin"></i> Bordeaux</span>
+                            <span><i class="fas fa-phone"></i> 06 34 56 78 90</span>
+                        </div>
                     </div>
-                </div>
-
-                <!-- SECTION ENQUÊTE DÉJÀ RÉPONDUE -->
-                <div class="survey-section">
-                    <div class="survey-header">
-                        <i class="fas fa-clipboard-check"></i>
-                        <h5>Réponse à l'enquête</h5>
-                    </div>
-                    <div class="survey-response">"Comment évaluez-vous le remboursement proposé ?"</div>
-                  
                 </div>
 
                 <div class="product-section">
@@ -1383,8 +1450,8 @@
                         <i class="fas fa-wind"></i>
                     </div>
                     <div class="product-details">
-                        <div class="product-name">Aspirateur CycloForce</div>
-                        <div class="product-ref">Réf: ASP-3000-R • Acheté le 15/02/2024</div>
+                        <div class="product-name">Aspirateur CycloForce 3000</div>
+                        <div class="product-ref">Réf: ASP-3000-R • Acheté le 10/02/2024</div>
                         <div class="product-tags">
                             <span class="product-tag">Puissance</span>
                             <span class="product-tag">Moteur</span>
@@ -1392,39 +1459,56 @@
                     </div>
                 </div>
 
-                <div class="ia-analysis">
+                <div class="ia-analysis" id="analysis-7452">
                     <div class="ia-header">
                         <i class="fas fa-microchip"></i>
-                        <h4>Analyse IA du défaut</h4>
-                        <span class="ia-badge">Confiance 86%</span>
+                        <h4>Analyse IA du défaut - CORRIGÉE</h4>
+                        <span class="ia-badge">Confiance 96%</span>
+                    </div>
+                    
+                    <!-- PROBLÈME DÉTECTÉ -->
+                    <div class="problem-detected">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Problème détecté :</span> Moteur principal défectueux - perte d'aspiration de 80%
                     </div>
                     
                     <div class="ia-metrics">
                         <div class="metric-item">
                             <div class="metric-label">
-                                <i class="fas fa-bolt"></i> Gravité IA
+                                <i class="fas fa-bolt"></i> Gravité du problème
                             </div>
-                            <div class="metric-value">5.5 <span class="metric-unit">/10</span></div>
+                            <div class="metric-value">8.5 <span class="metric-unit">/10</span></div>
                             <div class="progress-bar">
-                                <div class="progress-fill moyenne" style="width: 55%"></div>
+                                <div class="progress-fill elevee" style="width: 85%"></div>
                             </div>
                         </div>
                         <div class="metric-item">
                             <div class="metric-label">
-                                <i class="fas fa-clock"></i> Urgence
+                                <i class="fas fa-clock"></i> Impact utilisation
                             </div>
-                            <div class="metric-value">Moyenne</div>
+                            <div class="metric-value">Très élevé</div>
                             <div class="progress-bar">
-                                <div class="progress-fill moyenne" style="width: 50%"></div>
+                                <div class="progress-fill elevee" style="width: 90%"></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="ia-tags">
-                        <span class="ia-tag medium"><i class="fas fa-microchip"></i> Perte aspiration</span>
-                        <span class="ia-tag medium"><i class="fas fa-microchip"></i> Moteur fatigué</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Filtres propres</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Remboursé</span>
+                        <span class="ia-tag high"><i class="fas fa-exclamation-circle"></i> Moteur HS</span>
+                        <span class="ia-tag high"><i class="fas fa-microchip"></i> Perte puissance 80%</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Sous garantie</span>
+                        <span class="ia-tag"><i class="fas fa-microchip"></i> Remplacement nécessaire</span>
+                    </div>
+                </div>
+
+                <!-- RECOMMANDATION OLLAMA -->
+                <div class="ollama-recommendation">
+                    <h5><i class="fas fa-microchip"></i> Recommandation Ollama</h5>
+                    <div class="solution-text">
+                        <strong>Solution proposée :</strong> Remplacement complet du moteur sous garantie. Défaut de fabrication identifié sur cette série. Échange standard préconisé.
+                    </div>
+                    <div class="cost-estimate">
+                        <i class="fas fa-euro-sign"></i> Coût estimé : 0€ (garantie constructeur)
                     </div>
                 </div>
 
@@ -1437,7 +1521,7 @@
                         <span class="image-name">
                             <i class="fas fa-camera"></i> aspirateur_defaut.jpg
                         </span>
-                        <span class="image-size">2.1 MB • 07/03/2024</span>
+                        <span class="image-size">2.1 MB • 15/03/2024</span>
                     </div>
                 </div>
 
@@ -1446,21 +1530,208 @@
                         <i class="fas fa-microchip"></i>
                         <span>Corriger IA</span>
                     </a>
-                    <a href="#" class="action-btn check" onclick="alert('Réouvrir réclamation #RCL-7452'); return false;">
-                        <i class="fas fa-undo"></i>
-                        <span>Réouvrir</span>
+                    <a href="#" class="action-btn ollama" onclick="showOllamaRecommendation('#RCL-7452'); return false;">
+                        <i class="fas fa-microchip"></i>
+                        <span>Recommandation</span>
                     </a>
-                    <!-- MODIFIÉ : "Enquête" -> "Répondre" -->
-                    <a href="#" class="action-btn repondre" onclick="alert('Répondre à Julie Moreau'); return false;">
+                    <a href="#" class="action-btn check" onclick="repondreClient('#RCL-7452'); return false;">
                         <i class="fas fa-reply"></i>
                         <span>Répondre</span>
                     </a>
                 </div>
             </div>
-
-       
         </div>
     </div>
-   
+
+    <script>
+        // Données des réclamations pour les calculs
+        const claims = [
+            { id: '#RCL-5233', gravite: 3.5, cout: 0, statut: 'traitee' },
+            { id: '#RCL-6341', gravite: 7.2, cout: 89, statut: 'attente' },
+            { id: '#RCL-7452', gravite: 8.5, cout: 0, statut: 'attente' }
+        ];
+
+        // Calcul de la gravité totale et mise à jour de l'affichage
+        function updateGlobalMetrics() {
+            const graviteTotale = claims.reduce((acc, claim) => acc + claim.gravite, 0) / claims.length;
+            const coutTotal = claims.reduce((acc, claim) => acc + claim.cout, 0);
+            
+            document.getElementById('gravite-totale').textContent = graviteTotale.toFixed(1);
+            
+            // Mise à jour des compteurs de statut
+            const attenteCount = claims.filter(c => c.statut === 'attente').length;
+            const traiteeCount = claims.filter(c => c.statut === 'traitee').length;
+            
+            document.getElementById('attente-count').textContent = attenteCount + ' en attente';
+            document.getElementById('traitee-count').textContent = traiteeCount + ' traitées';
+        }
+
+        // Initialisation des recommandations globales
+        function initGlobalRecommendations() {
+            const recGrid = document.getElementById('recommendations-global');
+            recGrid.innerHTML = `
+                <div class="rec-card produit1">
+                    <div class="rec-title">
+                        <i class="fas fa-tv"></i>
+                        TV 4K 55" - #RCL-5233
+                    </div>
+                    <div class="rec-problem">
+                        <strong>Problème:</strong> 5 pixels morts sur écran
+                    </div>
+                    <div class="rec-solution">
+                        <strong>Solution Ollama:</strong> Remplacement dalle sous garantie
+                    </div>
+                    <div class="rec-cost">
+                        <i class="fas fa-euro-sign"></i> Coût: 0€
+                    </div>
+                    <div class="rec-gravity">
+                        <span>Gravité: 3.5/10</span>
+                        <div class="gravity-bar">
+                            <div class="gravity-fill" style="width: 35%; background: var(--success);"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rec-card produit2">
+                    <div class="rec-title">
+                        <i class="fas fa-laptop"></i>
+                        PC ProBook - #RCL-6341
+                    </div>
+                    <div class="rec-problem">
+                        <strong>Problème:</strong> Surchauffe CPU - ventilateur HS
+                    </div>
+                    <div class="rec-solution">
+                        <strong>Solution Ollama:</strong> Remplacement ventilateur + nettoyage
+                    </div>
+                    <div class="rec-cost">
+                        <i class="fas fa-euro-sign"></i> Coût: 89€
+                    </div>
+                    <div class="rec-gravity">
+                        <span>Gravité: 7.2/10</span>
+                        <div class="gravity-bar">
+                            <div class="gravity-fill" style="width: 72%; background: var(--warning);"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rec-card produit3">
+                    <div class="rec-title">
+                        <i class="fas fa-wind"></i>
+                        Aspirateur - #RCL-7452
+                    </div>
+                    <div class="rec-problem">
+                        <strong>Problème:</strong> Moteur défectueux - perte 80% puissance
+                    </div>
+                    <div class="rec-solution">
+                        <strong>Solution Ollama:</strong> Remplacement moteur sous garantie
+                    </div>
+                    <div class="rec-cost">
+                        <i class="fas fa-euro-sign"></i> Coût: 0€
+                    </div>
+                    <div class="rec-gravity">
+                        <span>Gravité: 8.5/10</span>
+                        <div class="gravity-bar">
+                            <div class="gravity-fill" style="width: 85%; background: var(--danger);"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fonction pour corriger l'analyse IA
+        function correctIA(claimId) {
+            alert(`Analyse IA corrigée pour ${claimId}`);
+            
+            // Simulation de correction
+            if (claimId === '#RCL-5233') {
+                document.getElementById('analysis-5233').innerHTML += '<div class="problem-detected" style="background: var(--success-light); border-left-color: var(--success);"><i class="fas fa-check-circle"></i><span>Correction appliquée :</span> Nouvelle analyse plus précise</div>';
+            }
+        }
+
+        // Fonction pour afficher les recommandations Ollama
+        function showOllamaRecommendation(claimId) {
+            const recommendations = {
+                '#RCL-5233': {
+                    probleme: '5 pixels morts sur écran LED',
+                    solution: 'Remplacement de la dalle sous garantie constructeur. Intervention prévue dans les 48h.',
+                    cout: '0€ (garantie)',
+                    delai: '2-3 jours'
+                },
+                '#RCL-6341': {
+                    probleme: 'Ventilateur défectueux - surchauffe CPU à 95°C',
+                    solution: 'Remplacement du ventilateur et nettoyage du système de refroidissement. Application de pâte thermique neuve.',
+                    cout: '89€ TTC',
+                    delai: '24-48h'
+                },
+                '#RCL-7452': {
+                    probleme: 'Moteur principal HS - perte d\'aspiration de 80%',
+                    solution: 'Remplacement complet du moteur sous garantie. Défaut de fabrication connu sur cette série.',
+                    cout: '0€ (garantie constructeur)',
+                    delai: '3-5 jours'
+                }
+            };
+            
+            const rec = recommendations[claimId];
+            if (rec) {
+                alert(`🔍 RECOMMANDATION OLLAMA pour ${claimId}\n\nProblème: ${rec.probleme}\n\nSolution: ${rec.solution}\n\nCoût estimé: ${rec.cout}\nDélai: ${rec.delai}`);
+            }
+        }
+
+        // Fonction pour répondre au client
+        function repondreClient(claimId) {
+            alert(`Formulaire de réponse pour ${claimId} - Message au client`);
+        }
+
+        // Fonction de filtrage
+        function filterClaims() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.claim-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchInput)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Fonction de filtrage par statut
+        function filterByStatus(status) {
+            const cards = document.querySelectorAll('.claim-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            cards.forEach(card => {
+                if (status === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    const cardStatus = card.getAttribute('data-status');
+                    card.style.display = cardStatus === status ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Fonction de filtrage par gravité
+        function filterByGravity(gravity) {
+            const cards = document.querySelectorAll('.claim-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            cards.forEach(card => {
+                const cardGravity = card.getAttribute('data-gravity');
+                card.style.display = cardGravity === gravity ? 'block' : 'none';
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            updateGlobalMetrics();
+            initGlobalRecommendations();
+        });
+    </script>
 </body>
 </html>

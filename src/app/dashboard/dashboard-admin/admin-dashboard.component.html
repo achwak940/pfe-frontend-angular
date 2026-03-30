@@ -1,26 +1,24 @@
 <div class="admin-container">
+  
   <!-- Sidebar fixe -->
   <aside class="sidebar" 
          [class.sidebar-collapsed]="sidebarCollapsed" 
          [class.mobile-open]="mobileMenuOpen">
-    <div class="sidebar-header">
-      <div class="logo" (click)="navigateTo('/admin-dashboard')">
-        <i class="fas fa-chart-pie" style="color: #9D50BB; font-size: 1.8rem;"></i>
-        <span class="logo-text" *ngIf="!sidebarCollapsed">Admin<span class="purple">Panel</span></span>
-      </div>
-      <button class="toggle-sidebar" (click)="toggleSidebar()" *ngIf="!isMobile">
-        <i class="fas" [class.fa-chevron-left]="!sidebarCollapsed" [class.fa-chevron-right]="sidebarCollapsed"></i>
-      </button>
-    </div>
-    <div class="user-info" *ngIf="!sidebarCollapsed">
-      <div class="user-avatar">
-        <i class="fas fa-user-circle"></i>
-      </div>
-      <div class="user-details">
-        <span class="user-name">Admin User</span>
-        <span class="user-role">Administrateur</span>
-      </div>
-    </div>
+   <div class="sidebar-header">
+ <div class="logo" (click)="navigateTo('/admin-dashboard')">
+  <div class="logo-wrapper">
+    <img src="assets/images/logo.png" alt="Logo Admin" class="logo-img">
+    <div class="logo-overlay"></div>
+  </div>
+  <div class="logo-text-container" *ngIf="!sidebarCollapsed">
+    <span class="logo-text">Admin<span class="purple">Space</span></span>
+  </div>
+</div>
+  <button class="toggle-sidebar" (click)="toggleSidebar()" *ngIf="!isMobile">
+    <i class="fas" [class.fa-chevron-left]="!sidebarCollapsed" [class.fa-chevron-right]="sidebarCollapsed"></i>
+  </button>
+</div>
+   
     <nav class="sidebar-nav">
       <ul>
         <li [class.active]="isActive('/admin-dashboard')">
@@ -41,27 +39,36 @@
             <span *ngIf="!sidebarCollapsed">Gestion des questions</span>
           </a>
         </li>
+        <li [class.active]="isActive('/usersNotifier')">
+          <a (click)="navigateTo('/usersNotifier')">
+            <i class="fas fa-users"></i>
+            <span *ngIf="!sidebarCollapsed">Utilisateurs</span>
+          </a>
+        </li>
         <li [class.active]="isActive('/gestionReclamation')">
-  <a (click)="navigateTo('/gestionReclamation')">
-  <i class="fas fa-clipboard-list"></i> 
-    <span *ngIf="!sidebarCollapsed">Gestion Réclamations</span>
-  </a>
-</li>
-        
+          <a (click)="navigateTo('/gestionReclamation')">
+            <i class="fas fa-clipboard-list"></i> 
+            <span *ngIf="!sidebarCollapsed">Gestion Réclamations</span>
+          </a>
+        </li>
         <li [class.active]="isActive('/AnalyseReporting')">
           <a (click)="navigateTo('/AnalyseReporting')">
             <i class="fas fa-chart-bar"></i>
             <span *ngIf="!sidebarCollapsed">Analyse & Reporting</span>
           </a>
         </li>
-        
+        <li [class.active]="isActive('/userReponses')">
+          <a (click)="navigateTo('/userReponses')">
+            <i class="fas fa-message"></i>
+            <span *ngIf="!sidebarCollapsed">Réponses</span>
+          </a>
+        </li>
         <li [class.active]="isActive('/feedback')">
           <a (click)="navigateTo('/feedback')">
             <i class="fas fa-comment-dots"></i>
             <span *ngIf="!sidebarCollapsed">Feedback & Support</span>
           </a>
         </li>
-        
         <li [class.active]="isActive('/QuestionIA')">
           <a (click)="navigateTo('/QuestionIA')">
             <i class="fas fa-robot"></i>
@@ -72,7 +79,6 @@
     </nav>
 
     <div class="sidebar-footer" *ngIf="!sidebarCollapsed">
-    
       <div class="footer-item" (click)="confirmLogout()">
         <i class="fas fa-sign-out-alt"></i>
         <span>Déconnexion</span>
@@ -99,12 +105,19 @@
         
         <div class="header-notifications" (click)="navigateTo('/notifications')">
           <i class="fas fa-bell"></i>
-          <span class="notification-badge">3</span>
+          <span class="notification-badge">{{ getNotificationCount() }}</span>
         </div>
         
         <div class="header-user" (click)="navigateTo('/profile')">
-          <i class="fas fa-user-circle"></i>
-          <span class="user-name">Admin</span>
+         <img *ngIf="getPhotoProfil(); else defaultIcon" 
+     [src]="'http://localhost:3000/' + getPhotoProfil()" 
+     class="user-image" 
+     alt="Photo Profil">
+
+<ng-template #defaultIcon>
+  <i class="fas fa-user-circle fa-2x"></i>
+</ng-template>
+          <span class="user-name">{{getAdminName()}}</span>
         </div>
       </div>
     </header>
@@ -115,29 +128,40 @@
       <ng-container *ngIf="router.url === '/admin-dashboard' || router.url === '/'">
         <div class="dashboard-home">
           <!-- En-tête avec statistiques rapides -->
-          <div class="welcome-section">
-            <div class="welcome-text">
-              <h1>Bon retour, <span class="purple">Admin User</span> 👋</h1>
-              <p>Voici ce qui se passe sur votre plateforme aujourd'hui</p>
-            </div>
-            <div class="date-display">
-              <i class="fas fa-calendar-alt"></i>
-              <span>{{ currentDate | date:'EEEE d MMMM yyyy' }}</span>
-            </div>
-          </div>
+         <!-- En-tête avec statistiques rapides -->
+<div class="welcome-section">
+  <div class="welcome-text">
+   
+    <h1>
+      <span class="greeting-prefix">Bonjour,</span>
+      <span class="admin-name">{{ getAdminName() }}</span>
+      <span class="wave-icon">👋</span>
+    </h1>
+    <p class="welcome-message">
+      Voici un aperçu de votre activité sur 
+      <span class="highlight-date">{{ currentDate | date:'MMMM yyyy' }}</span>
+    </p>
+    <div class="stats-chip">
+      <i class="fas fa-chart-simple"></i>
+      <span>{{ getDashboardSummary() }}</span>
+    </div>
+  </div>
+  <div class="date-display">
+    <i class="fas fa-calendar-alt"></i>
+    <span>{{ currentDate | date:'EEEE d MMMM yyyy' }}</span>
+  </div>
+</div>
+        
 
-          <!-- Cartes de statistiques principales -->
+          <!-- Cartes de statistiques principales avec données dynamiques -->
           <div class="stats-grid">
             <div class="stat-card primary">
               <div class="stat-icon">
                 <i class="fas fa-poll"></i>
               </div>
               <div class="stat-content">
-                <span class="stat-value">24</span>
-                <span class="stat-label">Enquêtes actives</span>
-              </div>
-              <div class="stat-trend positive">
-                <i class="fas fa-arrow-up"></i> +12% vs mois dernier
+                <span class="stat-value">{{ nombreEnquete || 0}}</span>
+                <span class="stat-label">Total des enquêtes</span>
               </div>
             </div>
 
@@ -146,11 +170,8 @@
                 <i class="fas fa-users"></i>
               </div>
               <div class="stat-content">
-                <span class="stat-value">1,284</span>
+                <span class="stat-value">{{ nombreParticicant || 0 }}</span>
                 <span class="stat-label">Participants</span>
-              </div>
-              <div class="stat-trend positive">
-                <i class="fas fa-arrow-up"></i> +8% vs mois dernier
               </div>
             </div>
 
@@ -159,111 +180,159 @@
                 <i class="fas fa-chart-line"></i>
               </div>
               <div class="stat-content">
-                <span class="stat-value">68%</span>
+                <span class="stat-value">{{  tauxReponse || 0  }}%</span>
                 <span class="stat-label">Taux de réponse</span>
               </div>
-              <div class="stat-trend positive">
-                <i class="fas fa-arrow-up"></i> +5% vs mois dernier
-              </div>
             </div>
 
-      <div class="stat-card danger">
-  <div class="stat-icon">
-    <i class="fas fa-exclamation-triangle"></i>
-  </div>
-  <div class="stat-content">
-    <span class="stat-value">12</span>
-    <span class="stat-label">Réclamations</span>
-  </div>
-  <div class="stat-trend warning">
-    <i class="fas fa-exclamation-circle"></i> 3 nouvelles aujourd'hui
-  </div>
-</div>
+            <div class="stat-card danger">
+              <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="stat-content">
+                <span class="stat-value">12</span>
+                <span class="stat-label">Réclamations</span>
+              </div>
+            </div>
           </div>
-
-          <!-- Graphiques et analyses -->
-          <div class="charts-row">
-            <!-- Graphique des participations -->
-            <div class="chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3>Participation par enquête</h3>
-                  <p class="chart-subtitle">Dernières 30 jours</p>
+            <!-- Filtres de période globaux -->
+          <div class="global-period-filters">
+            <div class="period-label">Période:</div>
+            <div class="period-filters">
+              <button class="period-btn" [class.active]="selectedPeriod === 'today'" (click)="changePeriod('today')">Aujourd'hui</button>
+              <button class="period-btn" [class.active]="selectedPeriod === 'week'" (click)="changePeriod('week')">Cette semaine</button>
+              <button class="period-btn" [class.active]="selectedPeriod === 'month'" (click)="changePeriod('month')">Ce mois</button>
+              <button class="period-btn" [class.active]="selectedPeriod === 'year'" (click)="changePeriod('year')">Cette année</button>
+            </div>
+          </div>
+ <!-- Graphique d'évolution des réponses -->
+          <div class="responses-chart-card">
+            <div class="chart-header">
+              <h3>Évolution des Réponses</h3>
+              <div class="chart-stats">
+                
+                <div class="stat-badge">
+                  <span class="stat-number">{{ evolutionData.totalReponses }}</span>
+                  <span class="stat-label">Réponses</span>
                 </div>
-                <select class="chart-select">
-                  <option>Cette semaine</option>
-                  <option>Ce mois</option>
-                  <option>Cette année</option>
-                </select>
-              </div>
-              <div class="chart-container">
-                <div class="chart-bars">
-                  <div class="bar-item" *ngFor="let item of participationData">
-                    <div class="bar-label">{{ item.label }}</div>
-                    <div class="bar-progress">
-                      <div class="bar-fill" [style.width.%]="item.value" [style.background]="item.color"></div>
-                    </div>
-                    <div class="bar-value">{{ item.value }}%</div>
-                  </div>
+                <div class="stat-badge">
+                  <span class="stat-number">{{ evolutionData.tauxReponse }}%</span>
+                  <span class="stat-label">Taux de réponse</span>
                 </div>
               </div>
             </div>
+            
+            <!-- Graphique en lignes -->
+            <div class="line-chart-container">
+              <canvas id="responsesChart" width="400" height="200"></canvas>
+            </div>
+            
+            <!-- Jours de la semaine -->
+            <div class="week-days">
+              <div class="day-item" *ngFor="let day of weekDays">
+                <span class="day-name">{{ day.name }}</span>
+                <span class="day-value">{{ day.value }}</span>
+              </div>
+            </div>
+          </div>
+       
 
-            <!-- Répartition des types d'enquêtes -->
+          <!-- Deuxième ligne : Statut des Enquêtes et Participation -->
+          <div class="stats-row">
+            <!-- Statut des Enquêtes (Donut) avec données dynamiques -->
             <div class="chart-card">
               <div class="chart-header">
-                <div>
-                  <h3>Répartition par statut</h3>
-                  <p class="chart-subtitle">État des enquêtes</p>
-                </div>
+                <h3>Statut des Enquêtes</h3>
+                <span class="period-indicator">{{ getPeriodLabel() }}</span>
               </div>
               <div class="donut-container">
                 <div class="donut-chart">
-                  <svg viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#eef2f6" stroke-width="15"/>
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#9D50BB" stroke-width="15" 
-                            stroke-dasharray="188.4" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#f39c12" stroke-width="15" 
-                            stroke-dasharray="75.36" stroke-dashoffset="188.4" transform="rotate(-90 50 50)"/>
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#2ecc71" stroke-width="15" 
-                            stroke-dasharray="62.8" stroke-dashoffset="263.76" transform="rotate(-90 50 50)"/>
-                  </svg>
+                  <canvas id="surveyStatusChart" width="150" height="150"></canvas>
                 </div>
                 <div class="donut-legend">
                   <div class="legend-item">
                     <span class="legend-color" style="background: #9D50BB;"></span>
-                    <span class="legend-label">Actives (50%)</span>
+                    <span class="legend-label">Actives <strong>{{ surveyStatusData.actives }}%</strong></span>
                   </div>
                   <div class="legend-item">
                     <span class="legend-color" style="background: #f39c12;"></span>
-                    <span class="legend-label">Brouillons (20%)</span>
+                    <span class="legend-label">Brouillons <strong>{{ surveyStatusData.brouillons }}%</strong></span>
                   </div>
                   <div class="legend-item">
                     <span class="legend-color" style="background: #2ecc71;"></span>
-                    <span class="legend-label">Terminées (30%)</span>
+                    <span class="legend-label">Terminées <strong>{{ surveyStatusData.terminees }}%</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Graphique à barres horizontales avec données dynamiques -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3>Participation par enquête</h3>
+                <p class="chart-subtitle">{{ getPeriodLabel() }}</p>
+              </div>
+              <div class="horizontal-bars-container">
+                <div class="bar-item" *ngFor="let item of participationData">
+                  <span class="bar-label">{{ item.label }}</span>
+                  <div class="bar-progress">
+                    <div class="bar-fill" [style.width.%]="item.value" [style.background]="item.color"></div>
+                  </div>
+                  <span class="bar-value">{{ item.value }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+   <!-- Section Top Enquêtes avec données dynamiques -->
+          <div class="top-enquetes-section">
+            <div class="top-enquetes-header">
+              <h2>Top Enquêtes</h2>
+              <div class="period-filters">
+                <button class="period-btn" [class.active]="selectedPeriod === 'today'" (click)="changePeriod('today')">Aujourd'hui</button>
+                <button class="period-btn" [class.active]="selectedPeriod === 'week'" (click)="changePeriod('week')">Cette semaine</button>
+                <button class="period-btn" [class.active]="selectedPeriod === 'month'" (click)="changePeriod('month')">Ce mois</button>
+                <button class="period-btn" [class.active]="selectedPeriod === 'year'" (click)="changePeriod('year')">Cette année</button>
+              </div>
+            </div>
+            
+            <div class="top-enquetes-grid">
+              <div class="top-enquetes-list">
+                <div class="top-enquete-item" *ngFor="let enquete of topEnquetes">
+                  <span class="enquete-nom">{{ enquete.nom }}</span>
+                  <span class="enquete-valeur">{{ enquete.valeur }}</span>
+                </div>
+              
+              </div>
+              <div class="top-enquetes-card">
+                <div class="satisfaction-mini-card">
+                  <div class="satisfaction-header">
+                    <span>Indice de Satisfaction</span>
+                  </div>
+                  <div class="satisfaction-values">
+                    <span class="satisfaction-low">{{ satisfactionData.precedent }}%</span>
+                    <span class="satisfaction-high">{{ satisfactionData.actuel }}%</span>
+                  </div>
+                  <div class="satisfaction-footer">
+                    <span><strong>{{ satisfactionData.avis }}</strong> Avis recensés</span>
+                    <span class="a-ameliorer">à améliorer</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
+         
           <!-- Enquêtes récentes et activités -->
           <div class="recent-section">
             <!-- Enquêtes récentes -->
             <div class="recent-card">
               <div class="card-header">
-                <h3>Enquêtes récentes</h3>
+                <h3>Formations & Enquêtes</h3>
                 <a (click)="navigateTo('/gestionEnquete')" class="view-all">Voir tout <i class="fas fa-arrow-right"></i></a>
               </div>
               <div class="recent-list">
                 <div class="recent-item" *ngFor="let enquete of recentEnquetes">
-                  <div class="item-icon" [ngClass]="enquete.statut">
-                    <i class="fas" [ngClass]="{
-                      'fa-file-alt': enquete.statut === 'brouillon',
-                      'fa-poll': enquete.statut === 'active',
-                      'fa-check-circle': enquete.statut === 'terminee'
-                    }"></i>
-                  </div>
+                  
                   <div class="item-content">
                     <h4>{{ enquete.titre }}</h4>
                     <div class="item-meta">
@@ -282,17 +351,12 @@
             <div class="recent-card">
               <div class="card-header">
                 <h3>Activités récentes</h3>
-                <span class="view-all">Aujourd'hui</span>
+                <span class="view-all">{{ getPeriodLabel() }}</span>
               </div>
               <div class="activity-list">
                 <div class="activity-item" *ngFor="let activity of recentActivities">
-                  <div class="activity-icon" [ngClass]="activity.type">
-                    <i class="fas" [ngClass]="{
-                      'fa-plus': activity.type === 'creation',
-                      'fa-edit': activity.type === 'modification',
-                      'fa-check': activity.type === 'publication',
-                      'fa-user': activity.type === 'participation'
-                    }"></i>
+                  <div class="activity-icon" [style.background]="getActivityBackground(activity)">
+                    <i class="fas" [ngClass]="getActivityIcon(activity)"></i>
                   </div>
                   <div class="activity-content">
                     <p>{{ activity.message }}</p>

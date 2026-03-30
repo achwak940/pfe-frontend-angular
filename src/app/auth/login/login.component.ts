@@ -47,6 +47,7 @@ submit(): void {
       if (res.token) {
         localStorage.setItem('token', res.token);
         this.currentUser=res.user
+        console.log()
          localStorage.setItem('currentUser', JSON.stringify(res.user));
         if(this.currentUser.role==="ROLE_SUPER_ADMIN"){
             this.router.navigate(['/super-admin-dashboard']);

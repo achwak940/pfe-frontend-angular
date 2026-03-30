@@ -2,25 +2,28 @@
 
   <!-- Toast message -->
   <div id="toast" [ngClass]="{'show': showToast}">
-    Question ajoutée avec succès !
+    {{ toastMessage }}
   </div>
 
   <!-- Header -->
   <div class="header">
-    <div class="header-left"></div>
+    <div class="header-left">
+      <h1>Gestion des Questions</h1>
+      <p class="subtitle">Créez et gérez vos questionnaires</p>
+    </div>
     <div class="header-right">
       <div class="stats-badge">
         <span class="stat-item">
-          <i class="fas fa-question-circle"></i>
+          <i class="fas fa-check-circle"></i>
           <span>{{ questions.length }} questions</span>
         </span>
         <span class="stat-item">
-          <i class="fas fa-robot"></i>
-          <span>4 générées IA</span>
+          <i class="fas fa-star"></i>
+          <span>{{ getRatingCount() }} évaluations</span>
         </span>
         <span class="stat-item">
-          <i class="fas fa-check-circle"></i>
-          <span>8 manuelles</span>
+          <i class="fas fa-calendar"></i>
+          <span>{{ getDateCount() }} dates</span>
         </span>
       </div>
     </div>
@@ -43,10 +46,16 @@
     </button>
   </div>
 
-  <!-- Formulaire création question -->
-  <div class="question-form-card">
+  <!-- Formulaire création/modification question -->
+  <div class="question-form-card" [class.edit-mode]="isEditing">
     <div class="form-header">
-      <h3><i class="fas fa-pen" style="color: #9D50BB;"></i> Créer une nouvelle question</h3>
+      <h3>
+        <i class="fas fa-pen" style="color: #9D50BB;"></i>
+        {{ isEditing ? 'Modifier la question' : 'Créer une nouvelle question' }}
+      </h3>
+      <div *ngIf="isEditing" class="edit-badge">
+        <i class="fas fa-edit"></i> Mode édition
+      </div>
     </div>
 
     <div class="form-body">
@@ -62,10 +71,10 @@
       <div class="form-row grid-2">
         <div class="form-group">
           <label>Type de question <span class="required">*</span></label>
-          <select [(ngModel)]="questionType">
-            <option value="multiple">Choix multiple</option>
-            <option value="unique">Choix unique</option>
-            <option value="text">Texte libre</option>
+          <select [(ngModel)]="questionType" (change)="onTypeChange()">
+            <option *ngFor="let type of questionTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
           </select>
         </div>
         <div class="form-group">
@@ -77,14 +86,76 @@
         </div>
       </div>
 
-      <!-- Options -->
-      <div class="form-row" *ngIf="questionType !== 'text'">
+      <!-- Configuration pour le type rating (étoiles) -->
+      <div class="form-row config-section" *ngIf="questionType === 'rating'">
+        <div class="form-group">
+          <label>Configuration de l'évaluation par étoiles</label>
+          <div class="rating-config">
+            <div class="config-item">
+              <label>Nombre d'étoiles</label>
+              <input type="number" [(ngModel)]="ratingConfig.maxStars" min="1" max="10" step="1">
+            </div>
+            <div class="config-item">
+              <label>Valeur minimum</label>
+              <input type="number" [(ngModel)]="ratingConfig.minValue" min="1" [max]="ratingConfig.maxStars">
+            </div>
+            <div class="config-item">
+              <label>Valeur maximum</label>
+              <input type="number" [(ngModel)]="ratingConfig.maxValue" [min]="ratingConfig.minValue" [max]="ratingConfig.maxStars">
+            </div>
+          </div>
+          <div class="preview-box">
+            <small>Prévisualisation:</small>
+            <div class="stars-preview">
+              <i *ngFor="let star of getStarsArray(ratingConfig.maxStars); let i = index" 
+                 class="fas fa-star" [class.active]="i < 3"></i>
+              <span class="preview-text">({{ ratingConfig.maxStars }} étoiles)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuration pour le type scale (échelle linéaire) -->
+      <div class="form-row config-section" *ngIf="questionType === 'scale'">
+        <div class="form-group">
+          <label>Configuration de l'échelle linéaire</label>
+          <div class="scale-config">
+            <div class="config-item">
+              <label>Étiquette minimum</label>
+              <input type="text" [(ngModel)]="scaleConfig.minLabel" placeholder="Ex: Pas satisfait">
+            </div>
+            <div class="config-item">
+              <label>Étiquette maximum</label>
+              <input type="text" [(ngModel)]="scaleConfig.maxLabel" placeholder="Ex: Très satisfait">
+            </div>
+            <div class="config-item">
+              <label>Nombre de points</label>
+              <input type="number" [(ngModel)]="scaleConfig.steps" min="2" max="10" step="1">
+            </div>
+          </div>
+          <div class="preview-box">
+            <small>Prévisualisation:</small>
+            <div class="scale-preview">
+              <span class="scale-label">{{ scaleConfig.minLabel }}</span>
+              <div class="scale-points">
+                <span *ngFor="let point of getScalePoints(scaleConfig.steps); let i = index" class="scale-point">
+                  {{ i + 1 }}
+                </span>
+              </div>
+              <span class="scale-label">{{ scaleConfig.maxLabel }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Options pour multiple/unique -->
+      <div class="form-row" *ngIf="questionType === 'multiple' || questionType === 'unique'">
         <div class="form-group">
           <label>Options de réponse <span class="required">*</span> <small>(minimum 2 options)</small></label>
           <div class="options-list">
-            <div class="option-item" *ngFor="let opt of options; let i = index">
+            <div class="option-item" *ngFor="let opt of options; let i = index; trackBy: trackByIndex">
               <input type="text" [(ngModel)]="options[i]" placeholder="Option {{i+1}}">
-              <button class="remove-option" type="button" (click)="removeOptions(i)">
+              <button class="remove-option" type="button" (click)="removeOptions(i)" [disabled]="options.length <= 2">
                 <i class="fas fa-times"></i>
               </button>
             </div>
@@ -95,21 +166,46 @@
         </div>
       </div>
 
+      <!-- Indication pour les types spéciaux -->
+      <div class="form-row info-section" *ngIf="questionType === 'date'">
+        <div class="form-group">
+          <div class="info-message">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Les questions de type date permettent aux utilisateurs de sélectionner une date dans un calendrier.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row info-section" *ngIf="questionType === 'text'">
+        <div class="form-group">
+          <div class="info-message">
+            <i class="fas fa-font"></i>
+            <span>Les questions de type texte permettent une réponse libre et ouverte.</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Question obligatoire -->
       <div class="form-row">
         <div class="form-group checkbox-group">
           <label class="checkbox-label">
             <input type="checkbox" [(ngModel)]="required">
-            <span class="checkbox-custom"></span> Question obligatoire
+            <span class="checkbox-custom"></span>
+            <span>Question obligatoire</span>
           </label>
         </div>
       </div>
 
       <!-- Actions -->
       <div class="form-actions">
-        <button class="btn btn-outline" type="button" (click)="resetForm()">Annuler</button>
-        <button class="btn btn-primary" type="button" (click)="addQuestion()">
-          <i class="fas fa-check"></i> Ajouter la question
+        <button class="btn btn-outline" type="button" (click)="cancelEdit()" *ngIf="isEditing">
+          <i class="fas fa-times"></i> Annuler
+        </button>
+        <button class="btn btn-outline" type="button" (click)="resetForm()" *ngIf="!isEditing">
+          <i class="fas fa-times"></i> Annuler
+        </button>
+        <button class="btn btn-primary" type="button" (click)="saveQuestion()">
+          <i class="fas fa-check"></i> {{ isEditing ? 'Mettre à jour' : 'Ajouter' }}
         </button>
       </div>
     </div>
@@ -119,36 +215,110 @@
   <div class="questions-header">
     <h2 class="section-title">
       <i class="fas fa-list"></i> Liste des questions
-      <span class="questions-count">{{ questions.length }} questions</span>
+      <span class="questions-count">{{ filteredQuestions.length }} questions</span>
     </h2>
+    <div class="filter-buttons">
+      <button class="filter-btn" [class.active]="currentFilter === 'all'" (click)="filterQuestions('all')">Toutes</button>
+      <button class="filter-btn" [class.active]="currentFilter === 'active'" (click)="filterQuestions('active')">Actives</button>
+      <button class="filter-btn" [class.active]="currentFilter === 'inactive'" (click)="filterQuestions('inactive')">Inactives</button>
+    </div>
   </div>
 
   <div class="questions-grid">
-    <div class="question-card" *ngFor="let q of questions">
+    <div class="question-card" *ngFor="let q of filteredQuestions">
       <div class="card-header">
-        <h3>{{ q.texte }}</h3>
+        <div class="card-title">
+          <h3>{{ q.texte }}</h3>
+          <div class="required-badge" *ngIf="q.obligatoire">
+            <i class="fas fa-asterisk"></i> Obligatoire
+          </div>
+        </div>
         <div class="card-badges">
-          <span class="badge type-badge">{{ q.type }}</span>
+          <span class="badge type-badge" [class.rating-badge]="q.type === 'rating'" [class.scale-badge]="q.type === 'scale'">
+            <i [class]="'fas ' + getTypeIcon(q.type)"></i>
+            {{ getTypeLabel(q.type) }}
+          </span>
           <span class="badge status-badge" [ngClass]="{'active': q.active, 'inactive': !q.active}">
+            <i class="fas" [ngClass]="{'fa-check-circle': q.active, 'fa-ban': !q.active}"></i>
             {{ q.active ? 'Active' : 'Inactive' }}
           </span>
         </div>
       </div>
 
       <div class="card-content">
-        <strong>Options :</strong>
-        <div class="options-chips">
-          <span class="option-chip" *ngFor="let o of q.options">{{ o.texte }}</span>
+        <!-- Affichage des options pour multiple/unique -->
+        <div *ngIf="q.type === 'multiple' || q.type === 'unique'" class="options-section">
+          <strong>Options :</strong>
+          <div class="options-chips">
+            <span class="option-chip" *ngFor="let o of q.options">
+              <i class="fas" [ngClass]="{'fa-check-circle': q.type === 'multiple', 'fa-dot-circle': q.type === 'unique'}"></i>
+              {{ o.texte }}
+            </span>
+          </div>
         </div>
-        <div *ngIf="q.obligatoire">
-          <i class="fas fa-exclamation-circle"></i> Obligatoire
+        
+        <!-- Affichage pour rating (étoiles) -->
+        <div *ngIf="q.type === 'rating'" class="rating-display">
+          <strong>Évaluation par étoiles</strong>
+          <div class="stars-display">
+            <i class="fas fa-star" *ngFor="let star of getStarsArray(q.ratingConfig?.maxStars || 5)"></i>
+            <span class="rating-info">{{ q.ratingConfig?.maxStars || 5 }} étoiles</span>
+          </div>
+        </div>
+        
+        <!-- Affichage pour scale (échelle) -->
+        <div *ngIf="q.type === 'scale'" class="scale-display">
+          <strong>Échelle linéaire</strong>
+          <div class="scale-bar">
+            <span class="scale-min">{{ q.scaleConfig?.minLabel || 'Min' }}</span>
+            <div class="scale-steps">
+              <span *ngFor="let step of getScalePoints(q.scaleConfig?.steps || 5); let i = index" class="step-point">
+                {{ i + 1 }}
+              </span>
+            </div>
+            <span class="scale-max">{{ q.scaleConfig?.maxLabel || 'Max' }}</span>
+          </div>
+        </div>
+        
+        <!-- Affichage pour date -->
+        <div *ngIf="q.type === 'date'" class="date-display">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Sélection de date</span>
+        </div>
+        
+        <!-- Affichage pour text -->
+        <div *ngIf="q.type === 'text'" class="text-display">
+          <i class="fas fa-font"></i>
+          <span>Réponse texte libre</span>
+        </div>
+        
+        <!-- Indicateur création -->
+        <div class="creation-info" *ngIf="q.create_at">
+          <small>
+            <i class="fas fa-clock"></i>
+            Créée le {{ q.create_at | date:'dd/MM/yyyy' }}
+          </small>
         </div>
       </div>
 
       <div class="card-actions">
-        <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Modifier</button>
-        <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Supprimer</button>
+        <button class="action-btn edit-btn" (click)="editQuestion(q)">
+          <i class="fas fa-edit"></i> Modifier
+        </button>
+        <button class="action-btn delete-btn" (click)="deleteQuestion(q)">
+          <i class="fas fa-trash"></i> Supprimer
+        </button>
       </div>
+    </div>
+    
+    <!-- État vide -->
+    <div class="empty-state" *ngIf="filteredQuestions.length === 0">
+      <i class="fas fa-question-circle"></i>
+      <h3>Aucune question trouvée</h3>
+      <p>Commencez par créer votre première question</p>
+      <button class="btn btn-primary" (click)="resetForm()">
+        <i class="fas fa-plus-circle"></i> Créer une question
+      </button>
     </div>
   </div>
 </div>

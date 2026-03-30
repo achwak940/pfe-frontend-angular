@@ -12,6 +12,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
 import { ModifierEnqueteComponent } from './modifier-enquete/modifier-enquete.component';
 import { GestionReclamationComponent } from './gestion-reclamation/gestion-reclamation.component';
+import { EnqueteDetailsComponent } from './enquete-details/enquete-details.component';
+import { UserResponsesComponent } from './user-responses/user-responses.component';
+import { UsersComponent } from './users/users.component';
 
 
 @NgModule({
@@ -24,7 +27,10 @@ import { GestionReclamationComponent } from './gestion-reclamation/gestion-recla
     GestionIaQuestionsComponent,
     AjoutEnqueteComponent,
     ModifierEnqueteComponent,
-    GestionReclamationComponent
+    GestionReclamationComponent,
+    EnqueteDetailsComponent,
+    UserResponsesComponent,
+    UsersComponent
   ],
   imports: [
     CommonModule,
