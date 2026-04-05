@@ -58,6 +58,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   public router: Router;
   currentDate: Date = new Date();
   selectedPeriod: string = 'week';
+    isOpen = false;
 
   // Données du dashboard
   nombreEnquete: number = 0;
@@ -119,7 +120,22 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
         }
       });
   }
-
+  gereMenuUser(): void {
+    this.isOpen = !this.isOpen;
+    event?.stopPropagation();
+  }
+    FermeMenu(): void {
+    this.isOpen = false;
+  }
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const userMenu = document.querySelector('.header-user');
+    if (this.isOpen && userMenu && !userMenu.contains(target)) {
+      this.FermeMenu();
+    }
+  }
+  
   ngOnInit(): void {
     this.getUserData();
     this.checkScreenSize();

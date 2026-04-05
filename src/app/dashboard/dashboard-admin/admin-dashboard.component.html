@@ -89,38 +89,61 @@
   <!-- Contenu principal avec header et router-outlet -->
   <main class="main-content" [class.main-expanded]="sidebarCollapsed">
     <!-- Header avec titre de la page actuelle -->
-    <header class="content-header">
-      <div class="header-left">
-        <button class="mobile-menu-btn" (click)="toggleMobileMenu()" *ngIf="isMobile">
-          <i class="fas" [class.fa-bars]="!mobileMenuOpen" [class.fa-times]="mobileMenuOpen"></i>
-        </button>
-        <h1>{{ getPageTitle() }}</h1>
-      </div>
+<header class="content-header">
+  <div class="header-left">
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu()" *ngIf="isMobile">
+      <i class="fas" [class.fa-bars]="!mobileMenuOpen" [class.fa-times]="mobileMenuOpen"></i>
+    </button>
+    <h1>{{ getPageTitle() }}</h1>
+  </div>
+  
+  <div class="header-right">
+    <div class="header-search">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Rechercher..." (keyup.enter)="onSearch($event)">
+    </div>
+    
+    <div class="header-notifications" (click)="navigateTo('/notifications')">
+      <i class="fas fa-bell"></i>
+      <span class="notification-badge">{{ getNotificationCount() }}</span>
+    </div>
+    
+    <!-- MODIFICATION: Menu déroulant pour le profil -->
+    <div class="header-user" (click)=" gereMenuUser()" [class.menu-open]="isOpen">
+      <img *ngIf="getPhotoProfil(); else defaultIcon" 
+           [src]="'http://localhost:3000/' + getPhotoProfil()" 
+           class="user-image" 
+           alt="Photo Profil">
+      <ng-template #defaultIcon>
+        <i class="fas fa-user-circle fa-2x"></i>
+      </ng-template>
+      <span class="user-name">{{getAdminName()}}</span>
+      <i class="fas fa-chevron-down" [class.rotated]="isOpen"></i>
       
-      <div class="header-right">
-        <div class="header-search">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Rechercher..." (keyup.enter)="onSearch($event)">
+      <!-- Menu déroulant -->
+      <div class="user-dropdown" *ngIf="isOpen">
+       
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" (click)="navigateTo('/profil')">
+          <i class="fas fa-user"></i>
+          <span>Mon profil</span>
         </div>
-        
-        <div class="header-notifications" (click)="navigateTo('/notifications')">
-          <i class="fas fa-bell"></i>
-          <span class="notification-badge">{{ getNotificationCount() }}</span>
+        <div class="dropdown-item" (click)="navigateTo('/settings')">
+          <i class="fas fa-cog"></i>
+          <span>Paramètres</span>
         </div>
-        
-        <div class="header-user" (click)="navigateTo('/profile')">
-         <img *ngIf="getPhotoProfil(); else defaultIcon" 
-     [src]="'http://localhost:3000/' + getPhotoProfil()" 
-     class="user-image" 
-     alt="Photo Profil">
-
-<ng-template #defaultIcon>
-  <i class="fas fa-user-circle fa-2x"></i>
-</ng-template>
-          <span class="user-name">{{getAdminName()}}</span>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item logout-item" (click)="confirmLogout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Déconnexion</span>
         </div>
       </div>
-    </header>
+    </div>
+  </div>
+</header>
+
+<!-- Overlay pour fermer le menu quand on clique ailleurs -->
+<div class="dropdown-overlay" *ngIf="isOpen" (click)="  FermeMenu()"></div>
 
     <!-- Zone de contenu dynamique -->
     <div class="content-area">

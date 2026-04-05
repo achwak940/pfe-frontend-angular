@@ -4,9 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { DashboardRoutingModule } from './dashboard-routing.module';
-
-// ✅ IMPORTER SEULEMENT LES COMPOSANTS QUI EXISTENT
-import { SuperAdminDashboardComponent } from './dashboard-super-admin/super-admin-dashboard/super-admin-dashboard.component';
 import { UsersManagementComponent } from './dashboard-super-admin/users-management/users-management.component';
 
 // ❌ NE PAS IMPORTER AdminDashboardComponent s'il existe
@@ -14,19 +11,11 @@ import { UsersManagementComponent } from './dashboard-super-admin/users-manageme
 
 @NgModule({
   declarations: [
-    SuperAdminDashboardComponent,
-    UsersManagementComponent
+    UsersManagementComponent,
+
     // ❌ NE PAS DECLARER AdminDashboardComponent ici
   ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    DashboardRoutingModule,
-  ],
-  exports: [
-    SuperAdminDashboardComponent,
-    UsersManagementComponent
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, DashboardRoutingModule],
+  exports: [UsersManagementComponent],
 })
-export class DashboardModule { }
+export class DashboardModule {}

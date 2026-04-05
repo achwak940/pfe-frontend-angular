@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="profile-container">
+  <div class="profile-card">
+    <!-- Header Section -->
+    <div class="profile-header">
+      <div class="profile-image-section">
+        <div class="image-frame">
+       <img [src]="'http://localhost:3000/' + userInfo?.photo_profil" 
+     alt="Hanin Belili" 
+     class="profile-image">
+          <div class="status-badge status-inactive">
+            <i class="fas fa-circle"></i>
+            <span>{{userInfo?.statut}}</span>
+          </div>
+        </div>
+        
+        <div class="profile-title">
+          <h1> {{userInfo?.prenom}} {{userInfo?.nom}}</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Quick Info -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <i class="fas fa-calendar-alt"></i>
+        <div class="stat-info">
+          <span class="stat-label">Membre depuis</span>
+          <span class="stat-value">{{userInfo?.date_creation | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-clock"></i>
+        <div class="stat-info">
+          <span class="stat-label">Dernière modification</span>
+       <span class="stat-value">
+  {{ userInfo?.date_modification | date:'dd/MM/yyyy HH:mm' }}
+</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-id-card"></i>
+        <div class="stat-info">
+          <span class="stat-label">ID Utilisateur</span>
+          <span class="stat-value">{{userInfo?.id}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="profile-content">
+      <!-- Contact Information -->
+      <div class="info-section">
+        <div class="section-header">
+          <i class="fas fa-address-card"></i>
+          <h2>Informations de contact</h2>
+        </div>
+        
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="card-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-label">Adresse email</span>
+              <span class="card-value">{{userInfo?.email}}</span>
+              <div class="verification-tag unverified">
+                <i class="fas fa-times-circle"></i>
+                {{userInfo?.est_verifie ? 'Vérifié' : 'Non vérifié'}}
+              </div>
+            </div>
+          </div>
+          
+          <div class="info-card">
+            <div class="card-icon">
+              <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-label">Numéro de téléphone</span>
+              <span class="card-value">{{userInfo?.telephone}}</span>
+              <span class="card-sub">Tunisie</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Account Information -->
+      <div class="info-section">
+        <div class="section-header">
+          <i class="fas fa-user-circle"></i>
+          <h2>Informations du compte</h2>
+        </div>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="fas fa-tag"></i>
+            <div>
+              <span class="info-label">Rôle</span>
+              <span class="info-value">{{userInfo?.role}}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fas fa-check-circle"></i>
+            <div>
+              <span class="info-label">Vérification email</span>
+              <span class="info-value"> {{userInfo?.est_verifie ? 'Vérifié' : 'Non vérifié'}}</span>
+            </div>
+          </div>
+          
+      
+        </div>
+      </div>
+
+      <!-- Security Section -->
+      <div class="info-section">
+        <div class="section-header">
+          <i class="fas fa-shield-alt"></i>
+          <h2>Sécurité</h2>
+        </div>
+        
+        <div class="security-grid">
+          <div class="security-card">
+            <div class="security-icon">
+              <i class="fas fa-lock"></i>
+            </div>
+            <div class="security-content">
+              <h3>Mot de passe</h3>
+              <p>Protégez votre compte avec un mot de passe fort</p>
+              <button class="btn-outline">
+                <i class="fas fa-key"></i>
+                Changer le mot de passe
+              </button>
+            </div>
+          </div>
+          
+  
+        </div>
+      </div>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-primary" (click)="navigateTo('/ModifierProfil')">
+        <i class="fas fa-edit"></i>
+        Modifier le profil
+      </button>
+    
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -29,7 +29,6 @@ export class StatistiquesService {
     const apiUrl = `${this.apiUrl}/utilisateur/count/all`;
     return this.http.get(apiUrl);
   }
-
   getAllUsersConnecte(): Observable<any> {
     const apiUrl = `${this.apiUrl}/utilisateur/get/all/connecte`;
     return this.http.get(apiUrl);
@@ -75,7 +74,6 @@ export class StatistiquesService {
     const apiUrl = `${this.apiUrl}/reponse/stats/enquetes/${id}`;
     return this.http.get(apiUrl);
   }
-
   getTopUtilisateurs(id: number): Observable<any> {
     const apiUrl = `${this.apiUrl}/reponse/top-users/${id}`;
     return this.http.get(apiUrl);

@@ -13,6 +13,7 @@ import { GestionReclamationComponent } from './gestion-reclamation/gestion-recla
 import { EnqueteDetailsComponent } from './enquete-details/enquete-details.component';
 import { UserResponsesComponent } from './user-responses/user-responses.component';
 import { UsersComponent } from './users/users.component';
+import { ReactiveFormsModule } from '@angular/forms';
 
 const routes: Routes = [
   { 
@@ -33,9 +34,10 @@ const routes: Routes = [
     ] 
   }
 ];
-
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forChild(routes),
+      ReactiveFormsModule,
+  ],
   exports: [RouterModule]
 })
 export class DashboardAdminRoutingModule { }

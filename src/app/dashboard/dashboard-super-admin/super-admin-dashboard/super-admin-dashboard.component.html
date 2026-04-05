@@ -15,7 +15,7 @@
           </a>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/users">
+          <a routerLink="/super-admin-dashboard/detailes-user">
             <i class="fas fa-users"></i>
             Utilisateurs
           </a>
@@ -89,6 +89,7 @@
     <!-- main content -->
     <div class="content">
       <!-- stats cards -->
+<router-outlet></router-outlet>
       <section class="cards-grid" aria-label="Indicateurs clés">
         <article class="stat-card" *ngFor="let stat of statsCards">
           <div class="stat-icon"><i class="fas" [ngClass]="stat.icon"></i></div>
@@ -134,6 +135,9 @@
             <thead>
               <tr>
                 <th>Utilisateur</th>
+
+
+
                 <th>Action</th>
                 <th>Sondage</th>
                 <th>Statut</th>
