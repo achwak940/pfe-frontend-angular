@@ -1,0 +1,419 @@
+<div class="chat-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-content">
+      <div class="logo">
+        <div class="logo-wrapper">
+          <i class="fas fa-robot logo-icon"></i>
+          <div class="logo-overlay"></div>
+        </div>
+        <div class="logo-text-container">
+          <h2 class="logo-text">
+            AI <span class="purple">Question</span> Generator
+          </h2>
+          <span class="badge">Premium</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="language-selector">
+          <button
+            *ngFor="let lang of languages"
+            class="lang-btn"
+            [class.active]="selectedLanguage === lang.code"
+            (click)="changeLanguage(lang.code)"
+          >
+            <i [class]="getLanguageIcon(lang.code)"></i>
+            <span>{{ lang.name }}</span>
+          </button>
+        </div>
+
+        <button
+          class="icon-btn"
+          (click)="toggleHistoryPanel()"
+          [class.active]="showHistoryPanel"
+          title="Historique"
+        >
+          <i class="fas fa-history"></i>
+        </button>
+
+        <button class="icon-btn" (click)="exportChatHistory()" title="Exporter">
+          <i class="fas fa-download"></i>
+        </button>
+
+        <input
+          type="file"
+          #fileInput
+          (change)="importChatHistory($event)"
+          accept=".json"
+          style="display: none"
+        />
+        <button class="icon-btn" (click)="fileInput.click()" title="Importer">
+          <i class="fas fa-upload"></i>
+        </button>
+
+        <button
+          class="icon-btn"
+          (click)="toggleSpeech()"
+          [class.active]="isSpeechEnabled"
+          [title]="isSpeechEnabled ? 'Désactiver la voix' : 'Activer la voix'"
+        >
+          <i
+            [class]="
+              isSpeechEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute'
+            "
+          ></i>
+        </button>
+
+        <button
+          class="icon-btn"
+          (click)="toggleBatchMode()"
+          [class.active]="batchMode"
+          title="Mode batch"
+        >
+          <i class="fas fa-layer-group"></i>
+        </button>
+
+        <div class="connection-status" [class.connected]="isConnected">
+          <i class="fas fa-circle"></i>
+          <span>{{ isConnected ? "Online" : "Connecting..." }}</span>
+        </div>
+
+        <button class="icon-btn" (click)="clearChat()" title="Clear chat">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Panel -->
+  <div *ngIf="showHistoryPanel" class="history-panel">
+    <div class="history-header">
+      <h3><i class="fas fa-history"></i> Historique des conversations</h3>
+      <button class="close-btn" (click)="toggleHistoryPanel()">✕</button>
+    </div>
+    <div class="history-search">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Rechercher une conversation..."
+      />
+    </div>
+    <div class="history-actions">
+      <button class="history-action-btn" (click)="clearAllHistory()">
+        <i class="fas fa-trash-alt"></i> Tout effacer
+      </button>
+    </div>
+    <div class="history-list">
+      <div
+        *ngFor="let conv of getFilteredConversations()"
+        class="history-item"
+        (click)="loadConversation(conv)"
+      >
+        <div class="history-item-info">
+          <i class="fas fa-comment-dots"></i>
+          <div>
+            <div class="history-item-name">{{ conv.name }}</div>
+            <div class="history-item-date">
+              {{ conv.timestamp | date: "dd/MM/yyyy HH:mm" }}
+            </div>
+          </div>
+        </div>
+        <button
+          class="delete-conv-btn"
+          (click)="deleteConversation(conv.id, $event)"
+          title="Supprimer"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div *ngIf="getFilteredConversations().length === 0" class="no-history">
+        <i class="fas fa-inbox"></i>
+        <p>Aucune conversation enregistrée</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages Area -->
+  <div class="chat-messages" #chatMessages>
+    <!-- Mode Batch Panel -->
+    <div *ngIf="batchMode" class="batch-panel glass-effect">
+      <div class="batch-header">
+        <i class="fas fa-layer-group batch-icon"></i>
+        <h3>Batch Generation</h3>
+      </div>
+      <div class="batch-input-group">
+        <div class="input-wrapper">
+          <i class="fas fa-tag"></i>
+          <input
+            type="text"
+            [(ngModel)]="batchTopic"
+            placeholder="Enter topic..."
+            class="batch-input"
+            [disabled]="loading"
+          />
+        </div>
+        <div class="input-wrapper">
+          <i class="fas fa-hashtag"></i>
+          <input
+            type="number"
+            [(ngModel)]="batchCount"
+            min="1"
+            max="10"
+            class="batch-count"
+            [disabled]="loading"
+          />
+        </div>
+        <button
+          (click)="generateBatchQuestions()"
+          [disabled]="loading || !batchTopic.trim()"
+          class="batch-generate-btn"
+        >
+          <i class="fas fa-magic"></i> Generate {{ batchCount }} questions
+        </button>
+      </div>
+
+      <div *ngIf="loading && batchMode" class="batch-loading">
+        <div class="spinner"></div>
+        <span>Generating questions...</span>
+      </div>
+
+      <div *ngIf="generatedQuestions.length > 0" class="generated-questions">
+        <h4><i class="fas fa-check-circle"></i> Generated Questions:</h4>
+        <div *ngFor="let q of generatedQuestions" class="question-card">
+          <div class="question-number">{{ q.id }}</div>
+          <div class="question-type">
+            <i class="fas fa-question-circle"></i> {{ q.type }}
+          </div>
+          <div class="question-text">{{ q.question }}</div>
+          <button
+            class="copy-question-btn"
+            (click)="copyToClipboard(q.question)"
+            title="Copy"
+          >
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Welcome Message -->
+    <div
+      *ngIf="chatHistory.length === 0 && !batchMode"
+      class="welcome-message glass-effect"
+    >
+      <div class="welcome-icon"><i class="fas fa-robot"></i></div>
+      <h3>Welcome to AI Question Generator</h3>
+      <p>
+        Generate intelligent questions for your surveys, quizzes, and
+        assessments
+      </p>
+      <div class="features">
+        <div class="feature-item">
+          <i class="fas fa-globe"></i><span>Multilingual Support</span>
+        </div>
+        <div class="feature-item">
+          <i class="fas fa-microphone"></i><span>Voice Input</span>
+        </div>
+        <div class="feature-item">
+          <i class="fas fa-layer-group"></i><span>Batch Generation</span>
+        </div>
+        <div class="feature-item">
+          <i class="fas fa-lightbulb"></i><span>Smart Suggestions</span>
+        </div>
+        <div class="feature-item">
+          <i class="fas fa-edit"></i><span>Edit Messages</span>
+        </div>
+        <div class="feature-item">
+          <i class="fas fa-history"></i><span>Chat History</span>
+        </div>
+      </div>
+      <div class="suggestions-grid">
+        <button
+          *ngFor="let suggestion of suggestions"
+          class="suggestion-chip"
+          (click)="useSuggestion(suggestion)"
+        >
+          <i class="fas fa-star"></i> {{ suggestion }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div *ngFor="let message of chatHistory" class="message-wrapper">
+      <!-- Mode édition -->
+      <div *ngIf="editingMessage?.id === message.id" class="edit-mode">
+        <textarea
+          [(ngModel)]="editContent"
+          class="edit-textarea"
+          rows="3"
+        ></textarea>
+        <div class="edit-actions">
+          <button class="save-edit-btn" (click)="saveEdit()">
+            <i class="fas fa-save"></i> Sauvegarder
+          </button>
+          <button class="cancel-edit-btn" (click)="cancelEdit()">
+            <i class="fas fa-times"></i> Annuler
+          </button>
+        </div>
+      </div>
+
+      <!-- Affichage normal -->
+      <div
+        *ngIf="editingMessage?.id !== message.id"
+        class="message"
+        [class]="message.type"
+      >
+        <div class="message-avatar" [class]="message.type">
+          <i [class]="getMessageIcon(message.type)"></i>
+        </div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-sender">
+              <i class="fas fa-user-check"></i>
+              {{
+                message.type === "user"
+                  ? "You"
+                  : message.type === "ai"
+                    ? "AI Assistant"
+                    : "System"
+              }}
+            </span>
+            <span class="message-time">
+              <i class="far fa-clock"></i>
+              {{ message.timestamp | date: "HH:mm" }}
+            </span>
+          </div>
+          <div
+            class="message-text"
+            [dir]="selectedLanguage === 'ar' ? 'rtl' : 'ltr'"
+          >
+            {{ message.content }}
+          </div>
+
+          <div
+            *ngIf="message.type === 'ai' && message.status === 'generating'"
+            class="progress-container"
+          >
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                [style.width.%]="message.progress || 0"
+              ></div>
+            </div>
+            <span class="progress-text"
+              ><i class="fas fa-spinner fa-spin"></i> Generating...
+              {{ message.progress || 0 }}%</span
+            >
+          </div>
+
+          <!-- Actions pour les messages user et ai -->
+          <div
+            *ngIf="
+              (message.type === 'user' || message.type === 'ai') &&
+              message.status === 'completed'
+            "
+            class="message-actions"
+          >
+            <button
+              class="action-btn"
+              (click)="copyToClipboard(message.content)"
+            >
+              <i class="fas fa-copy"></i> Copy
+            </button>
+            <button class="action-btn" (click)="editMessage(message)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="action-btn" (click)="deleteMessage(message.id)">
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+            <button class="action-btn" (click)="regenerateQuestion(message)">
+              <i class="fas fa-sync-alt"></i> Regenerate
+            </button>
+            <button
+              *ngIf="message.type === 'ai'"
+              class="action-btn"
+              (click)="speakText(message.content)"
+              [disabled]="!isSpeechEnabled"
+            >
+              <i
+                [class]="
+                  isSpeechEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute'
+                "
+              ></i>
+              Listen
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div *ngIf="loading && !batchMode" class="typing-indicator">
+      <div class="typing-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <span class="typing-text">AI is thinking...</span>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="chat-input-area" *ngIf="!batchMode">
+    <div class="input-container">
+      <div class="input-wrapper">
+        <textarea
+          [(ngModel)]="userInput"
+          (keydown.enter)="generateQuestion(); $event.preventDefault()"
+          placeholder="Ask me to generate a question... (Press Enter to send)"
+          rows="2"
+          [disabled]="loading"
+          class="chat-input"
+          [dir]="selectedLanguage === 'ar' ? 'rtl' : 'ltr'"
+        ></textarea>
+      </div>
+      <button
+        (click)="toggleListening()"
+        [disabled]="loading"
+        class="mic-btn"
+        [class.listening]="isListening"
+        title="Voice recognition"
+      >
+        <i class="fas fa-microphone"></i>
+      </button>
+      <button
+        (click)="generateQuestion()"
+        [disabled]="loading || !userInput.trim()"
+        class="send-btn"
+      >
+        <i class="fas fa-paper-plane"></i><span *ngIf="!loading">Send</span
+        ><i *ngIf="loading" class="fas fa-spinner fa-spin"></i>
+      </button>
+    </div>
+    <div class="input-hints">
+      <span><i class="fas fa-keyboard"></i> Press Enter to send</span>
+      <span *ngIf="isListening" class="listening-indicator"
+        ><i class="fas fa-circle"></i> Listening... Speak now</span
+      >
+      <span *ngIf="!isConnected" class="warning"
+        ><i class="fas fa-exclamation-triangle"></i> Connecting to AI...</span
+      >
+      <span *ngIf="errorMessage" class="error-message"
+        ><i class="fas fa-times-circle"></i> {{ errorMessage }}</span
+      >
+      <span *ngIf="!isSpeechEnabled" class="speech-disabled"
+        ><i class="fas fa-volume-mute"></i> Voice disabled</span
+      >
+    </div>
+  </div>
+
+  <button
+    *ngIf="chatHistory.length > 3"
+    class="scroll-indicator"
+    (click)="scrollToBottomManual()"
+    title="Scroll to bottom"
+  >
+    <i class="fas fa-arrow-down"></i>
+  </button>
+</div>

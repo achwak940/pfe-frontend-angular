@@ -9,31 +9,58 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 10% 20%, rgba(157, 80, 187, 0.1) 0%, transparent 30%),
-              radial-gradient(circle at 90% 80%, rgba(107, 70, 193, 0.1) 0%, transparent 30%),
-              linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+  background: radial-gradient(circle at 10% 20%, rgba(157, 80, 187, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(107, 70, 193, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(66, 153, 225, 0.05) 0%, transparent 50%),
+              linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   padding: 20px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Effet de particules animées */
+.login-container::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle, rgba(157, 80, 187, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: float 60s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate(40px, 40px) rotate(360deg);
+  }
 }
 
 .login-card {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
-  border-radius: 32px;
-  box-shadow: 0 25px 50px -12px rgba(157, 80, 187, 0.25),
-              0 4px 12px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 48px;
+  box-shadow: 0 25px 50px -12px rgba(157, 80, 187, 0.3),
+              0 4px 20px 0 rgba(0, 0, 0, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8);
   padding: 48px;
   width: 100%;
-  max-width: 460px;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-              box-shadow 0.4s ease;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  text-align: center;
+  max-width: 500px;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  position: relative;
+  z-index: 1;
 }
 
 .login-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 35px 60px -15px rgba(157, 80, 187, 0.35);
+  transform: translateY(-10px) scale(1.01);
+  box-shadow: 0 35px 60px -15px rgba(157, 80, 187, 0.4);
 }
 
 /* Logo Styles */
@@ -44,29 +71,38 @@
 }
 
 .logo-circle {
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, rgba(157, 80, 187, 0.1) 0%, rgba(107, 70, 193, 0.1) 100%);
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(157, 80, 187, 0.15) 0%, rgba(107, 70, 193, 0.15) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9D50BB;
-  transition: all 0.3s ease;
-  border: 2px solid rgba(157, 80, 187, 0.2);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border: 2px solid rgba(157, 80, 187, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(157, 80, 187, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(157, 80, 187, 0);
+  }
 }
 
 .logo-circle svg {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   stroke: #9D50BB;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
 }
 
 .logo-circle:hover {
-  transform: scale(1.05);
-  background: linear-gradient(135deg, rgba(157, 80, 187, 0.15) 0%, rgba(107, 70, 193, 0.15) 100%);
-  border-color: rgba(157, 80, 187, 0.3);
+  transform: scale(1.1) rotate(5deg);
+  background: linear-gradient(135deg, rgba(157, 80, 187, 0.25) 0%, rgba(107, 70, 193, 0.25) 100%);
+  border-color: rgba(157, 80, 187, 0.5);
 }
 
 .logo-circle:hover svg {
@@ -77,14 +113,25 @@
 /* Header Text */
 .welcome-title {
   color: #1a202c;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 800;
   margin-bottom: 8px;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #9D50BB 0%, #6B46C1 100%);
+  background: linear-gradient(135deg, #9D50BB 0%, #6B46C1 50%, #4299E1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
 }
 
 .welcome-subtitle {
@@ -93,6 +140,74 @@
   margin-bottom: 32px;
   line-height: 1.6;
   font-weight: 400;
+}
+
+/* Social Login */
+.social-login {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.social-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #4a5568;
+  font-family: 'Inter', sans-serif;
+}
+
+.social-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.1);
+}
+
+.google-btn:hover {
+  border-color: #4285F4;
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+}
+
+.github-btn:hover {
+  border-color: #24292e;
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.google-icon, .github-btn svg {
+  margin-right: 4px;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #cbd5e0, transparent);
+}
+
+.divider-text {
+  color: #a0aec0;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Form Styles */
@@ -111,23 +226,29 @@ form {
 
 .form-group label {
   color: #4a5568;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-left: 4px;
+  letter-spacing: 0.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.required-star {
+  color: #e53e3e;
+  font-size: 12px;
 }
 
 .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  transition: all 0.3s ease;
 }
 
 .input-icon {
   position: absolute;
-  left: 18px;
+  left: 16px;
   color: #9D50BB;
   z-index: 1;
   transition: all 0.3s ease;
@@ -135,20 +256,61 @@ form {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
-.input-icon svg {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
+.input-valid-icon {
+  position: absolute;
+  right: 50px;
+  color: #48bb78;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.toggle-password {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a0aec0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+  z-index: 2;
+}
+
+.toggle-password:hover {
+  color: #9D50BB;
+  transform: scale(1.1);
+}
+
+.toggle-password:focus {
+  outline: none;
 }
 
 .form-control {
   width: 100%;
-  padding: 16px 16px 16px 52px;
+  padding: 14px 16px 14px 48px;
   font-size: 15px;
   border: 2px solid #e2e8f0;
-  border-radius: 18px;
+  border-radius: 20px;
   background: white;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
@@ -161,53 +323,147 @@ form {
   border-color: #9D50BB;
   box-shadow: 0 0 0 4px rgba(157, 80, 187, 0.15);
   background: white;
+  padding-left: 48px;
 }
 
 .form-control:focus ~ .input-icon {
   color: #6B46C1;
   opacity: 1;
-  transform: scale(1.1);
+  transform: scale(1.1) translateX(-2px);
 }
 
 .form-control.ng-invalid.ng-touched {
-  border-color: #e53e3e;
+  border-color: #fc8181;
   background: #fff5f5;
 }
 
 .form-control.ng-invalid.ng-touched ~ .input-icon {
-  color: #e53e3e;
+  color: #fc8181;
+}
+
+.form-control.ng-valid.ng-touched {
+  border-color: #48bb78;
+}
+
+/* Form Options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e0;
+  border-radius: 6px;
+  margin-right: 10px;
+  transition: all 0.2s ease;
+  display: inline-block;
+  position: relative;
+  background: white;
+}
+
+.checkbox-label:hover .checkbox-custom {
+  border-color: #9D50BB;
+}
+
+.checkbox-input:checked ~ .checkbox-custom {
+  background: linear-gradient(135deg, #9D50BB, #6B46C1);
+  border-color: #9D50BB;
+}
+
+.checkbox-input:checked ~ .checkbox-custom::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.checkbox-text {
+  color: #4a5568;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.forgot-password {
+  text-align: right;
+}
+
+.forgot-password a {
+  color: #9D50BB;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.forgot-password a:hover {
+  color: #6B46C1;
+  border-bottom-color: #6B46C1;
 }
 
 /* Error Messages */
 .error-message {
   color: #e53e3e;
-  font-size: 13px;
+  font-size: 12px;
   margin-top: 4px;
-  padding-left: 16px;
-  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(229, 62, 62, 0.05);
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 12px;
+  background: rgba(229, 62, 62, 0.08);
   border-left: 3px solid #e53e3e;
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .error-message div {
   margin: 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Alert Message */
 .alert {
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-radius: 16px;
   font-size: 14px;
   font-weight: 500;
   animation: slideDown 0.4s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .alert-danger {
-  color: #e53e3e;
+  color: #c53030;
   background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
   border: 1px solid #fc8181;
+}
+
+.alert-icon {
+  flex-shrink: 0;
 }
 
 /* Submit Button */
@@ -216,20 +472,39 @@ form {
   background-size: 200% auto;
   color: white;
   border: none;
-  padding: 16px 32px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 18px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 24px;
   cursor: pointer;
-  transition: all 0.4s ease;
-  margin-top: 16px;
-  box-shadow: 0 10px 25px -5px rgba(157, 80, 187, 0.4);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 8px;
+  box-shadow: 0 10px 20px -5px rgba(157, 80, 187, 0.4);
   position: relative;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-icon {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.btn-submit:hover:not(:disabled) .btn-icon {
+  transform: translateX(5px);
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -251,7 +526,7 @@ form {
   transform: none;
 }
 
-.btn-submit::after {
+.btn-submit::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -264,9 +539,63 @@ form {
   transition: width 0.6s, height 0.6s;
 }
 
-.btn-submit:hover:not(:disabled)::after {
+.btn-submit:hover:not(:disabled)::before {
   width: 300px;
   height: 300px;
+}
+
+/* Loading state animation */
+.btn-submit:disabled {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-submit:disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Signup Link */
+.signup-link {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.signup-link span {
+  color: #718096;
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+.signup-link a {
+  color: #9D50BB;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.signup-link a:hover {
+  color: #6B46C1;
+  border-bottom-color: #6B46C1;
 }
 
 /* Animations */
@@ -285,7 +614,7 @@ form {
 @media (max-width: 640px) {
   .login-card {
     padding: 32px 24px;
-    border-radius: 28px;
+    border-radius: 32px;
   }
   
   .welcome-title {
@@ -293,8 +622,8 @@ form {
   }
   
   .welcome-subtitle {
-    font-size: 15px;
-    margin-bottom: 28px;
+    font-size: 14px;
+    margin-bottom: 24px;
   }
   
   .logo-circle {
@@ -307,29 +636,58 @@ form {
     height: 30px;
   }
   
+  .social-login {
+    flex-direction: column;
+  }
+  
+  .social-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  
   .form-control {
-    padding: 15px 15px 15px 48px;
-    font-size: 15px;
+    padding: 12px 16px 12px 44px;
+    font-size: 14px;
     border-radius: 16px;
   }
   
   .input-icon {
-    left: 16px;
+    left: 14px;
   }
   
   .input-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .input-valid-icon {
+    right: 45px;
+  }
+  
+  .toggle-password {
+    right: 14px;
   }
   
   .btn-submit {
-    padding: 15px 28px;
-    font-size: 15px;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 20px;
+  }
+  
+  .form-options {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
   }
   
   .error-message {
-    font-size: 12px;
-    padding: 6px 14px;
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  
+  .signup-link span,
+  .signup-link a {
+    font-size: 13px;
   }
 }
 
@@ -343,27 +701,649 @@ form {
     font-size: 24px;
   }
   
-  .form-group label {
+  .welcome-subtitle {
     font-size: 13px;
+  }
+  
+  .form-group label {
+    font-size: 12px;
+  }
+  
+  .logo-circle {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .logo-circle svg {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .social-btn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+  
+  .divider-text {
+    font-size: 10px;
   }
 }
 
-/* Optional: Add a "Forgot Password" link style if needed */
-.forgot-password {
-  text-align: right;
-  margin-top: 8px;
+/* Tablette */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .login-card {
+    max-width: 460px;
+    padding: 40px;
+  }
+  
+  .welcome-title {
+    font-size: 32px;
+  }
 }
 
-.forgot-password a {
-  color: #9D50BB;
-  text-decoration: none;
+/* Support pour les écrans très hauts */
+@media (min-height: 900px) {
+  .login-container {
+    align-items: center;
+  }
+  
+  .login-card {
+    margin: 40px 0;
+  }
+}
+
+/* Style pour l'autofill des navigateurs */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #1a202c !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Amélioration de l'accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible pour l'accessibilité */
+:focus-visible {
+  outline: 2px solid #9D50BB;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbar personnalisée (optionnel) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #9D50BB, #6B46C1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6B46C1;
+}
+/* AUGMENTATION DE LA LARGEUR DU FORMULAIRE */
+
+/* Augmentation de la largeur de la carte principale */
+.login-card {
+  max-width: 580px; /* Changé de 460px/500px à 580px */
+  padding: 52px; /* Augmentation du padding intérieur */
+}
+
+/* Pour les écrans de taille moyenne */
+@media (min-width: 768px) {
+  .login-card {
+    max-width: 620px; /* Encore plus large sur les grands écrans */
+    padding: 56px;
+  }
+}
+
+/* Pour les très grands écrans */
+@media (min-width: 1200px) {
+  .login-card {
+    max-width: 680px; /* Largeur maximale pour les grands écrans */
+    padding: 64px;
+  }
+}
+
+/* Augmentation de la taille des champs de formulaire */
+.form-control {
+  padding: 16px 20px 16px 56px; /* Plus de padding pour des champs plus grands */
+  font-size: 16px; /* Police légèrement plus grande */
+  border-radius: 24px; /* Coins plus arrondis */
+}
+
+.input-icon {
+  left: 20px; /* Décalage de l'icône pour correspondre au nouveau padding */
+}
+
+.input-icon svg {
+  width: 22px; /* Icônes plus grandes */
+  height: 22px;
+}
+
+/* Agrandissement du bouton de soumission */
+.btn-submit {
+  padding: 18px 32px;
+  font-size: 17px;
+  border-radius: 28px;
+  margin-top: 24px;
+}
+
+/* Agrandissement des boutons sociaux */
+.social-btn {
+  padding: 14px 20px;
+  font-size: 15px;
+  border-radius: 24px;
+}
+
+.social-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Agrandissement des labels */
+.form-group label {
   font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid transparent;
+  margin-bottom: 4px;
 }
 
-.forgot-password a:hover {
-  color: #6B46C1;
-  border-bottom-color: #6B46C1;
+/* Agrandissement du titre */
+.welcome-title {
+  font-size: 42px; /* Titre plus grand */
+  margin-bottom: 12px;
+}
+
+.welcome-subtitle {
+  font-size: 18px;
+  margin-bottom: 40px;
+}
+
+/* Agrandissement du logo */
+.logo-circle {
+  width: 90px;
+  height: 90px;
+}
+
+.logo-circle svg {
+  width: 45px;
+  height: 45px;
+}
+
+/* Ajustement des espacements */
+.divider {
+  margin: 32px 0;
+}
+
+.divider-text {
+  font-size: 14px;
+}
+
+.form-options {
+  margin: 16px 0;
+}
+
+.checkbox-text,
+.forgot-password a {
+  font-size: 15px;
+}
+
+.signup-link {
+  margin-top: 32px;
+  padding-top: 24px;
+}
+
+.signup-link span,
+.signup-link a {
+  font-size: 15px;
+}
+
+/* Ajustement des messages d'erreur */
+.error-message {
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 14px;
+}
+
+/* Ajustement des alertes */
+.alert {
+  padding: 14px 20px;
+  font-size: 15px;
+  border-radius: 20px;
+}
+
+/* Espacement entre les champs du formulaire */
+form {
+  gap: 24px;
+}
+
+/* Largeur des champs sur mobile */
+@media (max-width: 640px) {
+  .login-card {
+    max-width: 100%;
+    padding: 32px 24px;
+  }
+  
+  .welcome-title {
+    font-size: 32px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 16px;
+  }
+  
+  .logo-circle {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .logo-circle svg {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .form-control {
+    padding: 14px 16px 14px 52px;
+    font-size: 15px;
+  }
+  
+  .btn-submit {
+    padding: 16px 28px;
+    font-size: 16px;
+  }
+}
+
+/* Ajustement pour les tablettes */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .login-card {
+    max-width: 560px;
+    padding: 48px;
+  }
+  
+  .welcome-title {
+    font-size: 38px;
+  }
+  
+  .form-control {
+    padding: 15px 18px 15px 54px;
+  }
+}
+
+/* Animation d'agrandissement au survol */
+.login-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.login-card:hover {
+  transform: translateY(-8px) scale(1.02); /* Scale ajouté pour l'effet d'agrandissement */
+  box-shadow: 0 35px 60px -15px rgba(157, 80, 187, 0.4);
+}
+
+/* Ajustement de la largeur du conteneur des icônes de validation */
+.input-valid-icon {
+  right: 60px; /* Ajusté pour la nouvelle largeur */
+}
+
+.toggle-password {
+  right: 20px; /* Ajusté pour la nouvelle largeur */
+}
+
+/* Pour les champs avec icône de validation active */
+.form-control:valid.ng-touched ~ .input-valid-icon {
+  display: flex;
+}
+
+/* Amélioration de la lisibilité sur grands écrans */
+@media (min-width: 1400px) {
+  .login-card {
+    max-width: 720px;
+    padding: 72px;
+  }
+  
+  .welcome-title {
+    font-size: 48px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 20px;
+  }
+  
+  .form-control {
+    padding: 18px 22px 18px 60px;
+    font-size: 17px;
+  }
+  
+  .input-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .btn-submit {
+    padding: 20px 36px;
+    font-size: 18px;
+  }
+  
+  .social-btn {
+    padding: 16px 24px;
+    font-size: 16px;
+  }
+}
+
+/* Effet de focus amélioré pour les grands champs */
+.form-control:focus {
+  border-width: 2px;
+  box-shadow: 0 0 0 6px rgba(157, 80, 187, 0.15);
+}
+
+/* Ajustement des espacements intérieurs du formulaire */
+.form-group {
+  gap: 10px;
+}
+
+/* Barre de progression de chargement plus large */
+.btn-submit:disabled::after {
+  width: 200%;
+  height: 100%;
+}
+
+/* Ajustement des marges pour les écrans de hauteur moyenne */
+@media (min-height: 800px) and (max-height: 1000px) {
+  .login-card {
+    margin: 20px auto;
+  }
+  
+  .form-group {
+    gap: 8px;
+  }
+  
+  .social-login {
+    margin-bottom: 20px;
+  }
+}
+
+/* Style optionnel : ajouter une bordure décorative plus large */
+.login-card {
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  position: relative;
+}
+
+/* Effet de brillance sur les bords */
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #9D50BB, #6B46C1, #4299E1);
+  border-radius: 50px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.login-card:hover::before {
+  opacity: 0.1;
+}
+/* CENTRAGE DU TITRE WELCOME BACK */
+
+/* Centrage du titre principal */
+.welcome-title {
+  text-align: center;
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Centrage du sous-titre */
+.welcome-subtitle {
+  text-align: center;
+  display: block;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Centrage de tous les textes de la carte */
+.login-card {
+  text-align: center;
+}
+
+/* Mais les formulaires doivent rester alignés à gauche */
+form {
+  text-align: left;
+}
+
+/* Ajustement des marges pour un meilleur centrage */
+.logo-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* S'assurer que le conteneur du titre prend toute la largeur */
+.login-card > .welcome-title,
+.login-card > .welcome-subtitle {
+  width: 100%;
+  display: block;
+}
+
+/* Alternative avec flexbox pour un contrôle parfait */
+.login-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Mais le formulaire doit garder sa largeur normale */
+form {
+  width: 100%;
+}
+
+/* Ajustement des espacements verticaux */
+.welcome-title {
+  margin-bottom: 12px;
+  margin-top: 0;
+}
+
+.welcome-subtitle {
+  margin-bottom: 32px;
+  margin-top: 0;
+}
+
+/* Pour les écrans mobiles */
+@media (max-width: 640px) {
+  .welcome-title {
+    margin-bottom: 8px;
+  }
+  
+  .welcome-subtitle {
+    margin-bottom: 24px;
+  }
+}
+
+/* Option : ajouter une ligne décorative sous le titre (optionnel) */
+.welcome-title::after {
+  content: '';
+  display: none; /* Désactivé par défaut, activable si besoin */
+}
+
+/* Pour activer la ligne décorative, décommentez ceci :
+.welcome-title {
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.welcome-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #9D50BB, #6B46C1);
+  border-radius: 3px;
+  display: block;
+}
+*/
+
+/* Centrage parfait avec grid (solution alternative) */
+.login-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.login-card > *:not(form) {
+  width: 100%;
+}
+
+form {
+  justify-self: stretch;
+}
+
+/* S'assurer que les icônes restent bien positionnées */
+.input-wrapper {
+  width: 100%;
+}
+
+/* Ajustement pour que le conteneur des options reste aligné */
+.form-options {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Centrage du texte dans les boutons sociaux */
+.social-btn {
+  justify-content: center;
+}
+
+/* Centrage du diviseur */
+.divider {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Centrage du lien d'inscription */
+.signup-link {
+  text-align: center;
+  width: 100%;
+}
+
+/* Amélioration de l'alignement vertical global */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* Effet de brillance centré sur le titre (optionnel) */
+.welcome-title {
+  background: linear-gradient(135deg, #9D50BB 0%, #6B46C1 50%, #4299E1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+  display: inline-block;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Pour éviter que le titre ne prenne trop de largeur sur grands écrans */
+@media (min-width: 1200px) {
+  .welcome-title {
+    max-width: 100%;
+  }
+}
+
+/* Correction du centrage vertical de la carte */
+.login-card {
+  margin: 0 auto;
+}
+
+/* S'assurer que tous les éléments sont bien centrés horizontalement */
+.logo-wrapper,
+.social-login,
+.divider,
+.btn-submit,
+.signup-link {
+  width: 100%;
+}
+
+/* Ajustement spécifique pour le conteneur des boutons sociaux */
+.social-login {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.social-btn {
+  flex: 1;
+}
+
+/* Pour mobile, les boutons sociaux restent en colonne */
+@media (max-width: 640px) {
+  .social-login {
+    flex-direction: column;
+  }
+  
+  .social-btn {
+    width: 100%;
+  }
+}
+
+/* Correction de l'alignement des icônes dans les champs */
+.input-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+/* Amélioration du centrage du texte du titre avec fallback */
+.welcome-title {
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: block !important;
+}
+
+.welcome-subtitle {
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: block !important;
 }

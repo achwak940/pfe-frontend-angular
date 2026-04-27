@@ -27,50 +27,50 @@
             <span *ngIf="!sidebarCollapsed">Dashboard Admin</span>
           </a>
         </li>
-        <li [class.active]="isActive('/gestionEnquete')">
-          <a (click)="navigateTo('/gestionEnquete')">
+        <li [class.active]="isActive('/admin-dashboard/gestionEnquete')">
+          <a (click)="navigateTo('/admin-dashboard/gestionEnquete')">
             <i class="fas fa-poll"></i>
             <span *ngIf="!sidebarCollapsed">Gestion des enquêtes</span>
           </a>
         </li>
-        <li [class.active]="isActive('/gestionQuestions')">
-          <a (click)="navigateTo('/gestionQuestions')">
+        <li [class.active]="isActive('/admin-dashboard/gestionQuestions')">
+          <a (click)="navigateTo('/admin-dashboard/gestionQuestions')">
             <i class="fas fa-question-circle"></i>
             <span *ngIf="!sidebarCollapsed">Gestion des questions</span>
           </a>
         </li>
-        <li [class.active]="isActive('/usersNotifier')">
-          <a (click)="navigateTo('/usersNotifier')">
+        <li [class.active]="isActive('/admin-dashboard/usersNotifier')">
+          <a (click)="navigateTo('/admin-dashboard/usersNotifier')">
             <i class="fas fa-users"></i>
             <span *ngIf="!sidebarCollapsed">Utilisateurs</span>
           </a>
         </li>
-        <li [class.active]="isActive('/gestionReclamation')">
-          <a (click)="navigateTo('/gestionReclamation')">
+        <li [class.active]="isActive('/admin-dashboard/gestionReclamation')">
+          <a (click)="navigateTo('/admin-dashboard/gestionReclamation')">
             <i class="fas fa-clipboard-list"></i> 
             <span *ngIf="!sidebarCollapsed">Gestion Réclamations</span>
           </a>
         </li>
-        <li [class.active]="isActive('/AnalyseReporting')">
-          <a (click)="navigateTo('/AnalyseReporting')">
+        <li [class.active]="isActive('/admin-dashboard/AnalyseReporting')">
+          <a (click)="navigateTo('/admin-dashboard/AnalyseReporting')">
             <i class="fas fa-chart-bar"></i>
             <span *ngIf="!sidebarCollapsed">Analyse & Reporting</span>
           </a>
         </li>
-        <li [class.active]="isActive('/userReponses')">
-          <a (click)="navigateTo('/userReponses')">
+        <li [class.active]="isActive('/admin-dashboard/userReponses')">
+          <a (click)="navigateTo('/admin-dashboard/userReponses')">
             <i class="fas fa-message"></i>
             <span *ngIf="!sidebarCollapsed">Réponses</span>
           </a>
         </li>
-        <li [class.active]="isActive('/feedback')">
-          <a (click)="navigateTo('/feedback')">
+        <li [class.active]="isActive('/admin-dashboard/feedback')">
+          <a (click)="navigateTo('/admin-dashboard/feedback')">
             <i class="fas fa-comment-dots"></i>
             <span *ngIf="!sidebarCollapsed">Feedback & Support</span>
           </a>
         </li>
-        <li [class.active]="isActive('/QuestionIA')">
-          <a (click)="navigateTo('/QuestionIA')">
+        <li [class.active]="isActive('/admin-dashboard/QuestionIA')">
+          <a (click)="navigateTo('/admin-dashboard/QuestionIA')">
             <i class="fas fa-robot"></i>
             <span *ngIf="!sidebarCollapsed">Gestion IA</span>
           </a>
@@ -394,19 +394,19 @@
           <div class="quick-actions">
             <h3>Actions rapides</h3>
             <div class="actions-grid">
-              <button class="action-btn primary" (click)="navigateTo('/gestionEnquete')">
+              <button class="action-btn primary" (click)="navigateTo('/admin-dashboard/gestionEnquete')">
                 <i class="fas fa-plus-circle"></i>
                 <span>Nouvelle enquête</span>
               </button>
-              <button class="action-btn secondary" (click)="navigateTo('/gestionQuestions')">
+              <button class="action-btn secondary" (click)="navigateTo('/admin-dashboard/gestionQuestions')">
                 <i class="fas fa-question-circle"></i>
                 <span>Gérer les questions</span>
               </button>
-              <button class="action-btn success" (click)="navigateTo('/AnalyseReporting')">
+              <button class="action-btn success" (click)="navigateTo('/admin-dashboard/AnalyseReporting')">
                 <i class="fas fa-chart-bar"></i>
                 <span>Voir les analyses</span>
               </button>
-              <button class="action-btn warning" (click)="navigateTo('/QuestionIA')">
+              <button class="action-btn warning" (click)="navigateTo('/admin-dashboard/QuestionIA')">
                 <i class="fas fa-robot"></i>
                 <span>Générer avec IA</span>
               </button>

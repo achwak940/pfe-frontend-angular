@@ -14,6 +14,7 @@ import { EnqueteDetailsComponent } from './enquete-details/enquete-details.compo
 import { UserResponsesComponent } from './user-responses/user-responses.component';
 import { UsersComponent } from './users/users.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AiQuestionComponent } from 'src/app/chatBot/ai-question/ai-question.component';
 
 const routes: Routes = [
   { 
@@ -30,7 +31,10 @@ const routes: Routes = [
       { path: 'gestionReclamation', component: GestionReclamationComponent },
        { path: 'DetailEnquete/:id', component: EnqueteDetailsComponent },
          { path: 'userReponses', component: UserResponsesComponent },
+           { path: 'chatbot', component: AiQuestionComponent },
          { path: 'usersNotifier', component: UsersComponent },
+                  { path: 'yolo', component: UsersComponent },
+
     ] 
   }
 ];

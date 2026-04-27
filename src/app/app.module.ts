@@ -10,12 +10,13 @@ import { DashboardAdminModule } from './dashboard/dashboard-admin/dashboard-admi
 import { YoloPredictComponent } from './yolo-predict/yolo-predict.component';
 import { ProfilComponent } from './gestionProfil/profil/profil.component';
 import { ModfifierProfilComponent } from './gestionProfil/modfifier-profil/modfifier-profil.component';
+import { AiQuestionComponent } from './chatBot/ai-question/ai-question.component';
 
 // ✅ SUPPRIMEZ CETTE IMPORTATION
 // import { DashboardAdminModule } from './dashboard/dashboard-admin/dashboard-admin.module';
 
 @NgModule({
-  declarations: [AppComponent, YoloPredictComponent, ProfilComponent, ModfifierProfilComponent],
+  declarations: [AppComponent, YoloPredictComponent, ProfilComponent, ModfifierProfilComponent, AiQuestionComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,

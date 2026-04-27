@@ -1,1737 +1,288 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des réclamations - Analyse IA des défauts produits</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* ===== VARIABLES ===== */
-        :root {
-            --purple: #9D50BB;
-            --purple-light: #b46fd3;
-            --purple-dark: #7a3b9a;
-            --purple-soft: #f3e5f5;
-            --bg-light: #ffffff;
-            --surface: #f8f9fe;
-            --border: #eef2f6;
-            --text-dark: #1a1a2c;
-            --text-soft: #4f5b6b;
-            --text-light: #7c8a9a;
-            --success: #2ecc71;
-            --success-light: #d5f5e3;
-            --warning: #f39c12;
-            --warning-light: #fef5e7;
-            --danger: #e74c3c;
-            --danger-light: #fdedec;
-            --info: #3498db;
-            --info-light: #e8f0fe;
-            --gray-badge: #f1f3f6;
-            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
-            --shadow-md: 0 8px 24px rgba(157, 80, 187, 0.08);
-            --shadow-lg: 0 20px 40px -12px rgba(157, 80, 187, 0.2);
-            --radius-sm: 12px;
-            --radius-md: 18px;
-            --radius-lg: 24px;
-            --radius-xl: 32px;
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* ===== BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            color: var(--text-dark);
-            width: 100%;
-        }
-
-        .container {
-            max-width: 100%;
-            width: 100%;
-            padding: 24px 32px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            min-height: 100vh;
-        }
-
-        /* ===== HEADER ===== */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-            padding: 1rem 0;
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: 1.5rem 2rem;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .header-left h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header-left h1 i {
-            background: var(--purple);
-            -webkit-background-clip: unset;
-            -webkit-text-fill-color: white;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            padding: 12px;
-            border-radius: var(--radius-lg);
-            font-size: 1.8rem;
-        }
-
-        .header-left .subtitle {
-            color: var(--text-soft);
-            margin: 0;
-            font-size: 1rem;
-            font-weight: 400;
-            padding-left: 16px;
-            border-left: 4px solid var(--purple-light);
-            background: rgba(194, 176, 240, 0.15);
-            border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
-            width: fit-content;
-            padding: 10px 24px;
-            font-weight: 500;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .stats-badge {
-            display: flex;
-            gap: 1rem;
-            padding: 0.5rem 1rem;
-            background: var(--surface);
-            border-radius: var(--radius-xl);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: var(--radius-xl);
-            background: white;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .stat-item i {
-            color: var(--purple);
-            font-size: 0.9rem;
-        }
-
-        /* ===== ANALYSE IA GLOBALE AVEC GRAVITÉ TOTALE ===== */
-        .ia-summary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: var(--radius-xl);
-            padding: 30px;
-            margin: 30px 0;
-            color: white;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 30px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .ia-summary-item {
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            backdrop-filter: blur(10px);
-        }
-
-        .ia-summary-item i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .ia-summary-item h4 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .ia-summary-item .value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .ia-summary-item .trend {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        /* ===== BOUTONS ===== */
-        .btn {
-            border: none;
-            padding: 0.8rem 1.8rem;
-            border-radius: var(--radius-xl);
-            font-weight: 600;
-            font-size: 0.95rem;
-            background: white;
-            color: var(--text-dark);
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            border: 1px solid var(--border);
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-light) 100%);
-            color: white;
-            border: none;
-            box-shadow: 0 8px 20px -8px rgba(157, 80, 187, 0.5);
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 100%);
-        }
-
-        /* ===== SECTION RECHERCHE ===== */
-        .search-section {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: 1.5rem 2rem;
-            margin: 2rem 0;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1.5rem;
-            border: 1px solid var(--border);
-        }
-
-        .search-wrapper {
-            display: flex;
-            align-items: center;
-            background: var(--surface);
-            border-radius: var(--radius-xl);
-            padding: 0.2rem 0.2rem 0.2rem 1.5rem;
-            border: 1px solid var(--border);
-            flex: 2 1 400px;
-            transition: var(--transition);
-        }
-
-        .search-wrapper:focus-within {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 4px rgba(157, 80, 187, 0.1);
-        }
-
-        .search-wrapper i {
-            color: var(--text-light);
-            font-size: 1rem;
-        }
-
-        .search-wrapper input {
-            border: none;
-            background: transparent;
-            padding: 1rem 1.2rem;
-            font-size: 1rem;
-            width: 100%;
-            outline: none;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
-            padding: 0.7rem 1.6rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-soft);
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .filter-btn:hover {
-            background: var(--purple-soft);
-            border-color: var(--purple-light);
-            color: var(--purple);
-        }
-
-        .filter-btn.active {
-            background: var(--purple);
-            border-color: var(--purple);
-            color: white;
-        }
-
-        /* ===== STATISTIQUES GLOBALES ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .stat-card-large {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: 25px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            transition: var(--transition);
-            border: 1px solid var(--border);
-        }
-
-        .stat-card-large:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--purple-soft), white);
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: var(--purple);
-            border: 1px solid var(--border);
-        }
-
-        .stat-content h3 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            line-height: 1.2;
-        }
-
-        .stat-content p {
-            color: var(--text-soft);
-            font-weight: 500;
-        }
-
-        /* ===== SECTION RECOMMANDATIONS OLLAMA ===== */
-        .ollama-section {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: 25px;
-            margin: 30px 0;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border);
-        }
-
-        .ollama-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .ollama-header i {
-            font-size: 2rem;
-            color: var(--purple);
-            background: var(--purple-soft);
-            padding: 15px;
-            border-radius: 50%;
-        }
-
-        .ollama-header h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .ollama-header span {
-            background: var(--success-light);
-            color: var(--success);
-            padding: 5px 15px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .recommendations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
-        .rec-card {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            border-left: 4px solid;
-            transition: var(--transition);
-        }
-
-        .rec-card:hover {
-            transform: translateX(5px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .rec-card.produit1 { border-left-color: var(--success); }
-        .rec-card.produit2 { border-left-color: var(--warning); }
-        .rec-card.produit3 { border-left-color: var(--danger); }
-
-        .rec-title {
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .rec-title i {
-            color: var(--purple);
-        }
-
-        .rec-problem {
-            background: white;
-            padding: 10px 15px;
-            border-radius: var(--radius-md);
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-
-        .rec-solution {
-            margin: 15px 0;
-            padding: 10px;
-            background: var(--info-light);
-            border-radius: var(--radius-md);
-            font-size: 0.9rem;
-        }
-
-        .rec-cost {
-            display: inline-block;
-            background: white;
-            padding: 8px 15px;
-            border-radius: 30px;
-            font-weight: 700;
-            color: var(--purple);
-            border: 1px solid var(--border);
-            margin-top: 10px;
-        }
-
-        .rec-gravity {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .gravity-bar {
-            flex: 1;
-            height: 8px;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .gravity-fill {
-            height: 100%;
-            border-radius: 4px;
-        }
-
-        /* ===== GRILLE DES RÉCLAMATIONS ===== */
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin: 40px 0 25px 0;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            color: var(--text-dark);
-        }
-
-        .section-title i {
-            color: var(--purple);
-            font-size: 2rem;
-        }
-
-        .section-title span {
-            font-size: 1rem;
-            background: var(--purple-soft);
-            padding: 6px 18px;
-            border-radius: 40px;
-            color: var(--purple);
-            margin-left: 15px;
-            font-weight: 600;
-        }
-
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-            gap: 30px;
-            margin: 30px 0 50px;
-        }
-
-        .claim-card {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: 25px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .claim-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, var(--purple), var(--purple-light));
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .claim-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .claim-card:hover::before {
-            opacity: 1;
-        }
-
-        .claim-card.elevee::before {
-            background: linear-gradient(90deg, var(--danger), #ff6b6b);
-        }
-
-        .claim-card.moyenne::before {
-            background: linear-gradient(90deg, var(--warning), #f1c40f);
-        }
-
-        .claim-card.faible::before {
-            background: linear-gradient(90deg, var(--success), #27ae60);
-        }
-
-        /* Header */
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .claim-id {
-            background: var(--surface);
-            padding: 6px 15px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .claim-id i {
-            color: var(--purple);
-        }
-
-        .status-badge {
-            padding: 6px 15px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .status-badge.attente { 
-            background: var(--warning-light); 
-            color: var(--warning); 
-        }
-
-        .status-badge.traitee { 
-            background: var(--success-light); 
-            color: var(--success); 
-        }
-
-        /* Date info */
-        .date-info {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding: 8px 12px;
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            font-size: 0.85rem;
-        }
-
-        .date-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-soft);
-        }
-
-        .date-item i {
-            color: var(--purple);
-        }
-
-        .date-item strong {
-            color: var(--text-dark);
-            margin-right: 3px;
-        }
-
-        /* User info - AVEC IMAGES AU LIEU DES INITIALES */
-        .user-section {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .user-image {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--purple-soft);
-            flex-shrink: 0;
-        }
-
-        .user-details {
-            flex: 1;
-        }
-
-        .user-name {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
-
-        .user-email {
-            color: var(--text-light);
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-        }
-
-        .user-meta {
-            display: flex;
-            gap: 15px;
-        }
-
-        .user-meta span {
-            font-size: 0.85rem;
-            color: var(--text-soft);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .user-meta i {
-            color: var(--purple);
-        }
-
-        /* Product info */
-        .product-section {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-            display: flex;
-            gap: 15px;
-        }
-
-        .product-icon-large {
-            width: 60px;
-            height: 60px;
-            background: white;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: var(--purple);
-            border: 1px solid var(--border);
-        }
-
-        .product-details {
-            flex: 1;
-        }
-
-        .product-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
-
-        .product-ref {
-            color: var(--text-light);
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-        }
-
-        .product-tags {
-            display: flex;
-            gap: 10px;
-        }
-
-        .product-tag {
-            background: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--purple);
-            border: 1px solid var(--border);
-        }
-
-        /* Analyse IA - CORRIGÉE AVEC PROBLÈME DÉTECTÉ */
-        .ia-analysis {
-            background: linear-gradient(135deg, #f6f9fc 0%, #f1f4fe 100%);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .ia-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .ia-header i {
-            font-size: 1.5rem;
-            color: var(--purple);
-        }
-
-        .ia-header h4 {
-            font-weight: 700;
-            color: var(--text-dark);
-            font-size: 1rem;
-        }
-
-        .ia-badge {
-            margin-left: auto;
-            background: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--purple);
-        }
-
-        .problem-detected {
-            background: var(--danger-light);
-            border-radius: var(--radius-md);
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-left: 4px solid var(--danger);
-        }
-
-        .problem-detected i {
-            color: var(--danger);
-            font-size: 1.2rem;
-        }
-
-        .problem-detected span {
-            font-weight: 600;
-            color: var(--danger);
-        }
-
-        .ia-metrics {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .metric-item {
-            background: white;
-            padding: 12px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-        }
-
-        .metric-label {
-            font-size: 0.75rem;
-            color: var(--text-light);
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .metric-value {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text-dark);
-        }
-
-        .metric-unit {
-            font-size: 0.8rem;
-            color: var(--text-light);
-            font-weight: 400;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: var(--border);
-            border-radius: 4px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--purple), var(--purple-light));
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .progress-fill.elevee {
-            background: linear-gradient(90deg, var(--danger), #ff6b6b);
-        }
-
-        .progress-fill.moyenne {
-            background: linear-gradient(90deg, var(--warning), #f1c40f);
-        }
-
-        .progress-fill.faible {
-            background: linear-gradient(90deg, var(--success), #27ae60);
-        }
-
-        .ia-tags {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .ia-tag {
-            background: white;
-            padding: 6px 15px;
-            border-radius: 25px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .ia-tag i {
-            color: var(--purple);
-        }
-
-        .ia-tag.high {
-            background: var(--danger-light);
-            color: var(--danger);
-            border-color: var(--danger);
-        }
-
-        .ia-tag.medium {
-            background: var(--warning-light);
-            color: var(--warning);
-            border-color: var(--warning);
-        }
-
-        .ia-tag.low {
-            background: var(--success-light);
-            color: var(--success);
-            border-color: var(--success);
-        }
-
-        /* Image section */
-        .image-section {
-            margin: 20px 0;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            border: 1px solid var(--border);
-            position: relative;
-        }
-
-        .claim-image {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            display: block;
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        .claim-image:hover {
-            transform: scale(1.05);
-        }
-
-        .image-caption {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            background: white;
-            border-top: 1px solid var(--border);
-        }
-
-        .image-name {
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-        }
-
-        .image-name i {
-            color: var(--purple);
-        }
-
-        .image-size {
-            font-size: 0.8rem;
-            color: var(--text-light);
-        }
-
-        .image-analysis {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Section recommandation Ollama */
-        .ollama-recommendation {
-            background: linear-gradient(135deg, #f6f9fc 0%, #e8f0fe 100%);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin: 20px 0;
-            border: 2px solid var(--purple);
-        }
-
-        .ollama-recommendation h5 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--purple);
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .solution-text {
-            background: white;
-            padding: 15px;
-            border-radius: var(--radius-md);
-            margin-bottom: 15px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        .cost-estimate {
-            display: inline-block;
-            background: var(--success-light);
-            color: var(--success);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        /* Actions */
-        .card-actions {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .action-btn {
-            border: none;
-            background: var(--surface);
-            padding: 12px 0;
-            border-radius: var(--radius-lg);
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-soft);
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            border: 1px solid var(--border);
-            text-decoration: none;
-        }
-
-        .action-btn i {
-            font-size: 1.2rem;
-        }
-
-        .action-btn:hover {
-            background: var(--purple-soft);
-            color: var(--purple);
-            transform: translateY(-3px);
-            border-color: var(--purple);
-        }
-
-        .action-btn.correct-ia:hover {
-            background: var(--warning-light);
-            color: var(--warning);
-            border-color: var(--warning);
-        }
-
-        .action-btn.check:hover {
-            background: var(--success-light);
-            color: var(--success);
-        }
-
-        .action-btn.ollama:hover {
-            background: linear-gradient(135deg, var(--purple-soft), var(--info-light));
-            color: var(--purple);
-            border-color: var(--purple);
-        }
-
-        /* Responsive */
-        @media (max-width: 1400px) {
-            .stats-grid, .ia-summary {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 1200px) {
-            .ia-summary {
-                grid-template-columns: 1fr;
-            }
-            
-            .cards-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 900px) {
-            .container { padding: 16px; }
-            .header { flex-direction: column; }
-            .stats-grid { grid-template-columns: 1fr; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Header amélioré -->
-        <div class="header">
-            <div class="header-left">
-                <h1>
-                    <i class="fas fa-robot"></i> 
-                    Analyse IA des Réclamations
-                </h1>
-            </div>
-            <div class="header-right">
-                <div class="stats-badge">
-                    <div class="stat-item">
-                        <i class="fas fa-clock"></i>
-                        <span id="attente-count">8 en attente</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span id="traitee-count">16 traitées</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-microchip"></i>
-                        <span>Ollama actif</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistiques globales avec taux de gravité total -->
-        <div class="stats-grid">
-            <div class="stat-card-large">
-                <div class="stat-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>24</h3>
-                    <p>Réclamations totales</p>
-                </div>
-            </div>
-            <div class="stat-card-large">
-                <div class="stat-icon">
-                    <i class="fas fa-microchip"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>91%</h3>
-                    <p>Précision IA corrigée</p>
-                </div>
-            </div>
-            <div class="stat-card-large">
-                <div class="stat-icon">
-                    <i class="fas fa-tachometer-alt"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 id="gravite-totale">6.8</h3>
-                    <p>Taux gravité total /10</p>
-                </div>
-            </div>
-            <div class="stat-card-large">
-                <div class="stat-icon">
-                    <i class="fas fa-euro-sign"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>2 450€</h3>
-                    <p>Coût estimation réparations</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section recommandations Ollama globale -->
-        <div class="ollama-section">
-            <div class="ollama-header">
-                <i class="fas fa-microchip"></i>
-                <h2>Recommandations Ollama - Analyse des défauts</h2>
-                <span>IA Active</span>
-            </div>
-            <div class="recommendations-grid" id="recommendations-global">
-                <!-- Les recommandations seront chargées dynamiquement -->
-            </div>
-        </div>
-
-        <!-- Section recherche et filtrage améliorée -->
-        <div class="search-section">
-            <div class="search-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Rechercher par ID, client, produit..." onkeyup="filterClaims()">
-            </div>
-            <div class="filter-group" id="filterGroup">
-                <button class="filter-btn active" onclick="filterByStatus('all')">Tous</button>
-                <button class="filter-btn" onclick="filterByStatus('attente')">En attente</button>
-                <button class="filter-btn" onclick="filterByStatus('traitee')">Traitées</button>
-                <button class="filter-btn" onclick="filterByGravity('faible')">Gravité faible</button>
-                <button class="filter-btn" onclick="filterByGravity('moyenne')">Gravité moyenne</button>
-                <button class="filter-btn" onclick="filterByGravity('elevee')">Gravité élevée</button>
-            </div>
-        </div>
-
-        <!-- Grille des réclamations avec images utilisateurs et analyses corrigées -->
-        <div class="cards-grid" id="claimsGrid">
-            <!-- Carte 1 - TV pixels morts - Gravité Faible -->
-            <div class="claim-card faible" data-status="traitee" data-gravity="faible" id="claim1">
-                <div class="card-header">
-                    <span class="claim-id">
-                        <i class="far fa-id-card"></i> #RCL-5233
-                    </span>
-                    <span class="status-badge traitee">Traitée</span>
-                </div>
-                
-                <div class="date-info">
-                    <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 11/03/2024</span>
-                    <span class="date-item"><i class="far fa-clock"></i> <strong>Traitement:</strong> 14/03/2024</span>
-                    <span class="date-item"><i class="fas fa-hourglass-half"></i> <strong>Durée:</strong> 3 jours</span>
-                </div>
-                
-                <div class="user-section">
-                    <!-- IMAGE UTILISATEUR RÉELLE -->
-                    <img src="data:image/jpeg;base64,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" alt="Camille Rousseau" class="user-image">
-                    <div class="user-details">
-                        <div class="user-name">Camille Rousseau</div>
-                        <div class="user-email">camille.rousseau@email.com</div>
-                        <div class="user-meta">
-                            <span><i class="fas fa-map-pin"></i> Paris</span>
-                            <span><i class="fas fa-phone"></i> 06 12 34 56 78</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-section">
-                    <div class="product-icon-large">
-                        <i class="fas fa-tv"></i>
-                    </div>
-                    <div class="product-details">
-                        <div class="product-name">TV LED 4K 55" UHD</div>
-                        <div class="product-ref">Réf: TV-4K-55 • Acheté le 01/03/2024</div>
-                        <div class="product-tags">
-                            <span class="product-tag">Pixels</span>
-                            <span class="product-tag">Écran</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ia-analysis" id="analysis-5233">
-                    <div class="ia-header">
-                        <i class="fas fa-microchip"></i>
-                        <h4>Analyse IA du défaut - CORRIGÉE</h4>
-                        <span class="ia-badge">Confiance 94%</span>
-                    </div>
-                    
-                    <!-- PROBLÈME DÉTECTÉ -->
-                    <div class="problem-detected">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>Problème détecté :</span> 5 pixels morts sur l'écran (zone centrale)
-                    </div>
-                    
-                    <div class="ia-metrics">
-                        <div class="metric-item">
-                            <div class="metric-label">
-                                <i class="fas fa-bolt"></i> Gravité du problème
-                            </div>
-                            <div class="metric-value">3.5 <span class="metric-unit">/10</span></div>
-                            <div class="progress-bar">
-                                <div class="progress-fill faible" style="width: 35%"></div>
-                            </div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-label">
-                                <i class="fas fa-clock"></i> Impact utilisation
-                            </div>
-                            <div class="metric-value">Mineur</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill faible" style="width: 30%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ia-tags">
-                        <span class="ia-tag low"><i class="fas fa-check-circle"></i> Défaut visuel</span>
-                        <span class="ia-tag low"><i class="fas fa-microchip"></i> 5 pixels morts</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Sous garantie</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Réparable</span>
-                    </div>
-                </div>
-
-                <!-- RECOMMANDATION OLLAMA -->
-                <div class="ollama-recommendation">
-                    <h5><i class="fas fa-microchip"></i> Recommandation Ollama</h5>
-                    <div class="solution-text">
-                        <strong>Solution proposée :</strong> Remplacement de la dalle sous garantie. Les pixels morts sont couverts par la garantie constructeur. Intervention à prévoir dans les 48h.
-                    </div>
-                    <div class="cost-estimate">
-                        <i class="fas fa-euro-sign"></i> Coût estimé : 0€ (garantie)
-                    </div>
-                </div>
-
-                <div class="image-section">
-                    <img src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800&h=600&fit=crop" alt="TV pixels morts" class="claim-image" onclick="window.open(this.src, '_blank')">
-                    <div class="image-analysis">
-                        <i class="fas fa-microchip"></i> Analyse: Pixels défectueux
-                    </div>
-                    <div class="image-caption">
-                        <span class="image-name">
-                            <i class="fas fa-camera"></i> pixels_morts_tv.jpg
-                        </span>
-                        <span class="image-size">2.3 MB • 11/03/2024</span>
-                    </div>
-                </div>
-
-                <div class="card-actions">
-                    <a href="#" class="action-btn correct-ia" onclick="correctIA('#RCL-5233'); return false;">
-                        <i class="fas fa-microchip"></i>
-                        <span>Corriger IA</span>
-                    </a>
-                    <a href="#" class="action-btn ollama" onclick="showOllamaRecommendation('#RCL-5233'); return false;">
-                        <i class="fas fa-microchip"></i>
-                        <span>Recommandation</span>
-                    </a>
-                    <a href="#" class="action-btn check" onclick="repondreClient('#RCL-5233'); return false;">
-                        <i class="fas fa-reply"></i>
-                        <span>Répondre</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Carte 2 - PC portable surchauffe - Gravité Moyenne -->
-            <div class="claim-card moyenne" data-status="attente" data-gravity="moyenne" id="claim2">
-                <div class="card-header">
-                    <span class="claim-id">
-                        <i class="far fa-id-card"></i> #RCL-6341
-                    </span>
-                    <span class="status-badge attente">En attente</span>
-                </div>
-                
-                <div class="date-info">
-                    <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 12/03/2024</span>
-                    <span class="date-item"><i class="far fa-clock"></i> <strong>En attente</strong></span>
-                    <span class="date-item"><i class="fas fa-hourglass-half"></i> <strong>Durée:</strong> 4 jours</span>
-                </div>
-                
-                <div class="user-section">
-                    <!-- IMAGE UTILISATEUR RÉELLE -->
-                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop" alt="Nicolas Petit" class="user-image">
-                    <div class="user-details">
-                        <div class="user-name">Nicolas Petit</div>
-                        <div class="user-email">nicolas.petit@email.com</div>
-                        <div class="user-meta">
-                            <span><i class="fas fa-map-pin"></i> Lyon</span>
-                            <span><i class="fas fa-phone"></i> 06 23 45 67 89</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-section">
-                    <div class="product-icon-large">
-                        <i class="fas fa-laptop"></i>
-                    </div>
-                    <div class="product-details">
-                        <div class="product-name">PC Portable ProBook i7</div>
-                        <div class="product-ref">Réf: PB-15-i7 • Acheté le 20/01/2024</div>
-                        <div class="product-tags">
-                            <span class="product-tag">Surchauffe</span>
-                            <span class="product-tag">Ventilation</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ia-analysis" id="analysis-6341">
-                    <div class="ia-header">
-                        <i class="fas fa-microchip"></i>
-                        <h4>Analyse IA du défaut - CORRIGÉE</h4>
-                        <span class="ia-badge">Confiance 89%</span>
-                    </div>
-                    
-                    <!-- PROBLÈME DÉTECTÉ -->
-                    <div class="problem-detected">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>Problème détecté :</span> Ventilateur défectueux causant une surchauffe CPU (95°C)
-                    </div>
-                    
-                    <div class="ia-metrics">
-                        <div class="metric-item">
-                            <div class="metric-label">
-                                <i class="fas fa-bolt"></i> Gravité du problème
-                            </div>
-                            <div class="metric-value">7.2 <span class="metric-unit">/10</span></div>
-                            <div class="progress-bar">
-                                <div class="progress-fill moyenne" style="width: 72%"></div>
-                            </div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-label">
-                                <i class="fas fa-clock"></i> Impact utilisation
-                            </div>
-                            <div class="metric-value">Élevé</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill moyenne" style="width: 70%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ia-tags">
-                        <span class="ia-tag high"><i class="fas fa-exclamation-circle"></i> Surchauffe critique</span>
-                        <span class="ia-tag medium"><i class="fas fa-microchip"></i> Ventilateur HS</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Sous garantie</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Réparation urgente</span>
-                    </div>
-                </div>
-
-                <!-- RECOMMANDATION OLLAMA -->
-                <div class="ollama-recommendation">
-                    <h5><i class="fas fa-microchip"></i> Recommandation Ollama</h5>
-                    <div class="solution-text">
-                        <strong>Solution proposée :</strong> Remplacement du ventilateur et nettoyage du système de refroidissement. Risque de dommages permanents au CPU si non traité rapidement.
-                    </div>
-                    <div class="cost-estimate">
-                        <i class="fas fa-euro-sign"></i> Coût estimé : 89€ (pièce + main d'œuvre)
-                    </div>
-                </div>
-
-                <div class="image-section">
-                    <img src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&h=600&fit=crop" alt="PC portable" class="claim-image" onclick="window.open(this.src, '_blank')">
-                    <div class="image-analysis">
-                        <i class="fas fa-microchip"></i> Analyse: Température excessive
-                    </div>
-                    <div class="image-caption">
-                        <span class="image-name">
-                            <i class="fas fa-camera"></i> pc_surchauffe.jpg
-                        </span>
-                        <span class="image-size">2.6 MB • 12/03/2024</span>
-                    </div>
-                </div>
-
-                <div class="card-actions">
-                    <a href="#" class="action-btn correct-ia" onclick="correctIA('#RCL-6341'); return false;">
-                        <i class="fas fa-microchip"></i>
-                        <span>Corriger IA</span>
-                    </a>
-                    <a href="#" class="action-btn ollama" onclick="showOllamaRecommendation('#RCL-6341'); return false;">
-                        <i class="fas fa-microchip"></i>
-                        <span>Recommandation</span>
-                    </a>
-                    <a href="#" class="action-btn check" onclick="repondreClient('#RCL-6341'); return false;">
-                        <i class="fas fa-reply"></i>
-                        <span>Répondre</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Carte 3 - Aspirateur sans puissance - Gravité Élevée -->
-            <div class="claim-card elevee" data-status="attente" data-gravity="elevee" id="claim3">
-                <div class="card-header">
-                    <span class="claim-id">
-                        <i class="far fa-id-card"></i> #RCL-7452
-                    </span>
-                    <span class="status-badge attente">En attente</span>
-                </div>
-                
-                <div class="date-info">
-                    <span class="date-item"><i class="far fa-calendar-alt"></i> <strong>Soumission:</strong> 15/03/2024</span>
-                    <span class="date-item"><i class="far fa-clock"></i> <strong>En attente</strong></span>
-                    <span class="date-item"><i class="fas fa-hourglass-half"></i> <strong>Durée:</strong> 1 jour</span>
-                </div>
-                
-                <div class="user-section">
-                    <!-- IMAGE UTILISATEUR RÉELLE -->
-                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop" alt="Sophie Martin" class="user-image">
-                    <div class="user-details">
-                        <div class="user-name">Sophie Martin</div>
-                        <div class="user-email">sophie.martin@email.com</div>
-                        <div class="user-meta">
-                            <span><i class="fas fa-map-pin"></i> Bordeaux</span>
-                            <span><i class="fas fa-phone"></i> 06 34 56 78 90</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-section">
-                    <div class="product-icon-large">
-                        <i class="fas fa-wind"></i>
-                    </div>
-                    <div class="product-details">
-                        <div class="product-name">Aspirateur CycloForce 3000</div>
-                        <div class="product-ref">Réf: ASP-3000-R • Acheté le 10/02/2024</div>
-                        <div class="product-tags">
-                            <span class="product-tag">Puissance</span>
-                            <span class="product-tag">Moteur</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ia-analysis" id="analysis-7452">
-                    <div class="ia-header">
-                        <i class="fas fa-microchip"></i>
-                        <h4>Analyse IA du défaut - CORRIGÉE</h4>
-                        <span class="ia-badge">Confiance 96%</span>
-                    </div>
-                    
-                    <!-- PROBLÈME DÉTECTÉ -->
-                    <div class="problem-detected">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>Problème détecté :</span> Moteur principal défectueux - perte d'aspiration de 80%
-                    </div>
-                    
-                    <div class="ia-metrics">
-                        <div class="metric-item">
-                            <div class="metric-label">
-                                <i class="fas fa-bolt"></i> Gravité du problème
-                            </div>
-                            <div class="metric-value">8.5 <span class="metric-unit">/10</span></div>
-                            <div class="progress-bar">
-                                <div class="progress-fill elevee" style="width: 85%"></div>
-                            </div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-label">
-                                <i class="fas fa-clock"></i> Impact utilisation
-                            </div>
-                            <div class="metric-value">Très élevé</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill elevee" style="width: 90%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ia-tags">
-                        <span class="ia-tag high"><i class="fas fa-exclamation-circle"></i> Moteur HS</span>
-                        <span class="ia-tag high"><i class="fas fa-microchip"></i> Perte puissance 80%</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Sous garantie</span>
-                        <span class="ia-tag"><i class="fas fa-microchip"></i> Remplacement nécessaire</span>
-                    </div>
-                </div>
-
-                <!-- RECOMMANDATION OLLAMA -->
-                <div class="ollama-recommendation">
-                    <h5><i class="fas fa-microchip"></i> Recommandation Ollama</h5>
-                    <div class="solution-text">
-                        <strong>Solution proposée :</strong> Remplacement complet du moteur sous garantie. Défaut de fabrication identifié sur cette série. Échange standard préconisé.
-                    </div>
-                    <div class="cost-estimate">
-                        <i class="fas fa-euro-sign"></i> Coût estimé : 0€ (garantie constructeur)
-                    </div>
-                </div>
-
-                <div class="image-section">
-                    <img src="https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800&h=600&fit=crop" alt="Aspirateur" class="claim-image" onclick="window.open(this.src, '_blank')">
-                    <div class="image-analysis">
-                        <i class="fas fa-microchip"></i> Analyse: Moteur défectueux
-                    </div>
-                    <div class="image-caption">
-                        <span class="image-name">
-                            <i class="fas fa-camera"></i> aspirateur_defaut.jpg
-                        </span>
-                        <span class="image-size">2.1 MB • 15/03/2024</span>
-                    </div>
-                </div>
-
-                <div class="card-actions">
-                    <a href="#" class="action-btn correct-ia" onclick="correctIA('#RCL-7452'); return false;">
-                        <i class="fas fa-microchip"></i>
-                        <span>Corriger IA</span>
-                    </a>
-                    <a href="#" class="action-btn ollama" onclick="showOllamaRecommendation('#RCL-7452'); return false;">
-                        <i class="fas fa-microchip"></i>
-                        <span>Recommandation</span>
-                    </a>
-                    <a href="#" class="action-btn check" onclick="repondreClient('#RCL-7452'); return false;">
-                        <i class="fas fa-reply"></i>
-                        <span>Répondre</span>
-                    </a>
-                </div>
-            </div>
-        </div>
+<!-- src/app/dashboard/dashboard-admin/gestion-reclamation/gestion-reclamation.component.html -->
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1><i class="fas fa-robot"></i> Analyse IA des Réclamations</h1>
+      <div class="subtitle"><i class="fas fa-chart-line"></i> Tableau de bord intelligent</div>
     </div>
+    <div class="header-right">
+      <div class="stats-badge">
+        <div class="stat-item"><i class="fas fa-clock"></i><span>{{ attenteCount }} en attente</span></div>
+        <div class="stat-item"><i class="fas fa-check-circle"></i><span>{{ traiteeCount }} traitées</span></div>
+        <div class="stat-item"><i class="fas fa-microchip"></i><span>IA actif</span></div>
+      </div>
+      <button class="btn btn-primary" (click)="openYoloModal()"><i class="fas fa-camera"></i> Nouvelle analyse</button>
+    </div>
+  </div>
 
-    <script>
-        // Données des réclamations pour les calculs
-        const claims = [
-            { id: '#RCL-5233', gravite: 3.5, cout: 0, statut: 'traitee' },
-            { id: '#RCL-6341', gravite: 7.2, cout: 89, statut: 'attente' },
-            { id: '#RCL-7452', gravite: 8.5, cout: 0, statut: 'attente' }
-        ];
+  <!-- Statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card-large">
+      <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="stat-content">
+        <h3>{{ totalReclamations }}</h3>
+        <p>Réclamations totales</p>
+      </div>
+    </div>
+    <div class="stat-card-large">
+      <div class="stat-icon"><i class="fas fa-microchip"></i></div>
+      <div class="stat-content">
+        <h3>91%</h3>
+        <p>Précision IA</p>
+      </div>
+    </div>
+    <div class="stat-card-large">
+      <div class="stat-icon"><i class="fas fa-tachometer-alt"></i></div>
+      <div class="stat-content">
+        <h3>{{ graviteTotale | number:'1.1-1' }}</h3>
+        <p>Gravité moyenne /10</p>
+      </div>
+    </div>
+    <div class="stat-card-large">
+      <div class="stat-icon"><i class="fas fa-euro-sign"></i></div>
+      <div class="stat-content">
+        <h3>{{ coutTotalEstime }}€</h3>
+        <p>Coût estimé</p>
+      </div>
+    </div>
+  </div>
 
-        // Calcul de la gravité totale et mise à jour de l'affichage
-        function updateGlobalMetrics() {
-            const graviteTotale = claims.reduce((acc, claim) => acc + claim.gravite, 0) / claims.length;
-            const coutTotal = claims.reduce((acc, claim) => acc + claim.cout, 0);
-            
-            document.getElementById('gravite-totale').textContent = graviteTotale.toFixed(1);
-            
-            // Mise à jour des compteurs de statut
-            const attenteCount = claims.filter(c => c.statut === 'attente').length;
-            const traiteeCount = claims.filter(c => c.statut === 'traitee').length;
-            
-            document.getElementById('attente-count').textContent = attenteCount + ' en attente';
-            document.getElementById('traitee-count').textContent = traiteeCount + ' traitées';
-        }
+  <!-- Filtres -->
+  <div class="search-section">
+    <div class="search-wrapper">
+      <i class="fas fa-search"></i>
+      <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput(searchQuery)" placeholder="Rechercher par ID, client, produit...">
+    </div>
+    <div class="filter-group">
+      <button class="filter-btn" [class.active]="selectedStatus === 'all'" (click)="selectedStatus='all'; applyFilters()">Tous</button>
+      <button class="filter-btn" [class.active]="selectedStatus === 'DETECTE'" (click)="selectedStatus='DETECTE'; applyFilters()">En attente</button>
+      <button class="filter-btn" [class.active]="selectedStatus === 'RESOLU'" (click)="selectedStatus='RESOLU'; applyFilters()">Résolues</button>
+      <button class="filter-btn" (click)="resetFilters()"><i class="fas fa-redo"></i> Réinitialiser</button>
+    </div>
+  </div>
 
-        // Initialisation des recommandations globales
-        function initGlobalRecommendations() {
-            const recGrid = document.getElementById('recommendations-global');
-            recGrid.innerHTML = `
-                <div class="rec-card produit1">
-                    <div class="rec-title">
-                        <i class="fas fa-tv"></i>
-                        TV 4K 55" - #RCL-5233
-                    </div>
-                    <div class="rec-problem">
-                        <strong>Problème:</strong> 5 pixels morts sur écran
-                    </div>
-                    <div class="rec-solution">
-                        <strong>Solution Ollama:</strong> Remplacement dalle sous garantie
-                    </div>
-                    <div class="rec-cost">
-                        <i class="fas fa-euro-sign"></i> Coût: 0€
-                    </div>
-                    <div class="rec-gravity">
-                        <span>Gravité: 3.5/10</span>
-                        <div class="gravity-bar">
-                            <div class="gravity-fill" style="width: 35%; background: var(--success);"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="rec-card produit2">
-                    <div class="rec-title">
-                        <i class="fas fa-laptop"></i>
-                        PC ProBook - #RCL-6341
-                    </div>
-                    <div class="rec-problem">
-                        <strong>Problème:</strong> Surchauffe CPU - ventilateur HS
-                    </div>
-                    <div class="rec-solution">
-                        <strong>Solution Ollama:</strong> Remplacement ventilateur + nettoyage
-                    </div>
-                    <div class="rec-cost">
-                        <i class="fas fa-euro-sign"></i> Coût: 89€
-                    </div>
-                    <div class="rec-gravity">
-                        <span>Gravité: 7.2/10</span>
-                        <div class="gravity-bar">
-                            <div class="gravity-fill" style="width: 72%; background: var(--warning);"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="rec-card produit3">
-                    <div class="rec-title">
-                        <i class="fas fa-wind"></i>
-                        Aspirateur - #RCL-7452
-                    </div>
-                    <div class="rec-problem">
-                        <strong>Problème:</strong> Moteur défectueux - perte 80% puissance
-                    </div>
-                    <div class="rec-solution">
-                        <strong>Solution Ollama:</strong> Remplacement moteur sous garantie
-                    </div>
-                    <div class="rec-cost">
-                        <i class="fas fa-euro-sign"></i> Coût: 0€
-                    </div>
-                    <div class="rec-gravity">
-                        <span>Gravité: 8.5/10</span>
-                        <div class="gravity-bar">
-                            <div class="gravity-fill" style="width: 85%; background: var(--danger);"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+  <!-- Mode sélection -->
+  <div *ngIf="isSelectionMode" class="selection-bar">
+    <span>{{ selectedIds.length }} sélectionné(s)</span>
+    <div class="selection-actions">
+      <button class="btn-secondary" (click)="exitSelectionMode()">Annuler</button>
+      <button class="btn-danger" (click)="deleteSelected()">Supprimer</button>
+    </div>
+  </div>
 
-        // Fonction pour corriger l'analyse IA
-        function correctIA(claimId) {
-            alert(`Analyse IA corrigée pour ${claimId}`);
-            
-            // Simulation de correction
-            if (claimId === '#RCL-5233') {
-                document.getElementById('analysis-5233').innerHTML += '<div class="problem-detected" style="background: var(--success-light); border-left-color: var(--success);"><i class="fas fa-check-circle"></i><span>Correction appliquée :</span> Nouvelle analyse plus précise</div>';
-            }
-        }
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Chargement des réclamations...</p>
+  </div>
 
-        // Fonction pour afficher les recommandations Ollama
-        function showOllamaRecommendation(claimId) {
-            const recommendations = {
-                '#RCL-5233': {
-                    probleme: '5 pixels morts sur écran LED',
-                    solution: 'Remplacement de la dalle sous garantie constructeur. Intervention prévue dans les 48h.',
-                    cout: '0€ (garantie)',
-                    delai: '2-3 jours'
-                },
-                '#RCL-6341': {
-                    probleme: 'Ventilateur défectueux - surchauffe CPU à 95°C',
-                    solution: 'Remplacement du ventilateur et nettoyage du système de refroidissement. Application de pâte thermique neuve.',
-                    cout: '89€ TTC',
-                    delai: '24-48h'
-                },
-                '#RCL-7452': {
-                    probleme: 'Moteur principal HS - perte d\'aspiration de 80%',
-                    solution: 'Remplacement complet du moteur sous garantie. Défaut de fabrication connu sur cette série.',
-                    cout: '0€ (garantie constructeur)',
-                    delai: '3-5 jours'
-                }
-            };
-            
-            const rec = recommendations[claimId];
-            if (rec) {
-                alert(`🔍 RECOMMANDATION OLLAMA pour ${claimId}\n\nProblème: ${rec.probleme}\n\nSolution: ${rec.solution}\n\nCoût estimé: ${rec.cout}\nDélai: ${rec.delai}`);
-            }
-        }
+  <!-- Liste des réclamations -->
+  <div *ngIf="!isLoading" class="cards-grid">
+    <div *ngFor="let reclamation of displayedReclamations" class="claim-card" [ngClass]="getGravityClass(reclamation.gravite)">
+      <div class="card-header">
+        <div *ngIf="isSelectionMode" class="selection-checkbox">
+          <input type="checkbox" [checked]="selectedIds.includes(reclamation.id)" (change)="toggleSelection(reclamation.id)">
+        </div>
+        <span class="claim-id"><i class="far fa-id-card"></i> #{{ reclamation.id }}</span>
+        <span class="status-badge" [ngClass]="getStatusClass(reclamation.statut)">{{ getStatusLabel(reclamation.statut) }}</span>
+      </div>
 
-        // Fonction pour répondre au client
-        function repondreClient(claimId) {
-            alert(`Formulaire de réponse pour ${claimId} - Message au client`);
-        }
+      <div class="date-info" *ngIf="reclamation.createdAt">
+        <i class="far fa-calendar-alt"></i> Soumission: {{ formatDate(reclamation.createdAt) }}
+      </div>
 
-        // Fonction de filtrage
-        function filterClaims() {
-            const searchInput = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.claim-card');
-            
-            cards.forEach(card => {
-                const text = card.textContent.toLowerCase();
-                if (text.includes(searchInput)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
+      <div class="user-section" *ngIf="reclamation.user">
+        <img [src]="reclamation.user.photoProfil || 'https://via.placeholder.com/50'" class="user-image">
+        <div class="user-details">
+          <div class="user-name">{{ reclamation.user.prenom }} {{ reclamation.user.nom }}</div>
+          <div class="user-email">{{ reclamation.user.email }}</div>
+          <div class="user-phone"><i class="fas fa-phone"></i> {{ reclamation.user.telephone || 'Non renseigné' }}</div>
+        </div>
+      </div>
 
-        // Fonction de filtrage par statut
-        function filterByStatus(status) {
-            const cards = document.querySelectorAll('.claim-card');
-            const buttons = document.querySelectorAll('.filter-btn');
-            
-            buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            cards.forEach(card => {
-                if (status === 'all') {
-                    card.style.display = 'block';
-                } else {
-                    const cardStatus = card.getAttribute('data-status');
-                    card.style.display = cardStatus === status ? 'block' : 'none';
-                }
-            });
-        }
+      <div class="product-section">
+        <div class="product-name">{{ reclamation.titre }}</div>
+        <div class="product-ref">Type: {{ reclamation.typeDommage }} | {{ reclamation.dommagesDetectes }} dommage(s)</div>
+      </div>
 
-        // Fonction de filtrage par gravité
-        function filterByGravity(gravity) {
-            const cards = document.querySelectorAll('.claim-card');
-            const buttons = document.querySelectorAll('.filter-btn');
-            
-            buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            cards.forEach(card => {
-                const cardGravity = card.getAttribute('data-gravity');
-                card.style.display = cardGravity === gravity ? 'block' : 'none';
-            });
-        }
+      <div class="ia-analysis">
+        <div class="ia-header">
+          <i class="fas fa-microchip"></i>
+          <h4>Analyse IA</h4>
+          <span class="ia-badge">Confiance {{ (reclamation.confiance * 100).toFixed(0) }}%</span>
+        </div>
+        <div class="problem-detected">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Problème détecté :</span> {{ reclamation.description }}
+        </div>
+        <div class="metric-item">
+          <label>Gravité du problème</label>
+          <div class="metric-value">{{ reclamation.gravite }}/10</div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="reclamation.gravite * 10"></div>
+          </div>
+        </div>
+      </div>
 
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            updateGlobalMetrics();
-            initGlobalRecommendations();
-        });
-    </script>
-</body>
-</html>
+      <!-- Section image -->
+      <div class="image-section" *ngIf="reclamation.imageUrl">
+        <img [src]="getImageUrl(reclamation.imageUrl)" 
+             class="claim-image" 
+             (click)="openImage(reclamation.imageUrl)"
+             (error)="onImageError($event)"
+             [alt]="'Image dommage réclamation n°' + reclamation.id">
+        <div class="image-caption">
+          <i class="fas fa-image"></i>
+          {{ reclamation.imageName || 'Image du dommage' }}
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn correct-ia" (click)="openCorrectionModal(reclamation)">
+          <i class="fas fa-edit"></i> Corriger
+        </button>
+        <button class="action-btn check" (click)="openResponseModal(reclamation)">
+          <i class="fas fa-reply"></i> Répondre
+        </button>
+        <button class="action-btn delete" (click)="deleteReclamation(reclamation.id)">
+          <i class="fas fa-trash"></i> Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aucune réclamation -->
+  <div *ngIf="!isLoading && displayedReclamations.length === 0" class="empty-state">
+    <i class="fas fa-inbox"></i>
+    <h3>Aucune réclamation trouvée</h3>
+    <p>Essayez de modifier vos filtres ou créez une nouvelle réclamation.</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1 && !isLoading" class="pagination">
+    <button [disabled]="currentPage === 1" (click)="previousPage()"><i class="fas fa-chevron-left"></i> Précédent</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button [disabled]="currentPage === totalPages" (click)="nextPage()">Suivant <i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<!-- Modal Réponse -->
+<div class="modal" [class.show]="showResponseModal" (click)="closeResponseModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-reply"></i> Répondre au client</h3>
+      <button class="close" (click)="closeResponseModal()">&times;</button>
+    </div>
+    <form [formGroup]="responseForm">
+      <div class="modal-body">
+        <textarea formControlName="message" placeholder="Votre message..." rows="5"></textarea>
+        <div *ngIf="responseForm.get('message')?.invalid && responseForm.get('message')?.touched" class="error-message">
+          Le message doit contenir au moins 10 caractères
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeResponseModal()">Annuler</button>
+        <button type="button" class="btn-primary" (click)="sendResponse()" [disabled]="responseForm.invalid || isSubmitting">Envoyer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Correction -->
+<div class="modal" [class.show]="showCorrectionModal" (click)="closeCorrectionModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit"></i> Corriger l'analyse IA</h3>
+      <button class="close" (click)="closeCorrectionModal()">&times;</button>
+    </div>
+    <form [formGroup]="correctionForm">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Problème détecté</label>
+          <textarea formControlName="problemDetected" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Niveau de gravité (0-10)</label>
+          <input type="range" formControlName="severity" min="0" max="10" step="0.5">
+          <span class="range-value">{{ correctionForm.get('severity')?.value }}/10</span>
+        </div>
+        <div class="form-group">
+          <label>Confiance (%)</label>
+          <input type="range" formControlName="confidence" min="0" max="100">
+          <span class="range-value">{{ correctionForm.get('confidence')?.value }}%</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeCorrectionModal()">Annuler</button>
+        <button type="button" class="btn-primary" (click)="submitCorrection()" [disabled]="correctionForm.invalid || isSubmitting">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal YOLO -->
+<div class="modal" [class.show]="showYoloModal" (click)="closeYoloModal()">
+  <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-camera"></i> Analyse YOLO - Détection de défauts</h3>
+      <button class="close" (click)="closeYoloModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="yolo-upload" (click)="fileInput.click()">
+        <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" style="display: none">
+        <div *ngIf="!previewUrl" class="upload-placeholder">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Cliquez pour télécharger une image</p>
+          <small>Formats supportés: JPG, PNG, JPEG</small>
+        </div>
+        <img *ngIf="previewUrl" [src]="previewUrl" class="preview-image">
+      </div>
+      
+      <div *ngIf="isAnalyzing" class="analyzing">
+        <div class="spinner"></div>
+        <p>Analyse en cours avec YOLO...</p>
+      </div>
+      
+      <div *ngIf="yoloResult && !isAnalyzing" class="yolo-results">
+        <h4><i class="fas fa-chart-bar"></i> Résultats de l'analyse</h4>
+        <div class="results-grid">
+          <div class="result-card">
+            <i class="fas fa-tag"></i>
+            <div class="result-info">
+              <label>Catégorie</label>
+              <span>{{ yoloResult.category }}</span>
+            </div>
+          </div>
+          <div class="result-card">
+            <i class="fas fa-chart-line"></i>
+            <div class="result-info">
+              <label>Confiance</label>
+              <span>{{ (yoloResult.averageConfidence * 100).toFixed(0) }}%</span>
+            </div>
+          </div>
+          <div class="result-card">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="result-info">
+              <label>Gravité</label>
+              <span>{{ yoloResult.averageGravity }}/10</span>
+            </div>
+          </div>
+          <div class="result-card">
+            <i class="fas fa-bug"></i>
+            <div class="result-info">
+              <label>Dommages détectés</label>
+              <span>{{ yoloResult.damageCount }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="yolo-actions">
+          <button class="btn-secondary" (click)="resetYoloState()"><i class="fas fa-redo"></i> Nouvelle image</button>
+          <button class="btn-primary" (click)="createReclamationFromYolo()" [disabled]="isSubmitting">
+            <i class="fas fa-check"></i> {{ isSubmitting ? 'Création...' : 'Créer la réclamation' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

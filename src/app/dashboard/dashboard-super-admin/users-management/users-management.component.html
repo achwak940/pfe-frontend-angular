@@ -1,25 +1,30 @@
+<!-- users-management.component.html -->
 <div class="admin-container">
+  <!-- Notification Toast -->
+  <div class="notification-toast" [class.show]="notification.show" [ngClass]="notification.type">
+    <i class="fas" [ngClass]="{
+      'fa-check-circle': notification.type === 'success',
+      'fa-exclamation-circle': notification.type === 'error',
+      'fa-info-circle': notification.type === 'info'
+    }"></i>
+    <span>{{ notification.message }}</span>
+    <button class="close-notif" (click)="closeNotification()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
   <main class="main-content">
     <div class="content-header">
       <div class="header-left">
-        <button class="mobile-menu-btn">
-          <i class="fas fa-bars"></i>
-        </button>
-        <h1>Gestion des Utilisateurs</h1>
+        <h1>
+          <i class="fas fa-users-cog"></i>
+          Gestion des Utilisateurs
+        </h1>
+        <p class="subtitle">Gérez tous les utilisateurs de la plateforme</p>
       </div>
       <div class="header-right">
-        <div class="header-search">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Rechercher...">
-        </div>
-        <div class="header-notifications">
-          <i class="fas fa-bell"></i>
-          <span class="notification-badge">3</span>
-        </div>
-        <div class="header-user">
-          <img src="https://via.placeholder.com/40" alt="Admin" class="user-image">
-          <span class="user-name">Admin</span>
-          <i class="fas fa-chevron-down"></i>
+        <div class="loading-indicator" *ngIf="loading">
+          <i class="fas fa-spinner fa-spin"></i> Chargement...
         </div>
       </div>
     </div>
@@ -31,56 +36,49 @@
         <div class="stat-card primary">
           <div class="stat-icon"><i class="fas fa-users"></i></div>
           <div class="stat-content">
-            <span class="stat-value">{{ nombreUsersTotal || 0 }}</span>
+            <span class="stat-value">{{ nombreUsersTotal | number }}</span>
             <span class="stat-label">Utilisateurs totaux</span>
-          </div>
-          <div class="stat-trend up">
-            <i class="fas fa-arrow-up"></i><span>+12%</span>
           </div>
         </div>
         <div class="stat-card success">
           <div class="stat-icon"><i class="fas fa-user-check"></i></div>
           <div class="stat-content">
-            <span class="stat-value">{{ nombreUsersTotalActifs || 0 }}</span>
+            <span class="stat-value">{{ nombreUsersTotalActifs | number }}</span>
             <span class="stat-label">Utilisateurs actifs</span>
-          </div>
-          <div class="stat-trend up">
-            <i class="fas fa-arrow-up"></i><span>+5%</span>
           </div>
         </div>
         <div class="stat-card warning">
           <div class="stat-icon"><i class="fas fa-user-clock"></i></div>
           <div class="stat-content">
-            <span class="stat-value">{{ nombreUsersTotalInActifs || 0 }}</span>
+            <span class="stat-value">{{ nombreUsersTotalInActifs | number }}</span>
             <span class="stat-label">Utilisateurs inactifs</span>
-          </div>
-          <div class="stat-trend down">
-            <i class="fas fa-arrow-down"></i><span>-3%</span>
           </div>
         </div>
         <div class="stat-card danger">
           <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
           <div class="stat-content">
-            <span class="stat-value">{{ nombreAdmins || 0 }}</span>
+            <span class="stat-value">{{ nombreAdmins | number }}</span>
             <span class="stat-label">Administrateurs</span>
-          </div>
-          <div class="stat-trend up">
-            <i class="fas fa-arrow-up"></i><span>+2%</span>
           </div>
         </div>
       </div>
 
       <!-- Quick Actions Bar -->
       <div class="quick-actions">
-        <button class="quick-action-btn">
-          <i class="fas fa-download"></i><span>Exporter CSV</span>
-        </button>
-        <button class="quick-action-btn">
-          <i class="fas fa-print"></i><span>Imprimer</span>
-        </button>
-        <button class="quick-action-btn">
-          <i class="fas fa-share-alt"></i><span>Partager</span>
-        </button>
+        <div class="actions-left">
+          <button class="quick-action-btn" (click)="exportCSV()" title="Exporter en CSV">
+            <i class="fas fa-file-csv"></i><span>CSV</span>
+          </button>
+          <button class="quick-action-btn" (click)="exportExcel()" title="Exporter en Excel">
+            <i class="fas fa-file-excel"></i><span>Excel</span>
+          </button>
+          <button class="quick-action-btn" (click)="exportPDF()" title="Exporter en PDF">
+            <i class="fas fa-file-pdf"></i><span>PDF</span>
+          </button>
+          <button class="quick-action-btn" (click)="printUsers()" title="Imprimer">
+            <i class="fas fa-print"></i><span>Imprimer</span>
+          </button>
+        </div>
         <div class="view-toggle">
           <button class="view-btn active"><i class="fas fa-th-large"></i></button>
           <button class="view-btn"><i class="fas fa-list"></i></button>
@@ -91,7 +89,7 @@
       <div class="filters-card">
         <div class="filters-header">
           <h3><i class="fas fa-filter"></i> Filtres avancés</h3>
-          <button class="btn-clear">
+          <button class="btn-clear" (click)="clearFilters()">
             <i class="fas fa-times"></i> Effacer les filtres
           </button>
         </div>
@@ -100,123 +98,120 @@
             <label>Recherche</label>
             <div class="filter-input">
               <i class="fas fa-search"></i>
-              <input type="text" placeholder="Nom, email...">
+              <input type="text" placeholder="Nom, email..." 
+                     [(ngModel)]="searchTerm" (input)="onSearchChange($event)">
             </div>
           </div>
+          
+          <!-- FILTRE RÔLE CORRIGÉ -->
           <div class="filter-group">
             <label>Rôle</label>
             <div class="filter-select">
               <i class="fas fa-tag"></i>
-              <select>
+              <select [(ngModel)]="selectedRole" (change)="onRoleChange($event)">
                 <option value="">Tous les rôles</option>
-                <option value="super_admin">Super Admin</option>
-                <option value="admin">Admin</option>
-                <option value="editor">Éditeur</option>
-                <option value="viewer">Viewer</option>
+                <option value="ADMIN">👑 Administrateur</option>
+                <option value="USER_CONNECTE">👤 Utilisateur connecté</option>
+                <option value="SUPER_ADMIN">⭐ Super Admin</option>
               </select>
             </div>
           </div>
+          
+          <!-- FILTRE STATUT CORRIGÉ -->
           <div class="filter-group">
             <label>Statut</label>
             <div class="filter-select">
-              <i class="fas fa-circle" style="color: #2ecc71; font-size: 0.7rem;"></i>
-              <select>
+              <i class="fas fa-circle" [style.color]="selectedStatus === 'ACTIF' ? '#10b981' : '#ef4444'"></i>
+              <select [(ngModel)]="selectedStatus" (change)="onStatusChange($event)">
                 <option value="">Tous les statuts</option>
-                <option value="actif">Actif</option>
-                <option value="inactif">Inactif</option>
+                <option value="ACTIF">🟢 Actif</option>
+                <option value="INACTIF">🔴 Inactif</option>
               </select>
             </div>
-          </div>
-          <div class="filter-group">
-            <label>Département</label>
-            <div class="filter-select">
-              <i class="fas fa-building"></i>
-              <select>
-                <option value="">Tous</option>
-                <option value="it">IT</option>
-                <option value="rh">RH</option>
-                <option value="finance">Finance</option>
-                <option value="marketing">Marketing</option>
-              </select>
-            </div>
-          </div>
-          <div class="filter-group">
-            <label>Date d'inscription</label>
-            <div class="filter-input">
-              <i class="fas fa-calendar"></i>
-              <input type="date" placeholder="Date">
-            </div>
-          </div>
-          <div class="filter-group">
-            <label>&nbsp;</label>
-            <button class="btn-add">
-              <i class="fas fa-plus"></i> Ajouter
-            </button>
           </div>
         </div>
 
         <!-- Active Filters Tags -->
-        <div class="active-filters">
-          <span class="filter-tag">Rôle: Admin <i class="fas fa-times"></i></span>
-          <span class="filter-tag">Statut: Actif <i class="fas fa-times"></i></span>
-          <span class="filter-tag">Département: IT <i class="fas fa-times"></i></span>
+        <div class="active-filters" *ngIf="searchTerm || selectedRole || selectedStatus">
+          <span class="filter-tag" *ngIf="searchTerm">
+            <i class="fas fa-search"></i> {{ searchTerm }}
+            <i class="fas fa-times" (click)="searchTerm = ''; applyFilters()"></i>
+          </span>
+          <span class="filter-tag" *ngIf="selectedRole">
+            <i class="fas fa-tag"></i> 
+            <ng-container [ngSwitch]="selectedRole">
+              <span *ngSwitchCase="'ADMIN'">Administrateur</span>
+              <span *ngSwitchCase="'USER_CONNECTE'">Utilisateur connecté</span>
+              <span *ngSwitchCase="'SUPER_ADMIN'">Super Admin</span>
+              <span *ngSwitchDefault>{{ selectedRole }}</span>
+            </ng-container>
+            <i class="fas fa-times" (click)="selectedRole = ''; applyFilters()"></i>
+          </span>
+          <span class="filter-tag" *ngIf="selectedStatus">
+            <i class="fas fa-circle"></i> {{ selectedStatus === 'ACTIF' ? 'Actif' : 'Inactif' }}
+            <i class="fas fa-times" (click)="selectedStatus = ''; applyFilters()"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Debug Panel (à supprimer après tests) -->
+      <div class="debug-panel" style="background: #f0f0f0; padding: 10px; margin-bottom: 15px; border-radius: 8px; font-size: 12px; display: none;">
+        <strong>🔍 Debug:</strong>
+        <div>Rôle sélectionné: <strong>{{ selectedRole || 'Aucun' }}</strong></div>
+        <div>Statut sélectionné: <strong>{{ selectedStatus || 'Aucun' }}</strong></div>
+        <div>Recherche: <strong>{{ searchTerm || 'Aucune' }}</strong></div>
+        <div>Total users: <strong>{{ users.length }}</strong></div>
+        <div>Users filtrés: <strong>{{ filteredUsers.length }}</strong></div>
+        <div>Rôles disponibles: 
+          <span *ngFor="let r of getUniqueRoles()">{{ r }} | </span>
         </div>
       </div>
 
       <!-- Users Grid -->
       <div class="users-grid">
-        <div class="user-card" *ngFor="let listusers of users">
+        <div class="user-card" *ngFor="let user of getPaginatedUsers()" [class.selected]="selectedUsers.has(user.id)">
           <div class="card-gradient-bg"></div>
 
           <!-- Selection Checkbox -->
           <div class="card-select">
-            <input type="checkbox" id="select-{{listusers.id}}" class="card-checkbox">
-            <label for="select-{{listusers.id}}"></label>
+            <input type="checkbox" [id]="'select' + user.id" 
+                   [checked]="selectedUsers.has(user.id)"
+                   (change)="toggleUserSelection(user.id)">
+            <label [for]="'select' + user.id">
+              <i class="fas fa-check"></i>
+            </label>
           </div>
 
           <div class="card-header">
             <div class="user-avatar">
               <div class="avatar-wrapper">
-                <img
-                  *ngIf="listusers.photo_profil && listusers.photo_profil !== 'default'"
-                  [src]="'http://localhost:3000/' + listusers.photo_profil"
-                  alt="Photo profil"
-                  (error)="listusers.photo_profil = null"
-                >
-                <div class="avatar-icon" *ngIf="!listusers.photo_profil || listusers.photo_profil === 'default'">
+                <img *ngIf="user.photo_profil && user.photo_profil !== 'default' && user.photo_profil !== ''"
+                     [src]="getImageUrl(user.photo_profil)"
+                     [alt]="user.prenom"
+                     (error)="onImageError(user)">
+                <div class="avatar-icon" *ngIf="!user.photo_profil || user.photo_profil === 'default' || user.photo_profil === ''">
                   <i class="fas fa-user-circle"></i>
                 </div>
+                <div class="online-dot" [class.offline]="user.statut !== 'ACTIF'"></div>
               </div>
-              <div class="online-dot" [ngClass]="{'offline': listusers.statut === 'inactif'}"></div>
             </div>
 
             <div class="user-badges">
-              <span class="badge" [ngClass]="{
-                'role-super-admin': listusers.role === 'super_admin',
-                'role-admin':       listusers.role === 'admin',
-                'role-editor':      listusers.role === 'editor',
-                'role-viewer':      listusers.role === 'viewer'
-              }">
-                <i class="fas fa-crown"       *ngIf="listusers.role === 'super_admin'"></i>
-                <i class="fas fa-user-shield" *ngIf="listusers.role === 'admin'"></i>
-                <i class="fas fa-edit"        *ngIf="listusers.role === 'editor'"></i>
-                <i class="fas fa-eye"         *ngIf="listusers.role === 'viewer'"></i>
-                {{ listusers.role | uppercase }}
+              <span class="badge role-badge" [ngClass]="'role-' + (user.role | lowercase)">
+                <i [ngClass]="'fas ' + getRoleIcon(user.role)"></i>
+                {{ user.role | lowercase }}
               </span>
-              <span class="badge" [ngClass]="{
-                'status-active':   listusers.statut === 'actif',
-                'status-inactive': listusers.statut === 'inactif'
-              }">
-                <i class="fas fa-circle"></i> {{ listusers.statut | uppercase }}
+              <span class="badge status-badge" [ngClass]="getStatusClass(user.statut)">
+                <i class="fas fa-circle"></i> {{ user.statut }}
               </span>
             </div>
           </div>
 
           <div class="card-body">
-            <h3>{{ listusers.prenom }} {{ listusers.nom }}</h3>
+            <h3>{{ user.prenom }} {{ user.nom }}</h3>
             <p class="user-email">
               <i class="fas fa-envelope"></i>
-              {{ listusers.email }}
+              {{ user.email }}
             </p>
 
             <div class="user-stats">
@@ -224,97 +219,287 @@
                 <i class="fas fa-calendar-alt"></i>
                 <div class="stat-info">
                   <span class="stat-label">Inscrit le</span>
-                  <span class="stat-value">{{ listusers.date_creation | date:'dd/MM/yyyy' }}</span>
+                  <span class="stat-value">{{ user.date_creation | date:'dd/MM/yyyy' }}</span>
                 </div>
               </div>
               <div class="user-stat-item">
                 <i class="fas fa-clock"></i>
                 <div class="stat-info">
                   <span class="stat-label">Dernière connexion</span>
-                  <span class="stat-value">Il y a 3 jours</span>
+                  <span class="stat-value">{{ user.derniereConnexion }}</span>
                 </div>
               </div>
-              <div class="user-stat-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <div class="stat-info">
-                  <span class="stat-label">Localisation</span>
-                  <span class="stat-value">Paris, France</span>
-                </div>
-              </div>
-            </div><!-- /.user-stats -->
+            </div>
 
             <div class="user-progress">
               <div class="progress-label">
                 <span>Activité</span>
-                <span>85%</span>
+                <span>{{ user.activite }}%</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style="width: 85%"></div>
+                <div class="progress-fill" [style.width.%]="user.activite"></div>
               </div>
             </div>
-          </div><!-- /.card-body -->
+          </div>
 
           <div class="card-actions">
-            <button class="action-btn" title="Voir">
+            <button class="action-btn" title="Voir" (click)="viewUser(user.id)">
               <i class="fas fa-eye"></i><span>Voir</span>
             </button>
-            <button class="action-btn" title="Modifier">
+            <button class="action-btn" title="Modifier" (click)="editUser(user.id)">
               <i class="fas fa-edit"></i><span>Modifier</span>
             </button>
-            <button class="action-btn" title="Supprimer">
-              <i class="fas fa-trash"></i><span>Supprimer</span>
+            <button class="action-btn danger" title="Supprimer" (click)="openDeleteModal(user)">
+              <i class="fas fa-trash-alt"></i><span>Supprimer</span>
             </button>
-            <button class="action-btn" title="Messages">
+            <button class="action-btn" title="Message" (click)="sendMessage(user.id)">
               <i class="fas fa-comment"></i><span>Message</span>
             </button>
-            <button class="action-btn danger" title="Bloquer">
-              <i class="fas fa-ban"></i><span>Bloquer</span>
+            <button class="action-btn warning" *ngIf="user.statut === 'ACTIF'" 
+                    title="Désactiver" (click)="blockUser(user.id)">
+              <i class="fas fa-ban"></i><span>Désactiver</span>
+            </button>
+            <button class="action-btn success" *ngIf="user.statut !== 'ACTIF'" 
+                    title="Activer" (click)="activateUser(user.id)">
+              <i class="fas fa-check-circle"></i><span>Activer</span>
             </button>
           </div>
         </div>
-      </div><!-- /.users-grid -->
+      </div>
 
       <!-- Bulk Actions Bar -->
-      <div class="bulk-actions">
+      <div class="bulk-actions" *ngIf="selectedUsers.size > 0">
         <div class="bulk-info">
-          <input type="checkbox" id="select-all">
+          <input type="checkbox" id="select-all" 
+                 [checked]="selectAll"
+                 (change)="toggleSelectAll()">
           <label for="select-all">Sélectionner tout</label>
-          <span class="selected-count">2 sélectionnés</span>
+          <span class="selected-count">{{ selectedUsers.size }} sélectionné(s)</span>
         </div>
         <div class="bulk-buttons">
-          <button class="bulk-btn">
-            <i class="fas fa-envelope"></i> Envoyer email
+          <button class="bulk-btn" (click)="bulkActivate()" [disabled]="bulkActionInProgress">
+            <i class="fas fa-check-circle"></i> Activer
           </button>
-          <button class="bulk-btn">
-            <i class="fas fa-tag"></i> Changer rôle
+          <button class="bulk-btn warning" (click)="bulkDeactivate()" [disabled]="bulkActionInProgress">
+            <i class="fas fa-ban"></i> Désactiver
           </button>
-          <button class="bulk-btn danger">
-            <i class="fas fa-trash"></i> Supprimer
+          <button class="bulk-btn" (click)="bulkChangeRole('USER_CONNECTE')" [disabled]="bulkActionInProgress">
+            <i class="fas fa-user"></i> Rôle User
+          </button>
+          <button class="bulk-btn danger" (click)="bulkDelete()" [disabled]="bulkActionInProgress">
+            <i class="fas fa-trash-alt"></i> Supprimer
           </button>
         </div>
       </div>
 
       <!-- Pagination -->
-      <div class="pagination">
-        <button class="page-btn" disabled>
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
           <i class="fas fa-chevron-left"></i>
         </button>
-        <button class="page-btn active">1</button>
-        <button class="page-btn">2</button>
-        <button class="page-btn">3</button>
-        <button class="page-btn">4</button>
-        <span class="pagination-dots">...</span>
-        <button class="page-btn">10</button>
-        <button class="page-btn">
+        <button class="page-btn" *ngFor="let page of getPages()" 
+                [class.active]="page === currentPage"
+                (click)="changePage(page)">
+          {{ page }}
+        </button>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
 
       <!-- Results Info -->
-      <div class="results-info">
-        Affichage de <strong>1</strong> à <strong>8</strong> sur <strong>24</strong> utilisateurs
+      <div class="results-info" *ngIf="filteredUsers.length > 0">
+        <i class="fas fa-chart-line"></i>
+        Affichage de <strong>{{ (currentPage - 1) * itemsPerPage + 1 }}</strong> 
+        à <strong>{{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }}</strong> 
+        sur <strong>{{ filteredUsers.length }}</strong> utilisateurs
       </div>
 
-    </div><!-- /.content-area -->
+      <div class="no-results" *ngIf="filteredUsers.length === 0 && !loading">
+        <i class="fas fa-search"></i>
+        <p>Aucun utilisateur trouvé</p>
+        <button class="btn-primary" (click)="clearFilters()">Effacer les filtres</button>
+      </div>
+
+    </div>
   </main>
-</div><!-- /.admin-container -->
+
+  <!-- MODAL VIEW -->
+  <div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i class="fas fa-user-circle"></i>
+          Détails de l'utilisateur
+        </h2>
+        <button class="modal-close" (click)="closeViewModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body" *ngIf="selectedUser">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <img *ngIf="selectedUser.photo_profil && selectedUser.photo_profil !== 'default' && selectedUser.photo_profil !== ''" 
+                 [src]="getImageUrl(selectedUser.photo_profil)"
+                 [alt]="selectedUser.prenom"
+                 (error)="selectedUser.photo_profil = ''">
+            <div class="avatar-placeholder" *ngIf="!selectedUser.photo_profil || selectedUser.photo_profil === 'default' || selectedUser.photo_profil === ''">
+              <i class="fas fa-user-circle"></i>
+            </div>
+          </div>
+          <div class="profile-badges">
+            <span class="badge role-lg" [ngClass]="'role-' + (selectedUser.role | lowercase)">
+              <i [ngClass]="'fas ' + getRoleIcon(selectedUser.role)"></i>
+              {{ selectedUser.role }}
+            </span>
+            <span class="badge status-lg" [ngClass]="getStatusClass(selectedUser.statut)">
+              <i class="fas fa-circle"></i> {{ selectedUser.statut }}
+            </span>
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <i class="fas fa-user"></i>
+            <div>
+              <label>Nom complet</label>
+              <p>{{ selectedUser.prenom }} {{ selectedUser.nom }}</p>
+            </div>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-envelope"></i>
+            <div>
+              <label>Email</label>
+              <p>{{ selectedUser.email }}</p>
+            </div>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-phone"></i>
+            <div>
+              <label>Téléphone</label>
+              <p>{{ selectedUser.telephone || 'Non renseigné' }}</p>
+            </div>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-calendar-check"></i>
+            <div>
+              <label>Date d'inscription</label>
+              <p>{{ selectedUser.date_creation | date:'dd/MM/yyyy à HH:mm' }}</p>
+            </div>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-check-circle"></i>
+            <div>
+              <label>Email vérifié</label>
+              <p>{{ selectedUser.est_verifie ? 'Oui' : 'Non' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeViewModal()">Fermer</button>
+        <button class="btn-primary" (click)="editUser(selectedUser!.id); closeViewModal()">
+          <i class="fas fa-edit"></i> Modifier
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDIT -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i class="fas fa-edit"></i>
+          Modifier l'utilisateur
+        </h2>
+        <button class="modal-close" (click)="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form [formGroup]="editForm" (ngSubmit)="onSubmitEdit()">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Prénom *</label>
+              <input type="text" formControlName="prenom" placeholder="Prénom">
+              <small class="error" *ngIf="editForm.get('prenom')?.invalid && editForm.get('prenom')?.touched">
+                Le prénom est requis (min 2 caractères)
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Nom *</label>
+              <input type="text" formControlName="nom" placeholder="Nom">
+              <small class="error" *ngIf="editForm.get('nom')?.invalid && editForm.get('nom')?.touched">
+                Le nom est requis (min 2 caractères)
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" formControlName="email" placeholder="Email">
+              <small class="error" *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched">
+                Email valide requis
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Téléphone</label>
+              <input type="tel" formControlName="telephone" placeholder="Téléphone">
+            </div>
+            <div class="form-group">
+              <label>Rôle</label>
+              <select formControlName="role">
+                <option value="USER_CONNECTE">👤 Utilisateur connecté</option>
+                <option value="ADMIN">👑 Administrateur</option>
+                <option value="SUPER_ADMIN">⭐ Super Admin</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Statut</label>
+              <select formControlName="statut">
+                <option value="ACTIF">🟢 Actif</option>
+                <option value="INACTIF">🔴 Inactif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeEditModal()">Annuler</button>
+          <button type="submit" class="btn-primary" [disabled]="editForm.invalid || loading">
+            <i class="fas fa-save"></i> Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DELETE -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-container modal-danger" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i class="fas fa-exclamation-triangle"></i>
+          Confirmer la suppression
+        </h2>
+      </div>
+      <div class="modal-body" *ngIf="userToDelete">
+        <div class="delete-warning">
+          <i class="fas fa-trash-alt"></i>
+          <p>
+            Êtes-vous sûr de vouloir supprimer <strong>{{ userToDelete.prenom }} {{ userToDelete.nom }}</strong> ?
+            Cette action est irréversible.
+          </p>
+        </div>
+        <div class="confirm-input">
+          <label>Tapez <strong>SUPPRIMER</strong> pour confirmer</label>
+          <input type="text" [(ngModel)]="deleteConfirmText" placeholder="SUPPRIMER" autocomplete="off">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeDeleteModal()">Annuler</button>
+        <button class="btn-danger" (click)="confirmDelete()" [disabled]="deleteConfirmText !== 'SUPPRIMER'">
+          <i class="fas fa-trash-alt"></i> Supprimer définitivement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

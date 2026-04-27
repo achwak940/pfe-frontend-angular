@@ -15,7 +15,7 @@
           </a>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/super-admin-dashboard/detailes-user">
+          <a routerLink="/super-admin-dashboard/users">
             <i class="fas fa-users"></i>
             Utilisateurs
           </a>
@@ -90,82 +90,8 @@
     <div class="content">
       <!-- stats cards -->
 <router-outlet></router-outlet>
-      <section class="cards-grid" aria-label="Indicateurs clés">
-        <article class="stat-card" *ngFor="let stat of statsCards">
-          <div class="stat-icon"><i class="fas" [ngClass]="stat.icon"></i></div>
-          <div class="stat-details">
-            <span class="stat-label">{{ stat.label }}</span>
-            <span class="stat-value">{{ stat.value }}</span>
-            <span class="stat-trend" [class.positive]="stat.trend > 0" [class.neutral]="stat.trend === 0">
-           
-            
-            </span>
-          </div>
-        </article>
-      </section>
-
-      <!-- graphiques -->
-      <section class="charts-row">
-        <div class="chart-container">
-          <h3>Réponses aux sondages <span class="badge outline">hebdomadaire</span></h3>
-          <div class="chart-placeholder bars-placeholder">
-            <div class="fake-bar" *ngFor="let height of chartBars" [style.height.px]="height"></div>
-          </div>
-        </div>
-        <div class="chart-container">
-          <h3>Utilisation IA <span class="badge outline">tendance</span></h3>
-          <div class="chart-placeholder line-placeholder">
-            <svg width="200" height="70" viewBox="0 0 200 70" class="line-svg">
-              <polyline points="0,60 20,40 40,55 60,25 80,40 100,45 120,30 140,43 160,35 180,20 200,30" stroke="#9D50BB" stroke-width="3" fill="none"/>
-            </svg>
-          </div>
-        </div>
-      </section>
-
-      <!-- activité récente -->
-      <section class="recent-activity">
-        <div class="section-header">
-          <h2><i class="fas fa-history"></i> Activité récente (utilisateurs / sondages)</h2>
-          <button class="btn-secondary btn-small" (click)="exportActivity()">
-            <i class="fas fa-download"></i> exporter
-          </button>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Utilisateur</th>
-
-
-
-                <th>Action</th>
-                <th>Sondage</th>
-                <th>Statut</th>
-                <th>Heure</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let activity of recentActivities">
-                <td>
-                  <span class="user-cell">
-                    <img [src]="activity.userAvatar" [alt]="activity.user">
-                    {{ activity.user }}
-                  </span>
-                </td>
-                <td>{{ activity.action }}</td>
-                <td>{{ activity.survey }}</td>
-                <td>
-                  <span class="badge-status" [class.actif]="activity.status === 'actif'" 
-                        [class.inactif]="activity.status === 'inactif'">
-                    {{ activity.status }}
-                  </span>
-                </td>
-                <td>{{ activity.time }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+     
+    
 
    
     </div>
