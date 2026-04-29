@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DashboardAdminModule } from './dashboard/dashboard-admin/dashboard-admin.module';
 import { YoloPredictComponent } from './yolo-predict/yolo-predict.component';
 import { ProfilComponent } from './gestionProfil/profil/profil.component';
@@ -22,7 +22,9 @@ import { AiQuestionComponent } from './chatBot/ai-question/ai-question.component
     AppRoutingModule,
     AuthModule,
     FormsModule,
-    DashboardAdminModule, // ✅ Une seule fois
+    DashboardAdminModule, 
+      ReactiveFormsModule, // ← OBLIGATOIRE pour [formGroup]
+    FormsModule, // ✅ Une seule fois
     // ✅ NE PAS METTRE DashboardAdminModule ICI
   ],
   providers: [],

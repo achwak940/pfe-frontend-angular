@@ -5,6 +5,9 @@ import { RouterModule } from '@angular/router';
 
 import { DashboardRoutingModule } from './dashboard-routing.module';
 import { UsersManagementComponent } from './dashboard-super-admin/users-management/users-management.component';
+import { MessangerComponent } from './messanger/messanger.component';
+import { GereRolesComponent } from './dashboard-super-admin/gere-roles/gere-roles.component';
+import { ParametreComponent } from './dashboard-super-admin/parametre/parametre.component';
 
 // ❌ NE PAS IMPORTER AdminDashboardComponent s'il existe
 // import { AdminDashboardComponent } from './dashboard-admin/admin-dashboard.component';
@@ -12,6 +15,9 @@ import { UsersManagementComponent } from './dashboard-super-admin/users-manageme
 @NgModule({
   declarations: [
     UsersManagementComponent,
+    MessangerComponent,
+    GereRolesComponent,
+    ParametreComponent,
 
     // ❌ NE PAS DECLARER AdminDashboardComponent ici
   ],

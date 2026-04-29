@@ -45,6 +45,9 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
   selectedUser: Utilisateur | null = null;
   userToDelete: Utilisateur | null = null;
   
+  // Messagerie - Variable séparée
+  selectedUserForMessage: Utilisateur | null = null;
+  
   // Formulaires
   editForm: FormGroup;
   deleteConfirmText: string = '';
@@ -202,34 +205,26 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
     return locations[Math.floor(Math.random() * locations.length)];
   }
 
-  // ========== FILTRES CORRIGÉS ==========
-  
+  // ========== FILTRES ==========
   applyFilters(): void {
-    console.log('🔍 Application des filtres - Rôle:', this.selectedRole, 'Statut:', this.selectedStatus, 'Recherche:', this.searchTerm);
-    
     this.filteredUsers = this.users.filter(user => {
-      // Filtre recherche texte
       const matchesSearch = !this.searchTerm || 
         user.prenom?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         user.nom?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         user.email?.toLowerCase().includes(this.searchTerm.toLowerCase());
       
-      // Filtre par rôle
       let matchesRole = true;
-      if (this.selectedRole && this.selectedRole !== '') {
+      if (this.selectedRole) {
         matchesRole = user.role === this.selectedRole;
       }
       
-      // Filtre par statut
       let matchesStatus = true;
-      if (this.selectedStatus && this.selectedStatus !== '') {
+      if (this.selectedStatus) {
         matchesStatus = user.statut === this.selectedStatus;
       }
       
       return matchesSearch && matchesRole && matchesStatus;
     });
-    
-    console.log('📊 Résultat filtrage:', this.filteredUsers.length, 'utilisateurs sur', this.users.length);
     
     this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
     this.currentPage = 1;
@@ -243,13 +238,11 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
 
   onRoleChange(event: any): void {
     this.selectedRole = event.target.value;
-    console.log('🎭 Rôle sélectionné:', this.selectedRole);
     this.applyFilters();
   }
 
   onStatusChange(event: any): void {
     this.selectedStatus = event.target.value;
-    console.log('🟢 Statut sélectionné:', this.selectedStatus);
     this.applyFilters();
   }
 
@@ -435,23 +428,19 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Erreur suppression:', err);
-        // Si l'erreur contient un message de succès (cas où backend retourne du texte)
-        if (err.error && typeof err.error === 'string' && err.error.includes('removes')) {
-          this.users = this.users.filter(u => u.id !== this.userToDelete!.id);
-          this.selectedUsers.delete(this.userToDelete!.id);
-          this.applyFilters();
-          this.closeDeleteModal();
-          this.showNotification('success', 'Utilisateur supprimé avec succès');
-          this.loadNombreTotalUsers();
-          this.loadNombreUsersActifs();
-          this.loadNombreUsersInactifs();
-          this.loadNombreAdmins();
-        } else {
-          this.showNotification('error', 'Erreur lors de la suppression');
-        }
         this.loading = false;
+        this.showNotification('error', 'Erreur lors de la suppression');
       }
     });
+  }
+
+  // ========== MESSAGERIE ==========
+  openMessaging(user: Utilisateur): void {
+    this.selectedUserForMessage = user;
+  }
+
+  closeMessenger(): void {
+    this.selectedUserForMessage = null;
   }
 
   // ========== ACTIONS RAPIDES ==========
@@ -522,16 +511,10 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
     });
   }
 
-  sendMessage(userId: number): void {
-    const user = this.users.find(u => u.id === userId);
-    if (user) {
-      this.showNotification('info', `Fenêtre de messagerie pour ${user.prenom} ${user.nom}`);
-    }
-  }
-
   // ========== ACTIONS GROUPÉES ==========
   bulkDelete(): void {
-    if (confirm(`Supprimer définitivement ${this.selectedUsers.size} utilisateur(s) ? Cette action est irréversible.`)) {
+    const count = this.selectedUsers.size;
+    if (confirm(`Supprimer définitivement ${count} utilisateur(s) ? Cette action est irréversible.`)) {
       this.bulkActionInProgress = true;
       const promises = Array.from(this.selectedUsers).map(id => 
         this.service.deleteUser(id).toPromise()
@@ -542,7 +525,7 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
         this.selectedUsers.clear();
         this.selectAll = false;
         this.applyFilters();
-        this.showNotification('success', `${this.selectedUsers.size} utilisateur(s) supprimés`);
+        this.showNotification('success', `${count} utilisateur(s) supprimés`);
         this.loadNombreTotalUsers();
         this.loadNombreUsersActifs();
         this.loadNombreUsersInactifs();
@@ -557,7 +540,8 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
   }
 
   bulkChangeRole(newRole: string): void {
-    if (confirm(`Changer le rôle de ${this.selectedUsers.size} utilisateur(s) vers ${newRole} ?`)) {
+    const count = this.selectedUsers.size;
+    if (confirm(`Changer le rôle de ${count} utilisateur(s) vers ${newRole} ?`)) {
       this.bulkActionInProgress = true;
       const promises = Array.from(this.selectedUsers).map(id => 
         this.service.updateUserRole(id, newRole).toPromise()
@@ -570,7 +554,7 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
           }
         });
         this.applyFilters();
-        this.showNotification('success', `Rôle changé pour ${this.selectedUsers.size} utilisateur(s)`);
+        this.showNotification('success', `Rôle changé pour ${count} utilisateur(s)`);
         this.loadNombreAdmins();
         this.bulkActionInProgress = false;
       }).catch(err => {
@@ -582,7 +566,8 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
   }
 
   bulkActivate(): void {
-    if (confirm(`Activer ${this.selectedUsers.size} utilisateur(s) ?`)) {
+    const count = this.selectedUsers.size;
+    if (confirm(`Activer ${count} utilisateur(s) ?`)) {
       this.bulkActionInProgress = true;
       const promises = Array.from(this.selectedUsers).map(id => 
         this.service.updateUserStatus(id, 'ACTIF').toPromise()
@@ -595,7 +580,7 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
           }
         });
         this.applyFilters();
-        this.showNotification('success', `${this.selectedUsers.size} utilisateur(s) activés`);
+        this.showNotification('success', `${count} utilisateur(s) activés`);
         this.loadNombreUsersActifs();
         this.loadNombreUsersInactifs();
         this.bulkActionInProgress = false;
@@ -608,7 +593,8 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
   }
 
   bulkDeactivate(): void {
-    if (confirm(`Désactiver ${this.selectedUsers.size} utilisateur(s) ?`)) {
+    const count = this.selectedUsers.size;
+    if (confirm(`Désactiver ${count} utilisateur(s) ?`)) {
       this.bulkActionInProgress = true;
       const promises = Array.from(this.selectedUsers).map(id => 
         this.service.updateUserStatus(id, 'INACTIF').toPromise()
@@ -621,7 +607,7 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
           }
         });
         this.applyFilters();
-        this.showNotification('success', `${this.selectedUsers.size} utilisateur(s) désactivés`);
+        this.showNotification('success', `${count} utilisateur(s) désactivés`);
         this.loadNombreUsersActifs();
         this.loadNombreUsersInactifs();
         this.bulkActionInProgress = false;
@@ -742,12 +728,10 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
 
   onImageError(user: any): void {
     user.photo_profil = '';
-  
+  }
+
+  getUniqueRoles(): string[] {
+    return [...new Set(this.users.map(u => u.role))];
   }
   
-// À ajouter dans users-management.component.ts
-getUniqueRoles(): string[] {
-  return [...new Set(this.users.map(u => u.role))];
-}
-
 }

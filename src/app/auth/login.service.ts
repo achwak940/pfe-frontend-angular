@@ -6,17 +6,20 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class LoginService {
-  private apiurl="http://localhost:3000/authentification/login"
+  private apiurl = "http://localhost:3000/authentification";
 
-  constructor(
-    private http:HttpClient
-  ) { }
-  //cette methode pour test api post pour login 
-loginPostRequest(email: string, password: string): Observable<any> {
-  return this.http.post(this.apiurl, { 
-    email: email, 
-    mot_de_passe: password // correspondance exacte avec backend
-  });
-}
+  constructor(private http: HttpClient) { }
 
+  // Méthode pour login email/password
+  loginPostRequest(email: string, password: string): Observable<any> {
+    return this.http.post(`${this.apiurl}/login`, { 
+      email: email, 
+      mot_de_passe: password
+    });
+  }
+
+  // Méthode pour login avec Google
+  loginWithGoogle(token: string): Observable<any> {
+    return this.http.post(`${this.apiurl}/google`, { token: token });
+  }
 }

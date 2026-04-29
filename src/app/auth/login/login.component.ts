@@ -3,6 +3,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { LoginService } from '../login.service';
 import { Router } from '@angular/router';
 
+// Déclaration pour Google API
+declare const google: any;
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -17,12 +20,13 @@ export class LoginComponent implements OnInit {
       Validators.minLength(8),
       Validators.pattern(/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/)
     ]),
-    rememberMe: new FormControl(false) // Ajout du champ rememberMe
+    rememberMe: new FormControl(false)
   });
   
   errorMessage: string = '';
   currentUser: any = null;
-  showPassword: boolean = false; // Pour le toggle du mot de passe
+  showPassword: boolean = false;
+  isLoading: boolean = false; // Pour afficher un loader
 
   constructor(
     private serviceAuth: LoginService,
@@ -51,6 +55,107 @@ export class LoginComponent implements OnInit {
       this.loginForm.patchValue({ email: savedEmail });
       this.loginForm.patchValue({ rememberMe: true });
     }
+
+    // Initialiser Google Sign-In
+    this.initializeGoogleSignIn();
+  }
+
+  // Initialiser Google Sign-In
+  initializeGoogleSignIn(): void {
+    // Charger le script Google si pas déjà chargé
+    if (!document.querySelector('#google-script')) {
+      const script = document.createElement('script');
+      script.id = 'google-script';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    // Attendre que le script soit chargé
+    setTimeout(() => {
+      if (typeof google !== 'undefined') {
+        this.renderGoogleButton();
+      }
+    }, 1000);
+  }
+
+  // Rendre le bouton Google
+  renderGoogleButton(): void {
+    const buttonElement = document.getElementById('google-signin-button');
+    if (buttonElement && typeof google !== 'undefined') {
+      google.accounts.id.initialize({
+        client_id: '161266384329-jr3pa6k3smcc37ke3ambls5gfhdukpdb.apps.googleusercontent.com', // Remplacez par votre client ID
+        callback: (response: any) => this.handleGoogleLogin(response)
+      });
+      
+      google.accounts.id.renderButton(
+        buttonElement,
+        { 
+          theme: 'outline',
+          size: 'large',
+          width: '100%',
+          text: 'continue_with',
+          shape: 'rectangular'
+        }
+      );
+    }
+  }
+
+  // Gérer la réponse de Google
+  async handleGoogleLogin(response: any): Promise<void> {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    try {
+      const idToken = response.credential;
+      
+      this.serviceAuth.loginWithGoogle(idToken).subscribe({
+        next: (res: any) => {
+          if (res && res.token) {
+            // Sauvegarde du token
+            localStorage.setItem('token', res.token);
+            
+            // Sauvegarde de l'utilisateur
+            if (res.user) {
+              this.currentUser = res.user;
+              localStorage.setItem('currentUser', JSON.stringify(res.user));
+            }
+            
+            this.isLoading = false;
+            this.errorMessage = '';
+            
+            // Redirection basée sur le rôle
+            this.redirectBasedOnRole();
+          } else if (res && res.erreur) {
+            this.errorMessage = res.erreur;
+            this.isLoading = false;
+          }
+        },
+        error: (err) => {
+          console.error('Google login error:', err);
+          this.errorMessage = 'Erreur lors de l\'authentification Google';
+          this.isLoading = false;
+        }
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      this.errorMessage = 'Erreur lors de l\'authentification Google';
+      this.isLoading = false;
+    }
+  }
+
+  // Redirection basée sur le rôle
+  private redirectBasedOnRole(): void {
+    if (this.currentUser && this.currentUser.role) {
+      if (this.currentUser.role === "ADMIN" || this.currentUser.role === "ROLE_ADMIN") {
+        this.router.navigate(['/admin-dashboard']);
+      } else if (this.currentUser.role === "SUPER_ADMIN" || this.currentUser.role === "ROLE_SUPER_ADMIN") {
+        this.router.navigate(['/super-admin-dashboard']);
+      } else {
+        this.router.navigate(['/']);
+      }
+    }
   }
 
   // Méthode pour afficher/masquer le mot de passe
@@ -58,25 +163,10 @@ export class LoginComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-  // Redirection basée sur le rôle
-  private redirectBasedOnRole(): void {
-    if (this.currentUser && this.currentUser.role) {
-      if (this.currentUser.role === "ROLE_SUPER_ADMIN") {
-        this.router.navigate(['/super-admin-dashboard']);
-      } else if (this.currentUser.role === "ROLE_ADMIN") {
-        this.router.navigate(['/admin-dashboard']);
-      } else {
-        this.router.navigate(['/']);
-      }
-    }
-  }
-
   // Méthode de soumission
   submit(): void {
-    // Réinitialiser l'erreur
     this.errorMessage = '';
     
-    // Vérifier si le formulaire est invalide
     if (this.loginForm.invalid) {
       if (this.loginForm.get('email')?.invalid) {
         this.errorMessage = 'Veuillez entrer un email valide';
@@ -104,48 +194,41 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    // Gérer la sauvegarde de l'email si "Remember me" est coché
     if (rememberMe) {
       localStorage.setItem('savedEmail', email);
     } else {
       localStorage.removeItem('savedEmail');
     }
 
-    // Appel au service d'authentification
+    this.isLoading = true;
+
     this.serviceAuth.loginPostRequest(email, password).subscribe({
       next: (res: any) => {
         if (res && res.token) {
-          // Sauvegarde du token
           localStorage.setItem('token', res.token);
           
-          // Sauvegarde de l'utilisateur
           if (res.user) {
             this.currentUser = res.user;
             localStorage.setItem('currentUser', JSON.stringify(res.user));
-          } else if (res.username || res.email) {
-            // Si l'API retourne l'utilisateur directement
-            this.currentUser = res;
-            localStorage.setItem('currentUser', JSON.stringify(res));
           }
           
-          // Réinitialiser l'erreur
           this.errorMessage = '';
-          
-          // Redirection basée sur le rôle
+          this.isLoading = false;
           this.redirectBasedOnRole();
-          
         } else if (res && res.erreur) {
           this.errorMessage = res.erreur;
+          this.isLoading = false;
         } else if (res && res.message) {
           this.errorMessage = res.message;
+          this.isLoading = false;
         } else {
           this.errorMessage = 'Erreur lors de la connexion';
+          this.isLoading = false;
         }
       },
       error: (err) => {
         console.error('Http error:', err);
         
-        // Gestion des erreurs HTTP
         if (err.status === 401) {
           this.errorMessage = 'Email ou mot de passe incorrect';
         } else if (err.status === 403) {
@@ -157,30 +240,27 @@ export class LoginComponent implements OnInit {
         } else {
           this.errorMessage = 'Erreur serveur, veuillez réessayer plus tard';
         }
+        this.isLoading = false;
       }
     });
   }
 
-  // Méthode pour le mot de passe oublié
   forgotPassword(event: Event): void {
     event.preventDefault();
     const email = this.loginForm.get('email')?.value;
     
     if (email && email.trim()) {
-      // Rediriger vers la page de réinitialisation avec l'email pré-rempli
       this.router.navigate(['/forgot-password'], { queryParams: { email: email } });
     } else {
       this.router.navigate(['/forgot-password']);
     }
   }
 
-  // Méthode pour l'inscription
   signUp(event: Event): void {
     event.preventDefault();
     this.router.navigate(['/register']);
   }
 
-  // Méthode de déconnexion (optionnelle)
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
@@ -190,9 +270,13 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // Vérifier si l'utilisateur est authentifié
   isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
     return !!token && !!this.currentUser;
   }
+  // Dans login.component.ts
+handleLogoError() {
+  // Optionnel: logger l'erreur ou utiliser un logo par défaut
+  console.warn('Logo not found, using default');
+}
 }

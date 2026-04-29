@@ -1,0 +1,637 @@
+<!-- parametre.component.html -->
+<div class="admin-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo-area">
+      <div class="logo-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#9D50BB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 17L12 22L22 17" stroke="#9D50BB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="#9D50BB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="logo-text">AdminPanel</span>
+    </div>
+    
+    <nav class="nav-menu">
+      <a href="#" class="nav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+      <a href="#" class="nav-item"><i class="fas fa-users"></i><span>Utilisateurs</span></a>
+      <a href="#" class="nav-item"><i class="fas fa-shield-alt"></i><span>Rôles</span></a>
+      <a href="#" class="nav-item"><i class="fas fa-key"></i><span>Permissions</span></a>
+      <a href="#" class="nav-item"><i class="fas fa-chart-pie"></i><span>Sondages</span></a>
+      <a href="#" class="nav-item"><i class="fas fa-brain"></i><span>Questions & IA</span></a>
+      <a href="#" class="nav-item"><i class="fas fa-chart-line"></i><span>Résultats</span></a>
+      <a href="#" class="nav-item"><i class="fas fa-download"></i><span>Exportations</span></a>
+      <a href="#" class="nav-item active"><i class="fas fa-cog"></i><span>Paramètres</span></a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="content-header">
+      <div class="header-left">
+        <h1><i class="fas fa-cog"></i> Paramètres système</h1>
+        <div class="subtitle"><i class="fas fa-sliders-h"></i> Configurez les paramètres globaux de l'application</div>
+      </div>
+      <div class="header-right">
+        <div class="admin-profile">
+          <div class="avatar"><span>AD</span></div>
+          <div class="admin-info">
+            <span class="admin-name">Admin User</span>
+            <span class="admin-role">Super Administrateur</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container">
+      <button *ngFor="let section of sections" 
+              class="tab-btn" 
+              [class.active]="activeSection === section.id"
+              (click)="setActiveSection(section.id)">
+        <i [class]="section.icon"></i>
+        <span>{{ section.name }}</span>
+      </button>
+    </div>
+
+    <!-- Settings Cards -->
+    <div class="settings-container">
+      
+      <!-- Paramètres Généraux -->
+      <div class="settings-card" *ngIf="activeSection === 'general'">
+        <div class="card-header">
+          <div class="header-icon"><i class="fas fa-sliders-h"></i></div>
+          <div class="header-text">
+            <h3>Paramètres généraux</h3>
+            <p>Configurez les informations de base de l'application</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-tag"></i> Nom de l'application</label>
+              <input type="text" class="form-control" [(ngModel)]="generalSettings.appName" placeholder="Nom de l'application">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-code-branch"></i> Version</label>
+              <input type="text" class="form-control" [(ngModel)]="generalSettings.appVersion" placeholder="Version">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label><i class="fas fa-image"></i> Logo de l'application</label>
+            <div class="logo-upload">
+              <div class="logo-preview" *ngIf="generalSettings.logoPreview && generalSettings.logoPreview !== 'assets/logo-placeholder.png'">
+                <img [src]="generalSettings.logoPreview" alt="Logo preview">
+                <div class="logo-overlay">
+                  <button type="button" class="btn-icon" (click)="removeLogo()"><i class="fas fa-trash-alt"></i></button>
+                </div>
+              </div>
+              <div class="logo-placeholder" *ngIf="!generalSettings.logoPreview || generalSettings.logoPreview === 'assets/logo-placeholder.png'">
+                <i class="fas fa-image"></i>
+                <span>Aucun logo</span>
+              </div>
+              <input type="file" accept="image/*" (change)="onLogoUpload($event)" style="display: none" #logoInput>
+              <button type="button" class="btn-secondary" (click)="logoInput.click()">
+                <i class="fas fa-upload"></i> Télécharger
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-language"></i> Langue</label>
+              <select class="form-control" [(ngModel)]="generalSettings.language">
+                <option *ngFor="let lang of languages" [value]="lang.value">{{ lang.flag }} {{ lang.label }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-globe"></i> Fuseau horaire</label>
+              <select class="form-control" [(ngModel)]="generalSettings.timezone">
+                <option *ngFor="let tz of timezones" [value]="tz.value">{{ tz.label }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-calendar-alt"></i> Format de date</label>
+              <select class="form-control" [(ngModel)]="generalSettings.dateFormat">
+                <option *ngFor="let fmt of dateFormats" [value]="fmt.value">{{ fmt.label }}</option>
+              </select>
+            </div>
+            <div class="form-group toggle-group">
+              <label><i class="fas fa-moon"></i> Thème sombre</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="themeDark" [(ngModel)]="generalSettings.themeDark">
+                <label for="themeDark"></label>
+              </div>
+              <span class="toggle-description">Activer le mode sombre</span>
+            </div>
+          </div>
+          
+          <div class="toggle-group">
+            <label><i class="fas fa-tools"></i> Mode maintenance</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="maintenanceMode" [(ngModel)]="generalSettings.maintenanceMode">
+              <label for="maintenanceMode"></label>
+            </div>
+            <span class="toggle-description">Mettre l'application en maintenance</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paramètres Utilisateurs -->
+      <div class="settings-card" *ngIf="activeSection === 'users'">
+        <div class="card-header">
+          <div class="header-icon"><i class="fas fa-users"></i></div>
+          <div class="header-text">
+            <h3>Paramètres utilisateurs</h3>
+            <p>Configurez la gestion des comptes utilisateurs</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-user-plus"></i> Inscription libre</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="enableRegistration" [(ngModel)]="userSettings.enableRegistration">
+                <label for="enableRegistration"></label>
+              </div>
+              <span class="toggle-description">Permettre aux nouveaux utilisateurs de s'inscrire</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-envelope"></i> Vérification email</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="emailVerification" [(ngModel)]="userSettings.emailVerificationRequired">
+                <label for="emailVerification"></label>
+              </div>
+              <span class="toggle-description">Vérification email requise</span>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-user-tag"></i> Rôle par défaut</label>
+              <select class="form-control" [(ngModel)]="userSettings.defaultRole">
+                <option *ngFor="let role of defaultRoles" [value]="role.value">{{ role.label }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-shield-alt"></i> Tentatives max</label>
+              <input type="number" class="form-control" [(ngModel)]="userSettings.maxLoginAttempts" min="1" max="10">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-key"></i> Longueur min mot de passe</label>
+              <input type="number" class="form-control" [(ngModel)]="userSettings.passwordMinLength" min="6" max="20">
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-lock"></i> Mot de passe fort</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="strongPassword" [(ngModel)]="userSettings.requireStrongPassword">
+                <label for="strongPassword"></label>
+              </div>
+              <span class="toggle-description">Exiger un mot de passe fort</span>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-lock"></i> Verrouillage auto</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="autoLock" [(ngModel)]="userSettings.autoLockAfterAttempts">
+                <label for="autoLock"></label>
+              </div>
+              <span class="toggle-description">Verrouiller après tentatives</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fab fa-google"></i> Login social</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="socialLogin" [(ngModel)]="userSettings.allowSocialLogin">
+                <label for="socialLogin"></label>
+              </div>
+              <span class="toggle-description">Autoriser les connexions sociales</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paramètres Sondages -->
+      <div class="settings-card" *ngIf="activeSection === 'surveys'">
+        <div class="card-header">
+          <div class="header-icon"><i class="fas fa-chart-pie"></i></div>
+          <div class="header-text">
+            <h3>Paramètres sondages</h3>
+            <p>Configurez les options des sondages</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-clock"></i> Durée par défaut (jours)</label>
+              <input type="number" class="form-control" [(ngModel)]="surveySettings.defaultDuration" min="1" max="365">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-question-circle"></i> Questions max</label>
+              <input type="number" class="form-control" [(ngModel)]="surveySettings.maxQuestionsPerSurvey" min="1" max="100">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-user-secret"></i> Réponses anonymes</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="allowAnonymous" [(ngModel)]="surveySettings.allowAnonymousResponses">
+                <label for="allowAnonymous"></label>
+              </div>
+              <span class="toggle-description">Permettre les réponses anonymes</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-check-double"></i> Réponses multiples</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="allowMultiple" [(ngModel)]="surveySettings.allowMultipleAnswers">
+                <label for="allowMultiple"></label>
+              </div>
+              <span class="toggle-description">Plusieurs réponses par utilisateur</span>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-robot"></i> Recommandations IA</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="enableAI" [(ngModel)]="surveySettings.enableAIRecommendations">
+                <label for="enableAI"></label>
+              </div>
+              <span class="toggle-description">Activer les recommandations IA</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-edit"></i> Modification réponses</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="allowEditing" [(ngModel)]="surveySettings.allowEditingResponses">
+                <label for="allowEditing"></label>
+              </div>
+              <span class="toggle-description">Permettre de modifier les réponses</span>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-chart-bar"></i> Résultats immédiats</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="showResults" [(ngModel)]="surveySettings.showResultsImmediately">
+                <label for="showResults"></label>
+              </div>
+              <span class="toggle-description">Afficher résultats immédiatement</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-sign-in-alt"></i> Login requis</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="requireLogin" [(ngModel)]="surveySettings.requireLoginToParticipate">
+                <label for="requireLogin"></label>
+              </div>
+              <span class="toggle-description">Authentification requise</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paramètres IA -->
+      <div class="settings-card" *ngIf="activeSection === 'ia'">
+        <div class="card-header">
+          <div class="header-icon"><i class="fas fa-brain"></i></div>
+          <div class="header-text">
+            <h3>Paramètres IA</h3>
+            <p>Configurez l'intelligence artificielle</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-microchip"></i> Activer l'IA</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="enableAISystem" [(ngModel)]="iaSettings.enableAI">
+                <label for="enableAISystem"></label>
+              </div>
+              <span class="toggle-description">Activer toutes les fonctionnalités IA</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-shield-alt"></i> Auto-modération</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="autoModeration" [(ngModel)]="iaSettings.autoModerationEnabled">
+                <label for="autoModeration"></label>
+              </div>
+              <span class="toggle-description">Modération automatique du contenu</span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label><i class="fas fa-robot"></i> Type de recommandation</label>
+            <select class="form-control" [(ngModel)]="iaSettings.recommendationType">
+              <option *ngFor="let type of recommendationTypes" [value]="type.value">{{ type.label }}</option>
+            </select>
+            <small class="form-hint">{{ getRecommendationDescription() }}</small>
+          </div>
+          
+          <div class="form-group">
+            <label><i class="fas fa-chart-line"></i> Seuil de confiance : {{ iaSettings.confidenceThreshold }}%</label>
+            <input type="range" class="slider" min="0" max="100" [value]="iaSettings.confidenceThreshold" (input)="updateConfidenceThreshold($event)">
+            <div class="range-labels">
+              <span>Faible</span>
+              <span>Moyen</span>
+              <span>Élevé</span>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-tachometer-alt"></i> Tokens max par requête</label>
+              <input type="number" class="form-control" [(ngModel)]="iaSettings.maxTokensPerRequest" min="100" max="2000" step="100">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-thermometer-half"></i> Température</label>
+              <input type="number" class="form-control" [(ngModel)]="iaSettings.temperature" min="0" max="1" step="0.1">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-code-branch"></i> Version du modèle</label>
+              <select class="form-control" [(ngModel)]="iaSettings.aiModelVersion">
+                <option value="v2.4">v2.4 - Dernière version</option>
+                <option value="v2.3">v2.3 - Stable</option>
+                <option value="v2.2">v2.2 - Legacy</option>
+              </select>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-history"></i> Logs IA</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="showLogs" [(ngModel)]="iaSettings.showAILogs">
+                <label for="showLogs"></label>
+              </div>
+              <span class="toggle-description">Conserver les logs IA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paramètres Export -->
+      <div class="settings-card" *ngIf="activeSection === 'export'">
+        <div class="card-header">
+          <div class="header-icon"><i class="fas fa-download"></i></div>
+          <div class="header-text">
+            <h3>Paramètres d'export</h3>
+            <p>Configurez les options d'exportation des données</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-file-alt"></i> Format par défaut</label>
+              <select class="form-control" [(ngModel)]="exportSettings.defaultFormat">
+                <option *ngFor="let format of exportFormats" [value]="format.value">
+                  <i [class]="'fas ' + format.icon"></i> {{ format.label }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-weight-hanging"></i> Taille max (MB)</label>
+              <input type="number" class="form-control" [(ngModel)]="exportSettings.maxFileSize" min="1" max="100">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label><i class="fas fa-folder-open"></i> Chemin d'export</label>
+            <input type="text" class="form-control" [(ngModel)]="exportSettings.exportPath" placeholder="/exports/">
+          </div>
+          
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-table"></i> Inclure en-têtes</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="includeHeaders" [(ngModel)]="exportSettings.includeHeaders">
+                <label for="includeHeaders"></label>
+              </div>
+              <span class="toggle-description">Inclure les en-têtes dans les exports</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-compress-alt"></i> Compresser</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="compressExports" [(ngModel)]="exportSettings.compressExports">
+                <label for="compressExports"></label>
+              </div>
+              <span class="toggle-description">Compresser les exports (ZIP)</span>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-trash-alt"></i> Suppression auto (jours)</label>
+              <input type="number" class="form-control" [(ngModel)]="exportSettings.autoDeleteAfterDays" min="1" max="365">
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-lock"></i> Chiffrement</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="encryptionEnabled" [(ngModel)]="exportSettings.encryptionEnabled">
+                <label for="encryptionEnabled"></label>
+              </div>
+              <span class="toggle-description">Chiffrer les exports</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paramètres Notifications -->
+      <div class="settings-card" *ngIf="activeSection === 'notifications'">
+        <div class="card-header">
+          <div class="header-icon"><i class="fas fa-bell"></i></div>
+          <div class="header-text">
+            <h3>Paramètres notifications</h3>
+            <p>Configurez les notifications</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-envelope"></i> Notifications email</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="emailNotif" [(ngModel)]="notificationSettings.emailNotifications">
+                <label for="emailNotif"></label>
+              </div>
+              <span class="toggle-description">Recevoir des notifications par email</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-bell"></i> Notifications in-app</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="inAppNotif" [(ngModel)]="notificationSettings.inAppNotifications">
+                <label for="inAppNotif"></label>
+              </div>
+              <span class="toggle-description">Notifications dans l'application</span>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-mobile-alt"></i> Notifications push</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="pushNotif" [(ngModel)]="notificationSettings.pushNotifications">
+                <label for="pushNotif"></label>
+              </div>
+              <span class="toggle-description">Notifications push sur mobile</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-chart-line"></i> Résumé hebdomadaire</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="weeklyDigest" [(ngModel)]="notificationSettings.weeklyDigest">
+                <label for="weeklyDigest"></label>
+              </div>
+              <span class="toggle-description">Recevoir un résumé chaque semaine</span>
+            </div>
+          </div>
+          
+          <div class="form-row" *ngIf="notificationSettings.weeklyDigest">
+            <div class="form-group">
+              <label><i class="fas fa-calendar-day"></i> Jour du résumé</label>
+              <select class="form-control" [(ngModel)]="notificationSettings.digestDay">
+                <option *ngFor="let day of digestDays" [value]="day.value">{{ day.label }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-clock"></i> Heure du résumé</label>
+              <input type="time" class="form-control" [(ngModel)]="notificationSettings.digestTime">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-poll"></i> Nouveaux sondages</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="notifyNewSurvey" [(ngModel)]="notificationSettings.notifyOnNewSurvey">
+                <label for="notifyNewSurvey"></label>
+              </div>
+              <span class="toggle-description">Notification pour nouveaux sondages</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-chart-bar"></i> Résultats disponibles</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="notifyResults" [(ngModel)]="notificationSettings.notifyOnResults">
+                <label for="notifyResults"></label>
+              </div>
+              <span class="toggle-description">Notification quand résultats disponibles</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paramètres Sécurité -->
+      <div class="settings-card" *ngIf="activeSection === 'security'">
+        <div class="card-header">
+          <div class="header-icon"><i class="fas fa-shield-alt"></i></div>
+          <div class="header-text">
+            <h3>Paramètres sécurité</h3>
+            <p>Configurez la sécurité de l'application</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="toggle-group">
+              <label><i class="fas fa-mobile-alt"></i> Authentification 2FA</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="enable2FA" [(ngModel)]="securitySettings.enable2FA">
+                <label for="enable2FA"></label>
+              </div>
+              <span class="toggle-description">Double authentification</span>
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-history"></i> Logs système</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="enableLogs" [(ngModel)]="securitySettings.enableLogs">
+                <label for="enableLogs"></label>
+              </div>
+              <span class="toggle-description">Conserver les logs système</span>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-clock"></i> Session timeout (minutes)</label>
+              <input type="number" class="form-control" [(ngModel)]="securitySettings.sessionTimeout" min="5" max="120">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-calendar-alt"></i> Expiration mot de passe (jours)</label>
+              <input type="number" class="form-control" [(ngModel)]="securitySettings.passwordExpiryDays" min="30" max="365">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-laptop"></i> Sessions max par utilisateur</label>
+              <input type="number" class="form-control" [(ngModel)]="securitySettings.maxSessionsPerUser" min="1" max="10">
+            </div>
+            <div class="toggle-group">
+              <label><i class="fas fa-network-wired"></i> Limitation débit</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="rateLimitEnabled" [(ngModel)]="securitySettings.rateLimitEnabled">
+                <label for="rateLimitEnabled"></label>
+              </div>
+              <span class="toggle-description">Activer la limitation de débit</span>
+            </div>
+          </div>
+          
+          <div class="form-row" *ngIf="securitySettings.rateLimitEnabled">
+            <div class="form-group">
+              <label><i class="fas fa-tachometer-alt"></i> Requêtes max</label>
+              <input type="number" class="form-control" [(ngModel)]="securitySettings.rateLimitRequests" min="10" max="1000">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-clock"></i> Période (minutes)</label>
+              <input type="number" class="form-control" [(ngModel)]="securitySettings.rateLimitMinutes" min="1" max="60">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-database"></i> Fréquence backup</label>
+              <select class="form-control" [(ngModel)]="securitySettings.backupFrequency">
+                <option *ngFor="let freq of backupFrequencies" [value]="freq.value">{{ freq.label }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-trash-alt"></i> Rétention backup (jours)</label>
+              <input type="number" class="form-control" [(ngModel)]="securitySettings.backupRetentionDays" min="7" max="365">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn-secondary" (click)="resetSettings()">
+          <i class="fas fa-undo-alt"></i> Réinitialiser
+        </button>
+        <button class="btn-primary" (click)="saveSettings()">
+          <i class="fas fa-save"></i> Enregistrer les paramètres
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Notification Toast -->
+  <div class="notification-toast" [class.show]="notification.show" 
+       [class.success]="notification.type === 'success'" 
+       [class.error]="notification.type === 'error'" 
+       [class.info]="notification.type === 'info'">
+    <i class="fas" [class.fa-check-circle]="notification.type === 'success'" 
+       [class.fa-exclamation-circle]="notification.type === 'error'" 
+       [class.fa-info-circle]="notification.type === 'info'"></i>
+    <span>{{ notification.message }}</span>
+    <button class="close-notif" (click)="closeNotification()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>

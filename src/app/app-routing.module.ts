@@ -7,6 +7,9 @@ import { YoloPredictComponent } from './yolo-predict/yolo-predict.component';
 import { ProfilComponent } from './gestionProfil/profil/profil.component';
 import { ModfifierProfilComponent } from './gestionProfil/modfifier-profil/modfifier-profil.component';
 import { DetailesUserComponent } from './dashboard/dashboard-super-admin/detailes-user/detailes-user.component';
+import { MessangerComponent } from './dashboard/messanger/messanger.component';
+import { GereRolesComponent } from './dashboard/dashboard-super-admin/gere-roles/gere-roles.component';
+import { ParametreComponent } from './dashboard/dashboard-super-admin/parametre/parametre.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -15,6 +18,10 @@ const routes: Routes = [
   { path: 'predict', component: YoloPredictComponent },
   { path: 'profil', component: ProfilComponent },
   { path: 'modifier-profil', component: ModfifierProfilComponent },
+    { path: 'messanger', component: MessangerComponent },
+     { path: 'gereRoles', component: GereRolesComponent },
+     { path: 'parametre', component: ParametreComponent },
+
 
   {
     path: 'admin-dashboard',

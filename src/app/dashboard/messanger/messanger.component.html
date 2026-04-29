@@ -1,0 +1,122 @@
+<div class="messenger-overlay" (click)="closeModal()">
+  <div class="messenger-container" (click)="$event.stopPropagation()">
+    
+    <!-- Notification Toast -->
+    <div class="notification-toast" [class.show]="notification.show" [class]="notification.type">
+      <i class="fas" [class.fa-check-circle]="notification.type === 'success'" 
+         [class.fa-exclamation-circle]="notification.type === 'error'"
+         [class.fa-info-circle]="notification.type === 'info'"></i>
+      <span>{{ notification.message }}</span>
+      <button class="close-notif" (click)="closeNotification()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Header -->
+    <div class="messenger-header">
+      <div class="header-left">
+        <button class="back-btn" (click)="closeModal()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="recipient-avatar" *ngIf="recipientUser">
+            <!-- Remplacer l'ancienne ligne par celle-ci -->
+<img *ngIf="recipientUser.photo_profil && recipientUser.photo_profil !== 'default' && recipientUser.photo_profil !== ''" 
+     [src]="getImageUrl(recipientUser.photo_profil)" 
+     alt="Avatar"
+     (error)="onImageError()">
+          <div class="avatar-placeholder" *ngIf="!recipientUser.photo_profil">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="online-dot" [class.online]="recipientUser.online"></div>
+        </div>
+        <div class="recipient-info" *ngIf="recipientUser">
+          <h3>{{ recipientUser.prenom }} {{ recipientUser.nom }}</h3>
+          <span class="status" [class.online]="recipientUser.online">
+            {{ recipientUser.online ? 'En ligne' : 'Hors ligne' }}
+          </span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="refresh-btn" (click)="refreshMessages()" [disabled]="loading">
+          <i class="fas fa-sync-alt" [class.spinning]="loading"></i>
+        </button>
+        <button class="close-btn" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Current User Info (pour débogage) -->
+    <div class="current-user-info" *ngIf="currentUser">
+      <small>Connecté en tant que: {{ currentUser.prenom }} {{ currentUser.nom }}</small>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading-indicator" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des messages...</span>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="messages-area" #messagesContainer *ngIf="!loading">
+      <div class="messages-list">
+        <div class="no-messages" *ngIf="messages.length === 0">
+          <i class="fas fa-comments"></i>
+          <p>Aucun message pour le moment</p>
+          <p class="subtitle">Soyez le premier à envoyer un message !</p>
+        </div>
+        
+        <ng-container *ngFor="let msg of messages; let i = index">
+          <div class="date-separator" *ngIf="shouldShowDateSeparator(i)">
+            <span>{{ formatDate(msg.dateEnvoi) }}</span>
+          </div>
+          
+          <div class="message-item" 
+               [class.sent]="isCurrentUser(msg)" 
+               [class.received]="!isCurrentUser(msg)">
+            <div class="message-bubble">
+              <div class="message-subject" *ngIf="msg.sujet && !isCurrentUser(msg)">
+                <strong>{{ msg.sujet }}</strong>
+              </div>
+              <div class="message-content">{{ msg.contenu }}</div>
+              <div class="message-time">
+                {{ formatTime(msg.dateEnvoi) }}
+                <span class="message-status" *ngIf="isCurrentUser(msg)">
+                  <i class="fas fa-check" *ngIf="!msg.lu"></i>
+                  <i class="fas fa-check-double" *ngIf="msg.lu"></i>
+                  <span class="status-text">{{ getMessageStatus(msg) }}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        
+        <div class="typing-indicator" *ngIf="isTyping">
+          <span></span><span></span><span></span>
+          <span class="typing-text">{{ recipientUser?.prenom }} écrit...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Input -->
+    <div class="message-input-area">
+      <input type="text" 
+             [(ngModel)]="sujet" 
+             placeholder="Sujet (optionnel)" 
+             class="subject-input"
+             *ngIf="messages.length === 0">
+      <div class="input-wrapper">
+        <textarea [(ngModel)]="newMessage" 
+                  (keyup)="onTyping()" 
+                  (keydown.enter)="$event.preventDefault(); sendMessage()"
+                  placeholder="Écrivez votre message..." 
+                  rows="2"
+                  [disabled]="sending"></textarea>
+        <button (click)="sendMessage()" [disabled]="!newMessage.trim() || sending || loading">
+          <i class="fas fa-paper-plane" [class.sending]="sending"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

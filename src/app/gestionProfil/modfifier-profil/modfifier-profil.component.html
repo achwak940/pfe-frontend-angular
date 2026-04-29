@@ -1,1 +1,115 @@
-<p>modfifier-profil works!</p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="edit-profile-container">
+  <div class="edit-profile-card">
+    <!-- Header -->
+    <div class="edit-header">
+      <button class="back-btn" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1>Modifier le profil</h1>
+      <p>Mettez à jour vos informations personnelles</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoadingData" class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement de vos informations...</p>
+    </div>
+
+    <!-- Formulaire -->
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="edit-form" *ngIf="!isLoadingData && userInfo">
+      <!-- Photo de profil -->
+      <div class="form-group photo-group">
+        <label class="form-label">Photo de profil</label>
+        <div class="photo-upload-container">
+          <div class="photo-preview" (click)="triggerFileUpload()">
+            <img *ngIf="photoPreview" [src]="photoPreview" alt="Photo de profil" class="preview-image">
+            <div *ngIf="!photoPreview" class="photo-placeholder">
+              <i class="fas fa-camera"></i>
+              <span>Ajouter une photo</span>
+            </div>
+            <div class="photo-overlay" *ngIf="photoPreview">
+              <i class="fas fa-edit"></i>
+            </div>
+          </div>
+          <input 
+            type="file" 
+            #fileInput 
+            (change)="onFileSelected($event)" 
+            accept="image/jpeg,image/png,image/jpg,image/webp"
+            style="display: none"
+          >
+          <button type="button" class="remove-photo-btn" *ngIf="photoPreview" (click)="removePhoto()">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        <p class="photo-hint">Formats acceptés: JPG, PNG, WEBP. Max 5MB</p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom <span class="required">*</span></label>
+          <input type="text" formControlName="prenom" class="form-control" [class.is-invalid]="submitted && profileForm.get('prenom')?.invalid">
+          <div class="error-message" *ngIf="submitted && profileForm.get('prenom')?.hasError('required')">Le prénom est requis</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nom <span class="required">*</span></label>
+          <input type="text" formControlName="nom" class="form-control" [class.is-invalid]="submitted && profileForm.get('nom')?.invalid">
+          <div class="error-message" *ngIf="submitted && profileForm.get('nom')?.hasError('required')">Le nom est requis</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email <span class="required">*</span></label>
+        <input type="email" formControlName="email" class="form-control" [class.is-invalid]="submitted && profileForm.get('email')?.invalid">
+        <div class="error-message" *ngIf="submitted && profileForm.get('email')?.hasError('required')">L'email est requis</div>
+        <div class="error-message" *ngIf="submitted && profileForm.get('email')?.hasError('email')">Email invalide</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Téléphone <span class="required">*</span></label>
+        <input type="tel" formControlName="telephone" class="form-control" [class.is-invalid]="submitted && profileForm.get('telephone')?.invalid">
+        <div class="error-message" *ngIf="submitted && profileForm.get('telephone')?.hasError('required')">Le téléphone est requis</div>
+        <div class="error-message" *ngIf="submitted && profileForm.get('telephone')?.hasError('pattern')">Minimum 8 chiffres</div>
+      </div>
+
+      <!-- Informations supplémentaires -->
+      <div class="info-section">
+        <h3 class="section-title">Informations supplémentaires</h3>
+        <div class="info-grid">
+          <div class="info-display">
+            <span class="info-label">Rôle</span>
+            <span class="info-value">{{ userInfo?.role }}</span>
+          </div>
+          <div class="info-display">
+            <span class="info-label">Statut</span>
+            <span class="info-value" [class.status-active]="userInfo?.statut === 'ACTIF'" [class.status-inactive]="userInfo?.statut === 'INACTIF'">
+              <i class="fas fa-circle"></i> {{ userInfo?.statut }}
+            </span>
+          </div>
+          <div class="info-display">
+            <span class="info-label">Membre depuis</span>
+            <span class="info-value">{{ userInfo?.date_creation | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="goBack()">Annuler</button>
+        <button type="submit" class="btn-save" [disabled]="isLoading">
+          <i class="fas" [class.fa-spinner]="isLoading" [class.fa-save]="!isLoading"></i>
+          {{ isLoading ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>
