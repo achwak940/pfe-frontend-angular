@@ -1,496 +1,562 @@
-<div class="admin-container">
-  <!-- Notification Toast -->
-  <div class="notification-toast" [class.show]="notification.show" [ngClass]="notification.type">
-    <i class="fas" [ngClass]="{
-      'fa-check-circle': notification.type === 'success',
-      'fa-exclamation-circle': notification.type === 'error',
-      'fa-info-circle': notification.type === 'info'
-    }"></i>
-    <span>{{ notification.message }}</span>
-    <button class="close-notif" (click)="closeNotification()">
+<!-- users-management.component.html -->
+<div class="um-container">
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="um-toast" [class.show]="notification.show" [ngClass]="notification.type">
+    <div class="toast-icon">
+      <i class="fas"
+         [ngClass]="{
+           'fa-check': notification.type === 'success',
+           'fa-times': notification.type === 'error',
+           'fa-info': notification.type === 'info'
+         }"></i>
+    </div>
+    <span class="toast-msg">{{ notification.message }}</span>
+    <button class="toast-close" (click)="closeNotification()">
       <i class="fas fa-times"></i>
     </button>
   </div>
 
-  <main class="main-content">
-    <div class="content-header">
-      <div class="header-left">
-        <h1>
+  <main class="um-main">
+
+    <!-- ══ HEADER ══════════════════════════════════════════════════ -->
+    <header class="um-header">
+      <div class="um-header-left">
+        <div class="um-header-title">
           <i class="fas fa-users-cog"></i>
-          Gestion des Utilisateurs
-        </h1>
-        <p class="subtitle">Gérez tous les utilisateurs de la plateforme</p>
+          Gestion des <em>Utilisateurs</em>
+        </div>
+        <p class="um-header-sub">✦ Gérez tous les membres de la plateforme</p>
       </div>
-      <div class="header-right">
-        <div class="loading-indicator" *ngIf="loading">
-          <i class="fas fa-spinner fa-spin"></i> Chargement...
+      <div class="um-header-right">
+        <div class="um-loading-chip" *ngIf="loading">
+          <i class="fas fa-circle-notch fa-spin"></i> Chargement…
         </div>
+        <button class="um-add-btn" (click)="openAddModal()">
+          <i class="fas fa-user-plus"></i> Ajouter un utilisateur
+        </button>
       </div>
-    </div>
+    </header>
 
-    <div class="content-area">
+    <div class="um-content">
 
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card primary">
-          <div class="stat-icon"><i class="fas fa-users"></i></div>
-          <div class="stat-content">
-            <span class="stat-value">{{ nombreUsersTotal | number }}</span>
-            <span class="stat-label">Utilisateurs totaux</span>
-          </div>
+      <!-- ══ STATS ════════════════════════════════════════════════ -->
+      <div class="um-stats">
+        <div class="um-stat um-stat--primary">
+          <div class="um-stat__icon"><i class="fas fa-users"></i></div>
+          <div class="um-stat__num">{{ nombreUsersTotal | number }}</div>
+          <div class="um-stat__lbl">Utilisateurs totaux</div>
         </div>
-        <div class="stat-card success">
-          <div class="stat-icon"><i class="fas fa-user-check"></i></div>
-          <div class="stat-content">
-            <span class="stat-value">{{ nombreUsersTotalActifs | number }}</span>
-            <span class="stat-label">Utilisateurs actifs</span>
-          </div>
+        <div class="um-stat um-stat--success">
+          <div class="um-stat__icon"><i class="fas fa-user-check"></i></div>
+          <div class="um-stat__num">{{ nombreUsersTotalActifs | number }}</div>
+          <div class="um-stat__lbl">Actifs</div>
         </div>
-        <div class="stat-card warning">
-          <div class="stat-icon"><i class="fas fa-user-clock"></i></div>
-          <div class="stat-content">
-            <span class="stat-value">{{ nombreUsersTotalInActifs | number }}</span>
-            <span class="stat-label">Utilisateurs inactifs</span>
-          </div>
+        <div class="um-stat um-stat--warning">
+          <div class="um-stat__icon"><i class="fas fa-user-clock"></i></div>
+          <div class="um-stat__num">{{ nombreUsersTotalInActifs | number }}</div>
+          <div class="um-stat__lbl">Inactifs</div>
         </div>
-        <div class="stat-card danger">
-          <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
-          <div class="stat-content">
-            <span class="stat-value">{{ nombreAdmins | number }}</span>
-            <span class="stat-label">Administrateurs</span>
-          </div>
+        <div class="um-stat um-stat--rose">
+          <div class="um-stat__icon"><i class="fas fa-user-shield"></i></div>
+          <div class="um-stat__num">{{ nombreAdmins | number }}</div>
+          <div class="um-stat__lbl">Administrateurs</div>
         </div>
       </div>
 
-      <!-- Quick Actions Bar -->
-      <div class="quick-actions">
-        <div class="actions-left">
-          <button class="quick-action-btn" (click)="exportCSV()" title="Exporter en CSV">
-            <i class="fas fa-file-csv"></i><span>CSV</span>
-          </button>
-          <button class="quick-action-btn" (click)="exportExcel()" title="Exporter en Excel">
-            <i class="fas fa-file-excel"></i><span>Excel</span>
-          </button>
-          <button class="quick-action-btn" (click)="exportPDF()" title="Exporter en PDF">
-            <i class="fas fa-file-pdf"></i><span>PDF</span>
-          </button>
-          <button class="quick-action-btn" (click)="printUsers()" title="Imprimer">
-            <i class="fas fa-print"></i><span>Imprimer</span>
-          </button>
+      <!-- ══ TOOLBAR ══════════════════════════════════════════════ -->
+      <div class="um-toolbar">
+        <div class="um-search">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            placeholder="Rechercher un utilisateur…"
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange($event)">
         </div>
-        <div class="view-toggle">
-          <button class="view-btn active"><i class="fas fa-th-large"></i></button>
-          <button class="view-btn"><i class="fas fa-list"></i></button>
+
+        <div class="um-quick-filters">
+          <button class="um-qf-btn"
+                  [class.active]="activeQuickFilter === 'all'"
+                  (click)="setQuickFilter('all')">Tous</button>
+          <button class="um-qf-btn"
+                  [class.active]="activeQuickFilter === 'actif'"
+                  (click)="setQuickFilter('actif')">Actifs</button>
+          <button class="um-qf-btn"
+                  [class.active]="activeQuickFilter === 'inactif'"
+                  (click)="setQuickFilter('inactif')">Inactifs</button>
+          <button class="um-qf-btn"
+                  [class.active]="activeQuickFilter === 'admin'"
+                  (click)="setQuickFilter('admin')">Admins</button>
+        </div>
+
+        <div class="um-role-select">
+          <i class="fas fa-tag"></i>
+          <select [(ngModel)]="selectedRole" (change)="onRoleChange($event)">
+            <option value="">Tous les rôles</option>
+            <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
+          </select>
         </div>
       </div>
 
-      <!-- Filters Card -->
-      <div class="filters-card">
-        <div class="filters-header">
-          <h3><i class="fas fa-filter"></i> Filtres avancés</h3>
-          <button class="btn-clear" (click)="clearFilters()">
-            <i class="fas fa-times"></i> Effacer les filtres
-          </button>
-        </div>
-        <div class="filters-grid">
-          <div class="filter-group">
-            <label>Recherche</label>
-            <div class="filter-input">
-              <i class="fas fa-search"></i>
-              <input type="text" placeholder="Nom, email..." 
-                     [(ngModel)]="searchTerm" (input)="onSearchChange($event)">
-            </div>
-          </div>
-          
-          <div class="filter-group">
-            <label>Rôle</label>
-            <div class="filter-select">
-              <i class="fas fa-tag"></i>
-              <select [(ngModel)]="selectedRole" (change)="onRoleChange($event)">
-                <option value="">Tous les rôles</option>
-                <option value="ADMIN">👑 Administrateur</option>
-                <option value="USER_CONNECTE">👤 Utilisateur connecté</option>
-                <option value="SUPER_ADMIN">⭐ Super Admin</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="filter-group">
-            <label>Statut</label>
-            <div class="filter-select">
-              <i class="fas fa-circle" [style.color]="selectedStatus === 'ACTIF' ? '#10b981' : '#ef4444'"></i>
-              <select [(ngModel)]="selectedStatus" (change)="onStatusChange($event)">
-                <option value="">Tous les statuts</option>
-                <option value="ACTIF">🟢 Actif</option>
-                <option value="INACTIF">🔴 Inactif</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Active Filters Tags -->
-        <div class="active-filters" *ngIf="searchTerm || selectedRole || selectedStatus">
-          <span class="filter-tag" *ngIf="searchTerm">
-            <i class="fas fa-search"></i> {{ searchTerm }}
-            <i class="fas fa-times" (click)="searchTerm = ''; applyFilters()"></i>
-          </span>
-          <span class="filter-tag" *ngIf="selectedRole">
-            <i class="fas fa-tag"></i> 
-            <ng-container [ngSwitch]="selectedRole">
-              <span *ngSwitchCase="'ADMIN'">Administrateur</span>
-              <span *ngSwitchCase="'USER_CONNECTE'">Utilisateur connecté</span>
-              <span *ngSwitchCase="'SUPER_ADMIN'">Super Admin</span>
-              <span *ngSwitchDefault>{{ selectedRole }}</span>
-            </ng-container>
-            <i class="fas fa-times" (click)="selectedRole = ''; applyFilters()"></i>
-          </span>
-          <span class="filter-tag" *ngIf="selectedStatus">
-            <i class="fas fa-circle"></i> {{ selectedStatus === 'ACTIF' ? 'Actif' : 'Inactif' }}
-            <i class="fas fa-times" (click)="selectedStatus = ''; applyFilters()"></i>
-          </span>
-        </div>
+      <!-- ══ EXPORT BAR ════════════════════════════════════════════ -->
+      <div class="um-export-bar">
+        <span class="um-section-label">Membres de la plateforme</span>
+        <div class="um-export-sep"></div>
+        <button class="um-exp-btn" (click)="exportCSV()">
+          <i class="fas fa-file-csv"></i> CSV
+        </button>
+        <button class="um-exp-btn" (click)="exportExcel()">
+          <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="um-exp-btn" (click)="exportPDF()">
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="um-exp-btn" (click)="printUsers()">
+          <i class="fas fa-print"></i> Imprimer
+        </button>
+        <button class="um-exp-btn um-exp-btn--clear" *ngIf="searchTerm || selectedRole || selectedStatus" (click)="clearFilters()">
+          <i class="fas fa-times"></i> Effacer filtres
+        </button>
       </div>
 
-      <!-- Users Grid -->
-      <div class="users-grid">
-        <div class="user-card" *ngFor="let user of getPaginatedUsers()" [class.selected]="selectedUsers.has(user.id)">
-          <div class="card-gradient-bg"></div>
+      <!-- ══ USERS GRID ════════════════════════════════════════════ -->
+      <div class="um-grid">
+        <div
+          class="um-card"
+          *ngFor="let user of getPaginatedUsers()"
+          [class.selected]="selectedUsers.has(user.id)">
 
-          <!-- Selection Checkbox -->
-          <div class="card-select">
-            <input type="checkbox" [id]="'select' + user.id" 
+          <div class="um-card__aura"></div>
+
+          <!-- Checkbox sélection -->
+          <div class="um-card__check">
+            <input type="checkbox"
+                   [id]="'chk-' + user.id"
                    [checked]="selectedUsers.has(user.id)"
                    (change)="toggleUserSelection(user.id)">
-            <label [for]="'select' + user.id">
+            <label [for]="'chk-' + user.id">
               <i class="fas fa-check"></i>
             </label>
           </div>
 
-          <div class="card-header">
-            <div class="user-avatar">
-              <div class="avatar-wrapper">
-                <img *ngIf="user.photo_profil && user.photo_profil !== 'default' && user.photo_profil !== ''"
-                     [src]="getImageUrl(user.photo_profil)"
-                     [alt]="user.prenom"
-                     (error)="onImageError(user)">
-                <div class="avatar-icon" *ngIf="!user.photo_profil || user.photo_profil === 'default' || user.photo_profil === ''">
-                  <i class="fas fa-user-circle"></i>
-                </div>
-                <div class="online-dot" [class.offline]="user.statut !== 'ACTIF'"></div>
-              </div>
+          <!-- TOP -->
+          <div class="um-card__top">
+            <div class="um-card__avatar" [ngClass]="getAvatarClass(user)">
+              <img *ngIf="hasValidImage(user.photo_profil)"
+                   [src]="getImageUrl(user.photo_profil)"
+                   [alt]="user.prenom + ' ' + user.nom"
+                   (error)="onImageError($event, user)">
+              <span *ngIf="!hasValidImage(user.photo_profil)">{{ getInitials(user) }}</span>
+              <div class="um-card__online"
+                   [class.offline]="user.statut !== 'ACTIF'"></div>
             </div>
 
-            <div class="user-badges">
-              <span class="badge role-badge" [ngClass]="'role-' + (user.role | lowercase)">
-                <i [ngClass]="'fas ' + getRoleIcon(user.role)"></i>
-                {{ user.role | lowercase }}
-              </span>
-              <span class="badge status-badge" [ngClass]="getStatusClass(user.statut)">
-                <i class="fas fa-circle"></i> {{ user.statut }}
-              </span>
-            </div>
-          </div>
-
-          <div class="card-body">
-            <h3>{{ user.prenom }} {{ user.nom }}</h3>
-            <p class="user-email">
-              <i class="fas fa-envelope"></i>
-              {{ user.email }}
-            </p>
-
-            <div class="user-stats">
-              <div class="user-stat-item">
-                <i class="fas fa-calendar-alt"></i>
-                <div class="stat-info">
-                  <span class="stat-label">Inscrit le</span>
-                  <span class="stat-value">{{ user.date_creation | date:'dd/MM/yyyy' }}</span>
-                </div>
+            <div class="um-card__info">
+              <div class="um-card__name">{{ user.prenom }} {{ user.nom }}</div>
+              <div class="um-card__email">
+                <i class="fas fa-envelope"></i> {{ user.email }}
               </div>
-              <div class="user-stat-item">
-                <i class="fas fa-clock"></i>
-                <div class="stat-info">
-                  <span class="stat-label">Dernière connexion</span>
-                  <span class="stat-value">{{ user.derniereConnexion }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="user-progress">
-              <div class="progress-label">
-                <span>Activité</span>
-                <span>{{ user.activite }}%</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="user.activite"></div>
+              <div class="um-card__badges">
+                <span class="um-role-pill" [ngClass]="getRoleClass(user.role)">
+                  {{ getRoleLabel(user.role) }}
+                </span>
+                <span class="um-status-pill"
+                      [class.active]="user.statut === 'ACTIF'"
+                      [class.inactive]="user.statut !== 'ACTIF'">
+                  {{ user.statut }}
+                </span>
               </div>
             </div>
           </div>
 
-          <div class="card-actions">
-            <button class="action-btn" title="Voir" (click)="viewUser(user.id)">
-              <i class="fas fa-eye"></i><span>Voir</span>
+          <div class="um-card__divider"></div>
+
+          <!-- META -->
+          <div class="um-card__meta">
+            <div class="um-card__meta-item">
+              <span class="um-meta-lbl"><i class="fas fa-calendar-alt"></i> Inscrit le</span>
+              <span class="um-meta-val">{{ user.date_creation | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="um-card__meta-item" style="text-align:right">
+              <span class="um-meta-lbl">Activité</span>
+              <span class="um-meta-val">{{ user.activite }}%</span>
+            </div>
+          </div>
+
+          <!-- BARRE ACTIVITÉ -->
+          <div class="um-card__progress">
+            <div class="um-card__progress-fill" [style.width.%]="user.activite"></div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="um-card__actions">
+            <button class="um-act" title="Voir" (click)="viewUser(user.id)">
+              <i class="fas fa-eye"></i>
+              <span>Voir</span>
             </button>
-            <button class="action-btn" title="Modifier" (click)="editUser(user.id)">
-              <i class="fas fa-edit"></i><span>Modifier</span>
+            <button class="um-act" title="Modifier" (click)="editUser(user.id)">
+              <i class="fas fa-edit"></i>
+              <span>Modifier</span>
             </button>
-            <button class="action-btn danger" title="Supprimer" (click)="openDeleteModal(user)">
-              <i class="fas fa-trash-alt"></i><span>Supprimer</span>
+            <button class="um-act um-act--danger" title="Supprimer" (click)="openDeleteModal(user)">
+              <i class="fas fa-trash-alt"></i>
+              <span>Suppr.</span>
             </button>
-            <button class="action-btn" title="Message" (click)="openMessaging(user)">
-              <i class="fas fa-comment"></i><span>Message</span>
+            <button class="um-act" title="Message" (click)="openMessaging(user)">
+              <i class="fas fa-comment"></i>
+              <span>Message</span>
             </button>
-            <button class="action-btn warning" *ngIf="user.statut === 'ACTIF'" 
-                    title="Désactiver" (click)="blockUser(user.id)">
-              <i class="fas fa-ban"></i><span>Désactiver</span>
+            <button class="um-act um-act--warn"
+                    *ngIf="user.statut === 'ACTIF'"
+                    title="Désactiver"
+                    (click)="blockUser(user.id)">
+              <i class="fas fa-ban"></i>
+              <span>Désact.</span>
             </button>
-            <button class="action-btn success" *ngIf="user.statut !== 'ACTIF'" 
-                    title="Activer" (click)="activateUser(user.id)">
-              <i class="fas fa-check-circle"></i><span>Activer</span>
+            <button class="um-act um-act--success"
+                    *ngIf="user.statut !== 'ACTIF'"
+                    title="Activer"
+                    (click)="activateUser(user.id)">
+              <i class="fas fa-check-circle"></i>
+              <span>Activer</span>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Bulk Actions Bar -->
-      <div class="bulk-actions" *ngIf="selectedUsers.size > 0">
-        <div class="bulk-info">
-          <input type="checkbox" id="select-all" 
+      <!-- ══ BULK ACTIONS ══════════════════════════════════════════ -->
+      <div class="um-bulk" *ngIf="selectedUsers.size > 0">
+        <div class="um-bulk__info">
+          <input type="checkbox" id="select-all"
                  [checked]="selectAll"
                  (change)="toggleSelectAll()">
-          <label for="select-all">Sélectionner tout</label>
-          <span class="selected-count">{{ selectedUsers.size }} sélectionné(s)</span>
+          <label for="select-all">Tout sélectionner</label>
+          <span class="um-bulk__count">{{ selectedUsers.size }} sélectionné(s)</span>
         </div>
-        <div class="bulk-buttons">
-          <button class="bulk-btn" (click)="bulkActivate()" [disabled]="bulkActionInProgress">
+        <div class="um-bulk__btns">
+          <button class="um-bulk-btn um-bulk-btn--success"
+                  (click)="bulkActivate()"
+                  [disabled]="bulkActionInProgress">
             <i class="fas fa-check-circle"></i> Activer
           </button>
-          <button class="bulk-btn warning" (click)="bulkDeactivate()" [disabled]="bulkActionInProgress">
+          <button class="um-bulk-btn um-bulk-btn--warn"
+                  (click)="bulkDeactivate()"
+                  [disabled]="bulkActionInProgress">
             <i class="fas fa-ban"></i> Désactiver
           </button>
-          <button class="bulk-btn" (click)="bulkChangeRole('USER_CONNECTE')" [disabled]="bulkActionInProgress">
+          <button class="um-bulk-btn"
+                  (click)="bulkChangeRole('USER_CONNECTE')"
+                  [disabled]="bulkActionInProgress">
             <i class="fas fa-user"></i> Rôle User
           </button>
-          <button class="bulk-btn danger" (click)="bulkDelete()" [disabled]="bulkActionInProgress">
+          <button class="um-bulk-btn um-bulk-btn--danger"
+                  (click)="bulkDelete()"
+                  [disabled]="bulkActionInProgress">
             <i class="fas fa-trash-alt"></i> Supprimer
           </button>
         </div>
       </div>
 
-      <!-- Pagination -->
-      <div class="pagination" *ngIf="totalPages > 1">
-        <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+      <!-- ══ PAGINATION ════════════════════════════════════════════ -->
+      <div class="um-pagination" *ngIf="totalPages > 1">
+        <button class="um-pg-btn"
+                [disabled]="currentPage === 1"
+                (click)="changePage(currentPage - 1)">
           <i class="fas fa-chevron-left"></i>
         </button>
-        <button class="page-btn" *ngFor="let page of getPages()" 
+        <button class="um-pg-btn"
+                *ngFor="let page of getPages()"
                 [class.active]="page === currentPage"
                 (click)="changePage(page)">
           {{ page }}
         </button>
-        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        <button class="um-pg-btn"
+                [disabled]="currentPage === totalPages"
+                (click)="changePage(currentPage + 1)">
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
 
-      <!-- Results Info -->
-      <div class="results-info" *ngIf="filteredUsers.length > 0">
+      <!-- ══ RÉSULTATS INFO ════════════════════════════════════════ -->
+      <div class="um-results-info" *ngIf="filteredUsers.length > 0">
         <i class="fas fa-chart-line"></i>
-        Affichage de <strong>{{ (currentPage - 1) * itemsPerPage + 1 }}</strong> 
-        à <strong>{{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }}</strong> 
+        Affichage de <strong>{{ (currentPage - 1) * itemsPerPage + 1 }}</strong> à
+        <strong>{{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }}</strong>
         sur <strong>{{ filteredUsers.length }}</strong> utilisateurs
       </div>
 
-      <div class="no-results" *ngIf="filteredUsers.length === 0 && !loading">
+      <div class="um-no-results" *ngIf="filteredUsers.length === 0 && !loading">
         <i class="fas fa-search"></i>
         <p>Aucun utilisateur trouvé</p>
-        <button class="btn-primary" (click)="clearFilters()">Effacer les filtres</button>
+        <button class="um-btn-primary" (click)="clearFilters()">Effacer les filtres</button>
       </div>
 
     </div>
   </main>
 
-  <!-- MODAL VIEW -->
-  <div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>
-          <i class="fas fa-user-circle"></i>
-          Détails de l'utilisateur
-        </h2>
-        <button class="modal-close" (click)="closeViewModal()">
+  <!-- ══════════════════════════════════════════════════════════════
+       MODAL — VIEW
+  ══════════════════════════════════════════════════════════════════ -->
+  <div class="um-modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+    <div class="um-modal" (click)="$event.stopPropagation()">
+      <div class="um-modal__head">
+        <h2><i class="fas fa-user-circle"></i> Détails du profil</h2>
+        <button class="um-modal__close" (click)="closeViewModal()">
           <i class="fas fa-times"></i>
         </button>
       </div>
-      <div class="modal-body" *ngIf="selectedUser">
-        <div class="profile-header">
-          <div class="profile-avatar">
-            <img *ngIf="selectedUser.photo_profil && selectedUser.photo_profil !== 'default' && selectedUser.photo_profil !== ''" 
+      <div class="um-modal__body" *ngIf="selectedUser">
+        <div class="um-profile-head">
+          <div class="um-profile-avatar" [ngClass]="getAvatarClass(selectedUser)">
+            <img *ngIf="hasValidImage(selectedUser.photo_profil)"
                  [src]="getImageUrl(selectedUser.photo_profil)"
                  [alt]="selectedUser.prenom"
-                 (error)="selectedUser.photo_profil = ''">
-            <div class="avatar-placeholder" *ngIf="!selectedUser.photo_profil || selectedUser.photo_profil === 'default' || selectedUser.photo_profil === ''">
-              <i class="fas fa-user-circle"></i>
-            </div>
+                 (error)="onImageError($event, selectedUser)">
+            <span *ngIf="!hasValidImage(selectedUser.photo_profil)">{{ getInitials(selectedUser) }}</span>
           </div>
-          <div class="profile-badges">
-            <span class="badge role-lg" [ngClass]="'role-' + (selectedUser.role | lowercase)">
-              <i [ngClass]="'fas ' + getRoleIcon(selectedUser.role)"></i>
-              {{ selectedUser.role }}
+          <div class="um-profile-badges">
+            <span class="um-role-pill" [ngClass]="getRoleClass(selectedUser.role)">
+              {{ getRoleLabel(selectedUser.role) }}
             </span>
-            <span class="badge status-lg" [ngClass]="getStatusClass(selectedUser.statut)">
-              <i class="fas fa-circle"></i> {{ selectedUser.statut }}
+            <span class="um-status-pill"
+                  [class.active]="selectedUser.statut === 'ACTIF'"
+                  [class.inactive]="selectedUser.statut !== 'ACTIF'">
+              {{ selectedUser.statut }}
             </span>
           </div>
         </div>
-
-        <div class="details-grid">
-          <div class="detail-item">
+        <div class="um-details-grid">
+          <div class="um-detail-item">
             <i class="fas fa-user"></i>
-            <div>
-              <label>Nom complet</label>
-              <p>{{ selectedUser.prenom }} {{ selectedUser.nom }}</p>
-            </div>
+            <div><label>Nom complet</label><p>{{ selectedUser.prenom }} {{ selectedUser.nom }}</p></div>
           </div>
-          <div class="detail-item">
+          <div class="um-detail-item">
             <i class="fas fa-envelope"></i>
-            <div>
-              <label>Email</label>
-              <p>{{ selectedUser.email }}</p>
-            </div>
+            <div><label>Email</label><p>{{ selectedUser.email }}</p></div>
           </div>
-          <div class="detail-item">
+          <div class="um-detail-item">
             <i class="fas fa-phone"></i>
-            <div>
-              <label>Téléphone</label>
-              <p>{{ selectedUser.telephone || 'Non renseigné' }}</p>
-            </div>
+            <div><label>Téléphone</label><p>{{ selectedUser.telephone || 'Non renseigné' }}</p></div>
           </div>
-          <div class="detail-item">
+          <div class="um-detail-item">
             <i class="fas fa-calendar-check"></i>
-            <div>
-              <label>Date d'inscription</label>
-              <p>{{ selectedUser.date_creation | date:'dd/MM/yyyy à HH:mm' }}</p>
-            </div>
+            <div><label>Inscription</label><p>{{ selectedUser.date_creation | date:'dd/MM/yyyy à HH:mm' }}</p></div>
           </div>
-          <div class="detail-item">
+          <div class="um-detail-item">
             <i class="fas fa-check-circle"></i>
-            <div>
-              <label>Email vérifié</label>
-              <p>{{ selectedUser.est_verifie ? 'Oui' : 'Non' }}</p>
-            </div>
+            <div><label>Email vérifié</label><p>{{ selectedUser.est_verifie ? '✅ Oui' : '❌ Non' }}</p></div>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="closeViewModal()">Fermer</button>
-        <button class="btn-primary" (click)="editUser(selectedUser!.id); closeViewModal()">
+      <div class="um-modal__foot">
+        <button class="um-btn-secondary" (click)="closeViewModal()">Fermer</button>
+        <button class="um-btn-primary" (click)="editUser(selectedUser!.id); closeViewModal()">
           <i class="fas fa-edit"></i> Modifier
         </button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL EDIT -->
-  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>
-          <i class="fas fa-edit"></i>
-          Modifier l'utilisateur
-        </h2>
-        <button class="modal-close" (click)="closeEditModal()">
+  <!-- ══════════════════════════════════════════════════════════════
+       MODAL — EDIT
+  ══════════════════════════════════════════════════════════════════ -->
+  <div class="um-modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="um-modal" (click)="$event.stopPropagation()">
+      <div class="um-modal__head">
+        <h2><i class="fas fa-edit"></i> Modifier l'utilisateur</h2>
+        <button class="um-modal__close" (click)="closeEditModal()">
           <i class="fas fa-times"></i>
         </button>
       </div>
       <form [formGroup]="editForm" (ngSubmit)="onSubmitEdit()">
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="form-group">
+        <div class="um-modal__body">
+          <div class="um-form-grid">
+            <div class="um-form-group">
               <label>Prénom *</label>
               <input type="text" formControlName="prenom" placeholder="Prénom">
-              <small class="error" *ngIf="editForm.get('prenom')?.invalid && editForm.get('prenom')?.touched">
-                Le prénom est requis (min 2 caractères)
+              <small class="um-error"
+                     *ngIf="editForm.get('prenom')?.invalid && editForm.get('prenom')?.touched">
+                Prénom requis (min 2 caractères)
               </small>
             </div>
-            <div class="form-group">
+            <div class="um-form-group">
               <label>Nom *</label>
               <input type="text" formControlName="nom" placeholder="Nom">
-              <small class="error" *ngIf="editForm.get('nom')?.invalid && editForm.get('nom')?.touched">
-                Le nom est requis (min 2 caractères)
+              <small class="um-error"
+                     *ngIf="editForm.get('nom')?.invalid && editForm.get('nom')?.touched">
+                Nom requis (min 2 caractères)
               </small>
             </div>
-            <div class="form-group">
+            <div class="um-form-group">
               <label>Email *</label>
               <input type="email" formControlName="email" placeholder="Email">
-              <small class="error" *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched">
+              <small class="um-error"
+                     *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched">
                 Email valide requis
               </small>
             </div>
-            <div class="form-group">
+            <div class="um-form-group">
               <label>Téléphone</label>
               <input type="tel" formControlName="telephone" placeholder="Téléphone">
             </div>
-            <div class="form-group">
-              <label>Rôle</label>
+            <div class="um-form-group">
+              <label>Rôle *</label>
               <select formControlName="role">
-                <option value="USER_CONNECTE">👤 Utilisateur connecté</option>
-                <option value="ADMIN">👑 Administrateur</option>
-                <option value="SUPER_ADMIN">⭐ Super Admin</option>
+                <option value="">-- Choisir un rôle --</option>
+                <option *ngFor="let role of allRoles" [value]="role">{{ role }}</option>
               </select>
             </div>
-            <div class="form-group">
-              <label>Statut</label>
+            <div class="um-form-group">
+              <label>Statut *</label>
               <select formControlName="statut">
                 <option value="ACTIF">🟢 Actif</option>
                 <option value="INACTIF">🔴 Inactif</option>
               </select>
             </div>
+            <div class="um-form-group um-form-group--full">
+              <label>Photo de profil</label>
+              <input type="file" (change)="onPhotoSelected($event)" accept="image/*">
+              <div *ngIf="selectedUser?.photo_profil && !removePhotoFlag" class="um-photo-preview">
+                <img [src]="getImageUrl(selectedUser?.photo_profil ?? '')" width="48" height="48" alt="Photo actuelle">
+                <button type="button" class="um-photo-remove" (click)="removePhoto()">
+                  <i class="fas fa-times"></i> Supprimer
+                </button>
+              </div>
+              <div class="um-info" *ngIf="removePhotoFlag">
+                <i class="fas fa-info-circle"></i> Photo supprimée (sera enregistrée)
+              </div>
+            </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="closeEditModal()">Annuler</button>
-          <button type="submit" class="btn-primary" [disabled]="editForm.invalid || loading">
-            <i class="fas fa-save"></i> Enregistrer
+        <div class="um-modal__foot">
+          <button type="button" class="um-btn-secondary" (click)="closeEditModal()">Annuler</button>
+          <button type="submit" class="um-btn-primary" [disabled]="editForm.invalid || loading">
+            <i class="fas fa-save"></i>
+            {{ loading ? 'Enregistrement…' : 'Enregistrer' }}
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL DELETE -->
-  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-    <div class="modal-container modal-danger" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>
-          <i class="fas fa-exclamation-triangle"></i>
-          Confirmer la suppression
-        </h2>
+  <!-- ══════════════════════════════════════════════════════════════
+       MODAL — DELETE
+  ══════════════════════════════════════════════════════════════════ -->
+  <div class="um-modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="um-modal um-modal--danger" (click)="$event.stopPropagation()">
+      <div class="um-modal__head">
+        <h2><i class="fas fa-exclamation-triangle"></i> Confirmer la suppression</h2>
       </div>
-      <div class="modal-body" *ngIf="userToDelete">
-        <div class="delete-warning">
-          <i class="fas fa-trash-alt"></i>
+      <div class="um-modal__body" *ngIf="userToDelete">
+        <div class="um-delete-warn">
+          <div class="um-delete-warn__icon">
+            <i class="fas fa-trash-alt"></i>
+          </div>
           <p>
-            Êtes-vous sûr de vouloir supprimer <strong>{{ userToDelete.prenom }} {{ userToDelete.nom }}</strong> ?
-            Cette action est irréversible.
+            Supprimer définitivement <strong>{{ userToDelete.prenom }} {{ userToDelete.nom }}</strong> ?
+            <br><small>{{ userToDelete.email }}</small>
           </p>
+          <span class="um-delete-warn__tag">⚠ Cette action est irréversible</span>
         </div>
-        <div class="confirm-input">
+        <div class="um-confirm-input">
           <label>Tapez <strong>SUPPRIMER</strong> pour confirmer</label>
-          <input type="text" [(ngModel)]="deleteConfirmText" placeholder="SUPPRIMER" autocomplete="off">
+          <input type="text"
+                 [(ngModel)]="deleteConfirmText"
+                 placeholder="SUPPRIMER"
+                 autocomplete="off">
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="closeDeleteModal()">Annuler</button>
-        <button class="btn-danger" (click)="confirmDelete()" [disabled]="deleteConfirmText !== 'SUPPRIMER'">
-          <i class="fas fa-trash-alt"></i> Supprimer définitivement
+      <div class="um-modal__foot">
+        <button class="um-btn-secondary" (click)="closeDeleteModal()">Annuler</button>
+        <button class="um-btn-danger"
+                (click)="confirmDelete()"
+                [disabled]="deleteConfirmText !== 'SUPPRIMER' || loading">
+          <i class="fas fa-trash-alt"></i>
+          {{ loading ? 'Suppression…' : 'Supprimer définitivement' }}
         </button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL MESSAGERIE -->
-  <app-messanger 
+  <!-- ══════════════════════════════════════════════════════════════
+       MODAL — ADD
+  ══════════════════════════════════════════════════════════════════ -->
+  <div class="um-modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+    <div class="um-modal" (click)="$event.stopPropagation()">
+      <div class="um-modal__head">
+        <h2><i class="fas fa-user-plus"></i> Nouvel utilisateur</h2>
+        <button class="um-modal__close" (click)="closeAddModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form [formGroup]="addForm" (ngSubmit)="onSubmitAdd()">
+        <div class="um-modal__body">
+          <div class="um-form-grid">
+            <div class="um-form-group">
+              <label>Prénom *</label>
+              <input type="text" formControlName="prenom" placeholder="Prénom">
+              <small class="um-error"
+                     *ngIf="addForm.get('prenom')?.invalid && addForm.get('prenom')?.touched">
+                Prénom requis
+              </small>
+            </div>
+            <div class="um-form-group">
+              <label>Nom *</label>
+              <input type="text" formControlName="nom" placeholder="Nom">
+              <small class="um-error"
+                     *ngIf="addForm.get('nom')?.invalid && addForm.get('nom')?.touched">
+                Nom requis
+              </small>
+            </div>
+            <div class="um-form-group">
+              <label>Email *</label>
+              <input type="email" formControlName="email" placeholder="Email">
+              <small class="um-error"
+                     *ngIf="addForm.get('email')?.invalid && addForm.get('email')?.touched">
+                Email valide requis
+              </small>
+            </div>
+            <div class="um-form-group">
+              <label>Téléphone</label>
+              <input type="tel" formControlName="telephone" placeholder="Téléphone">
+            </div>
+            <div class="um-form-group">
+              <label>Mot de passe *</label>
+              <input type="password" formControlName="mot_de_passe" placeholder="Min. 8 caractères">
+              <small class="um-error"
+                     *ngIf="addForm.get('mot_de_passe')?.invalid && addForm.get('mot_de_passe')?.touched">
+                Mot de passe requis (min 8 caractères)
+              </small>
+            </div>
+            <div class="um-form-group">
+              <label>Rôle *</label>
+              <select formControlName="role">
+                <option *ngFor="let role of allRoles" [value]="role">{{ role }}</option>
+              </select>
+            </div>
+            <div class="um-form-group um-form-group--full">
+              <label>Photo de profil</label>
+              <input type="file" (change)="onAddPhotoSelected($event)" accept="image/*">
+            </div>
+          </div>
+        </div>
+        <div class="um-modal__foot">
+          <button type="button" class="um-btn-secondary" (click)="closeAddModal()">Annuler</button>
+          <button type="submit" class="um-btn-primary" [disabled]="addForm.invalid || loading">
+            <i class="fas fa-save"></i>
+            {{ loading ? 'Création…' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ MESSAGERIE ════════════════════════════════════════════════ -->
+  <app-messanger
     *ngIf="selectedUserForMessage"
     [recipientUser]="selectedUserForMessage"
     (close)="closeMessenger()">
   </app-messanger>
+
 </div>

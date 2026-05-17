@@ -1,288 +1,597 @@
 <!-- src/app/dashboard/dashboard-admin/gestion-reclamation/gestion-reclamation.component.html -->
-<div class="container">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <h1><i class="fas fa-robot"></i> Analyse IA des Réclamations</h1>
-      <div class="subtitle"><i class="fas fa-chart-line"></i> Tableau de bord intelligent</div>
-    </div>
-    <div class="header-right">
-      <div class="stats-badge">
-        <div class="stat-item"><i class="fas fa-clock"></i><span>{{ attenteCount }} en attente</span></div>
-        <div class="stat-item"><i class="fas fa-check-circle"></i><span>{{ traiteeCount }} traitées</span></div>
-        <div class="stat-item"><i class="fas fa-microchip"></i><span>IA actif</span></div>
-      </div>
-      <button class="btn btn-primary" (click)="openYoloModal()"><i class="fas fa-camera"></i> Nouvelle analyse</button>
-    </div>
-  </div>
 
-  <!-- Statistiques -->
-  <div class="stats-grid">
-    <div class="stat-card-large">
-      <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-      <div class="stat-content">
-        <h3>{{ totalReclamations }}</h3>
-        <p>Réclamations totales</p>
+<!-- Toast Notifications -->
+<div class="toast-container">
+  <div *ngFor="let toast of toasts; let i = index" 
+       class="toast toast-{{ toast.type }}" 
+       [class.toast-hide]="toast.hiding"
+       (mouseenter)="pauseToastTimer(toast)"
+       (mouseleave)="resumeToastTimer(toast)">
+    <div class="toast-content">
+      <div class="toast-icon">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle': toast.type === 'success',
+          'fa-exclamation-circle': toast.type === 'error',
+          'fa-info-circle': toast.type === 'info',
+          'fa-exclamation-triangle': toast.type === 'warning'
+        }"></i>
+      </div>
+      <div class="toast-message">
+        <div class="toast-title">{{ toast.title }}</div>
+        <div class="toast-text">{{ toast.message }}</div>
       </div>
     </div>
-    <div class="stat-card-large">
-      <div class="stat-icon"><i class="fas fa-microchip"></i></div>
-      <div class="stat-content">
-        <h3>91%</h3>
-        <p>Précision IA</p>
-      </div>
-    </div>
-    <div class="stat-card-large">
-      <div class="stat-icon"><i class="fas fa-tachometer-alt"></i></div>
-      <div class="stat-content">
-        <h3>{{ graviteTotale | number:'1.1-1' }}</h3>
-        <p>Gravité moyenne /10</p>
-      </div>
-    </div>
-    <div class="stat-card-large">
-      <div class="stat-icon"><i class="fas fa-euro-sign"></i></div>
-      <div class="stat-content">
-        <h3>{{ coutTotalEstime }}€</h3>
-        <p>Coût estimé</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filtres -->
-  <div class="search-section">
-    <div class="search-wrapper">
-      <i class="fas fa-search"></i>
-      <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput(searchQuery)" placeholder="Rechercher par ID, client, produit...">
-    </div>
-    <div class="filter-group">
-      <button class="filter-btn" [class.active]="selectedStatus === 'all'" (click)="selectedStatus='all'; applyFilters()">Tous</button>
-      <button class="filter-btn" [class.active]="selectedStatus === 'DETECTE'" (click)="selectedStatus='DETECTE'; applyFilters()">En attente</button>
-      <button class="filter-btn" [class.active]="selectedStatus === 'RESOLU'" (click)="selectedStatus='RESOLU'; applyFilters()">Résolues</button>
-      <button class="filter-btn" (click)="resetFilters()"><i class="fas fa-redo"></i> Réinitialiser</button>
-    </div>
-  </div>
-
-  <!-- Mode sélection -->
-  <div *ngIf="isSelectionMode" class="selection-bar">
-    <span>{{ selectedIds.length }} sélectionné(s)</span>
-    <div class="selection-actions">
-      <button class="btn-secondary" (click)="exitSelectionMode()">Annuler</button>
-      <button class="btn-danger" (click)="deleteSelected()">Supprimer</button>
-    </div>
-  </div>
-
-  <!-- Loading -->
-  <div *ngIf="isLoading" class="loading-spinner">
-    <div class="spinner"></div>
-    <p>Chargement des réclamations...</p>
-  </div>
-
-  <!-- Liste des réclamations -->
-  <div *ngIf="!isLoading" class="cards-grid">
-    <div *ngFor="let reclamation of displayedReclamations" class="claim-card" [ngClass]="getGravityClass(reclamation.gravite)">
-      <div class="card-header">
-        <div *ngIf="isSelectionMode" class="selection-checkbox">
-          <input type="checkbox" [checked]="selectedIds.includes(reclamation.id)" (change)="toggleSelection(reclamation.id)">
-        </div>
-        <span class="claim-id"><i class="far fa-id-card"></i> #{{ reclamation.id }}</span>
-        <span class="status-badge" [ngClass]="getStatusClass(reclamation.statut)">{{ getStatusLabel(reclamation.statut) }}</span>
-      </div>
-
-      <div class="date-info" *ngIf="reclamation.createdAt">
-        <i class="far fa-calendar-alt"></i> Soumission: {{ formatDate(reclamation.createdAt) }}
-      </div>
-
-      <div class="user-section" *ngIf="reclamation.user">
-        <img [src]="reclamation.user.photoProfil || 'https://via.placeholder.com/50'" class="user-image">
-        <div class="user-details">
-          <div class="user-name">{{ reclamation.user.prenom }} {{ reclamation.user.nom }}</div>
-          <div class="user-email">{{ reclamation.user.email }}</div>
-          <div class="user-phone"><i class="fas fa-phone"></i> {{ reclamation.user.telephone || 'Non renseigné' }}</div>
-        </div>
-      </div>
-
-      <div class="product-section">
-        <div class="product-name">{{ reclamation.titre }}</div>
-        <div class="product-ref">Type: {{ reclamation.typeDommage }} | {{ reclamation.dommagesDetectes }} dommage(s)</div>
-      </div>
-
-      <div class="ia-analysis">
-        <div class="ia-header">
-          <i class="fas fa-microchip"></i>
-          <h4>Analyse IA</h4>
-          <span class="ia-badge">Confiance {{ (reclamation.confiance * 100).toFixed(0) }}%</span>
-        </div>
-        <div class="problem-detected">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span>Problème détecté :</span> {{ reclamation.description }}
-        </div>
-        <div class="metric-item">
-          <label>Gravité du problème</label>
-          <div class="metric-value">{{ reclamation.gravite }}/10</div>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="reclamation.gravite * 10"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section image -->
-      <div class="image-section" *ngIf="reclamation.imageUrl">
-        <img [src]="getImageUrl(reclamation.imageUrl)" 
-             class="claim-image" 
-             (click)="openImage(reclamation.imageUrl)"
-             (error)="onImageError($event)"
-             [alt]="'Image dommage réclamation n°' + reclamation.id">
-        <div class="image-caption">
-          <i class="fas fa-image"></i>
-          {{ reclamation.imageName || 'Image du dommage' }}
-        </div>
-      </div>
-
-      <div class="card-actions">
-        <button class="action-btn correct-ia" (click)="openCorrectionModal(reclamation)">
-          <i class="fas fa-edit"></i> Corriger
-        </button>
-        <button class="action-btn check" (click)="openResponseModal(reclamation)">
-          <i class="fas fa-reply"></i> Répondre
-        </button>
-        <button class="action-btn delete" (click)="deleteReclamation(reclamation.id)">
-          <i class="fas fa-trash"></i> Supprimer
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Aucune réclamation -->
-  <div *ngIf="!isLoading && displayedReclamations.length === 0" class="empty-state">
-    <i class="fas fa-inbox"></i>
-    <h3>Aucune réclamation trouvée</h3>
-    <p>Essayez de modifier vos filtres ou créez une nouvelle réclamation.</p>
-  </div>
-
-  <!-- Pagination -->
-  <div *ngIf="totalPages > 1 && !isLoading" class="pagination">
-    <button [disabled]="currentPage === 1" (click)="previousPage()"><i class="fas fa-chevron-left"></i> Précédent</button>
-    <span>Page {{ currentPage }} / {{ totalPages }}</span>
-    <button [disabled]="currentPage === totalPages" (click)="nextPage()">Suivant <i class="fas fa-chevron-right"></i></button>
+    <button class="toast-close" (click)="removeToast(toast)">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 </div>
 
-<!-- Modal Réponse -->
-<div class="modal" [class.show]="showResponseModal" (click)="closeResponseModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3><i class="fas fa-reply"></i> Répondre au client</h3>
-      <button class="close" (click)="closeResponseModal()">&times;</button>
-    </div>
-    <form [formGroup]="responseForm">
-      <div class="modal-body">
-        <textarea formControlName="message" placeholder="Votre message..." rows="5"></textarea>
-        <div *ngIf="responseForm.get('message')?.invalid && responseForm.get('message')?.touched" class="error-message">
-          Le message doit contenir au moins 10 caractères
+<div class="dashboard-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <i class="fas fa-robot"></i>
+          <span>IA Intelligence</span>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="closeResponseModal()">Annuler</button>
-        <button type="button" class="btn-primary" (click)="sendResponse()" [disabled]="responseForm.invalid || isSubmitting">Envoyer</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal Correction -->
-<div class="modal" [class.show]="showCorrectionModal" (click)="closeCorrectionModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3><i class="fas fa-edit"></i> Corriger l'analyse IA</h3>
-      <button class="close" (click)="closeCorrectionModal()">&times;</button>
-    </div>
-    <form [formGroup]="correctionForm">
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Problème détecté</label>
-          <textarea formControlName="problemDetected" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Niveau de gravité (0-10)</label>
-          <input type="range" formControlName="severity" min="0" max="10" step="0.5">
-          <span class="range-value">{{ correctionForm.get('severity')?.value }}/10</span>
-        </div>
-        <div class="form-group">
-          <label>Confiance (%)</label>
-          <input type="range" formControlName="confidence" min="0" max="100">
-          <span class="range-value">{{ correctionForm.get('confidence')?.value }}%</span>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="closeCorrectionModal()">Annuler</button>
-        <button type="button" class="btn-primary" (click)="submitCorrection()" [disabled]="correctionForm.invalid || isSubmitting">Enregistrer</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal YOLO -->
-<div class="modal" [class.show]="showYoloModal" (click)="closeYoloModal()">
-  <div class="modal-content modal-large" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3><i class="fas fa-camera"></i> Analyse YOLO - Détection de défauts</h3>
-      <button class="close" (click)="closeYoloModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="yolo-upload" (click)="fileInput.click()">
-        <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" style="display: none">
-        <div *ngIf="!previewUrl" class="upload-placeholder">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Cliquez pour télécharger une image</p>
-          <small>Formats supportés: JPG, PNG, JPEG</small>
-        </div>
-        <img *ngIf="previewUrl" [src]="previewUrl" class="preview-image">
-      </div>
-      
-      <div *ngIf="isAnalyzing" class="analyzing">
-        <div class="spinner"></div>
-        <p>Analyse en cours avec YOLO...</p>
-      </div>
-      
-      <div *ngIf="yoloResult && !isAnalyzing" class="yolo-results">
-        <h4><i class="fas fa-chart-bar"></i> Résultats de l'analyse</h4>
-        <div class="results-grid">
-          <div class="result-card">
-            <i class="fas fa-tag"></i>
-            <div class="result-info">
-              <label>Catégorie</label>
-              <span>{{ yoloResult.category }}</span>
-            </div>
+        <h1 class="hero-title">
+          Tableau de bord des <span class="gradient-text">Réclamations</span>
+        </h1>
+        <p class="hero-subtitle">
+          Gérez, analysez et résolvez les réclamations clients avec l'aide de l'intelligence artificielle
+        </p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="stat-value">{{ totalReclamations }}</span>
+            <span class="stat-label">Total</span>
           </div>
-          <div class="result-card">
-            <i class="fas fa-chart-line"></i>
-            <div class="result-info">
-              <label>Confiance</label>
-              <span>{{ (yoloResult.averageConfidence * 100).toFixed(0) }}%</span>
-            </div>
+          <div class="hero-stat">
+            <span class="stat-value">{{ resolutionRate }}%</span>
+            <span class="stat-label">Résolution</span>
           </div>
-          <div class="result-card">
-            <i class="fas fa-exclamation-triangle"></i>
-            <div class="result-info">
-              <label>Gravité</label>
-              <span>{{ yoloResult.averageGravity }}/10</span>
-            </div>
-          </div>
-          <div class="result-card">
-            <i class="fas fa-bug"></i>
-            <div class="result-info">
-              <label>Dommages détectés</label>
-              <span>{{ yoloResult.damageCount }}</span>
-            </div>
+          <div class="hero-stat">
+            <span class="stat-value">{{ avgResponseTime }}h</span>
+            <span class="stat-label">Réponse moy.</span>
           </div>
         </div>
-        <div class="yolo-actions">
-          <button class="btn-secondary" (click)="resetYoloState()"><i class="fas fa-redo"></i> Nouvelle image</button>
-          <button class="btn-primary" (click)="createReclamationFromYolo()" [disabled]="isSubmitting">
-            <i class="fas fa-check"></i> {{ isSubmitting ? 'Création...' : 'Créer la réclamation' }}
+      </div>
+      <div class="hero-right">
+        <div class="hero-actions">
+          <button class="btn-outline-glow" (click)="exportReclamations()">
+            <i class="fas fa-download"></i>
+            <span>Exporter</span>
+          </button>
+          <button class="btn-primary-glow" (click)="openYoloModal()">
+            <i class="fas fa-camera"></i>
+            <span>Nouvelle analyse IA</span>
+            <i class="fas fa-arrow-right"></i>
           </button>
         </div>
+        <div class="ai-status">
+          <div class="ai-dot"></div>
+          <span>IA active • YOLOv8</span>
+        </div>
       </div>
     </div>
+  </div>
+
+  <!-- Main Content Card -->
+  <div class="main-card">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card stat-card-primary" (click)="filterByStatus('DETECTE')">
+        <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
+        <div class="stat-info">
+          <span class="stat-number">{{ attenteCount }}</span>
+          <span class="stat-title">En attente</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card-warning" (click)="filterByStatus('EN_COURS')">
+        <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+        <div class="stat-info">
+          <span class="stat-number">{{ enCoursCount }}</span>
+          <span class="stat-title">En cours</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card-success" (click)="filterByStatus('RESOLU')">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+          <span class="stat-number">{{ traiteeCount }}</span>
+          <span class="stat-title">Résolues</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card-danger" (click)="filterByStatus('REJETE')">
+        <div class="stat-icon"><i class="fas fa-ban"></i></div>
+        <div class="stat-info">
+          <span class="stat-number">{{ rejeteCount }}</span>
+          <span class="stat-title">Rejetées</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="quick-actions">
+      <button class="quick-action" (click)="openBulkActions()">
+        <i class="fas fa-layer-group"></i>
+        <span>Actions groupées</span>
+      </button>
+      <button class="quick-action" (click)="generateReport()">
+        <i class="fas fa-file-alt"></i>
+        <span>Générer rapport</span>
+      </button>
+    </div>
+
+    <!-- Selection Mode Bar -->
+    <div *ngIf="isSelectionMode" class="selection-mode-bar">
+      <div class="selection-info">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ selectedIds.length }} réclamation(s) sélectionnée(s)</span>
+      </div>
+      <div class="selection-actions">
+        <button class="btn-outline" (click)="exitSelectionMode()">
+          <i class="fas fa-times"></i> Annuler
+        </button>
+        <button class="btn-warning" (click)="bulkUpdateStatus('EN_COURS')" [disabled]="isSubmitting">
+          <i class="fas fa-play"></i> En cours
+        </button>
+        <button class="btn-success" (click)="bulkUpdateStatus('RESOLU')" [disabled]="isSubmitting">
+          <i class="fas fa-check"></i> Résoudre
+        </button>
+        <button class="btn-danger" (click)="deleteSelected()" [disabled]="isSubmitting">
+          <i class="fas fa-trash-alt"></i> Supprimer
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+      <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput(searchQuery)" placeholder="Rechercher par ID, client..." class="search-input">
+        <button class="filter-chip" *ngIf="searchQuery" (click)="clearSearch()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="filters-group">
+        <div class="filter-dropdown">
+          <button class="filter-trigger"><i class="fas fa-filter"></i> Statut <i class="fas fa-chevron-down"></i></button>
+          <div class="filter-menu">
+            <button (click)="selectedStatus='all'; applyFilters()" [class.active]="selectedStatus === 'all'">Tous</button>
+            <button (click)="selectedStatus='DETECTE'; applyFilters()" [class.active]="selectedStatus === 'DETECTE'">En attente</button>
+            <button (click)="selectedStatus='EN_COURS'; applyFilters()" [class.active]="selectedStatus === 'EN_COURS'">En cours</button>
+            <button (click)="selectedStatus='RESOLU'; applyFilters()" [class.active]="selectedStatus === 'RESOLU'">Résolues</button>
+            <button (click)="selectedStatus='REJETE'; applyFilters()" [class.active]="selectedStatus === 'REJETE'">Rejetées</button>
+          </div>
+        </div>
+        <div class="filter-dropdown">
+          <button class="filter-trigger"><i class="fas fa-chart-line"></i> Criticité <i class="fas fa-chevron-down"></i></button>
+          <div class="filter-menu">
+            <button (click)="selectedGravity='all'; applyFilters()" [class.active]="selectedGravity === 'all'">Toutes</button>
+            <button (click)="selectedGravity='faible'; applyFilters()" [class.active]="selectedGravity === 'faible'">Faible</button>
+            <button (click)="selectedGravity='moyenne'; applyFilters()" [class.active]="selectedGravity === 'moyenne'">Moyenne</button>
+            <button (click)="selectedGravity='elevee'; applyFilters()" [class.active]="selectedGravity === 'elevee'">Élevée</button>
+            <button (click)="selectedGravity='critique'; applyFilters()" [class.active]="selectedGravity === 'critique'">Critique</button>
+          </div>
+        </div>
+        <div class="filter-dropdown">
+          <button class="filter-trigger"><i class="fas fa-calendar"></i> Période <i class="fas fa-chevron-down"></i></button>
+          <div class="filter-menu">
+            <button (click)="filterByPeriod('today')">Aujourd'hui</button>
+            <button (click)="filterByPeriod('week')">Cette semaine</button>
+            <button (click)="filterByPeriod('month')">Ce mois</button>
+          </div>
+        </div>
+        <button class="btn-reset" (click)="resetFilters()"><i class="fas fa-redo-alt"></i> Réinitialiser</button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Chargement des réclamations...</p>
+    </div>
+
+    <!-- Reclamations Grid -->
+    <div *ngIf="!isLoading" class="reclamations-grid">
+      <div *ngFor="let reclamation of displayedReclamations" 
+           class="reclamation-card" 
+           [class.critical]="(reclamation.gravite || 0) >= 8"
+           [class.high]="(reclamation.gravite || 0) >= 6 && (reclamation.gravite || 0) < 8"
+           [class.medium]="(reclamation.gravite || 0) >= 4 && (reclamation.gravite || 0) < 6"
+           [class.low]="(reclamation.gravite || 0) < 4">
+        
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="header-left">
+            <div class="selection-checkbox" *ngIf="isSelectionMode">
+              <input type="checkbox" [checked]="selectedIds.includes(reclamation.id)" (change)="toggleSelection(reclamation.id)" class="checkbox">
+            </div>
+            <div class="claim-badge"><i class="fas fa-hashtag"></i><span class="claim-id">#{{ reclamation.id }}</span></div>
+            <div class="criticity-badge" [ngClass]="getCriticityClass(reclamation.gravite || 0)">
+              <i class="fas fa-exclamation-triangle"></i><span>{{ getCriticityLabel(reclamation.gravite || 0) }}</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="status-badge" [ngClass]="getStatusClass(reclamation.statut || 'DETECTE')">
+              <span class="status-dot"></span>{{ getStatusLabel(reclamation.statut || 'DETECTE') }}
+            </div>
+            <button class="action-icon" (click)="toggleCardMenu(reclamation.id)"><i class="fas fa-ellipsis-v"></i></button>
+            <!-- Dropdown Menu -->
+            <div *ngIf="activeMenuId === reclamation.id" class="card-menu">
+              <button (click)="viewDetails(reclamation)"><i class="fas fa-info-circle"></i> Détails</button>
+              <button (click)="openImageFullscreen(reclamation)" *ngIf="reclamation.imageUrl"><i class="fas fa-image"></i> Voir l'image</button>
+              <button (click)="downloadImage(reclamation)" *ngIf="reclamation.imageUrl"><i class="fas fa-download"></i> Télécharger</button>
+              <button (click)="openCorrectionModal(reclamation)"><i class="fas fa-edit"></i> Modifier</button>
+              <button (click)="changerStatutReclamation(reclamation.id, 'EN_COURS')" *ngIf="reclamation.statut !== 'EN_COURS'"><i class="fas fa-spinner"></i> En cours</button>
+              <button (click)="resoudreReclamation(reclamation.id)" *ngIf="reclamation.statut !== 'RESOLU'"><i class="fas fa-check-circle"></i> Résoudre</button>
+              <button (click)="rejeterReclamation(reclamation.id)" *ngIf="reclamation.statut !== 'REJETE'"><i class="fas fa-ban"></i> Rejeter</button>
+              <button class="text-danger" (click)="deleteReclamation(reclamation.id)"><i class="fas fa-trash-alt"></i> Supprimer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="user-info" *ngIf="reclamation.user">
+          <div class="user-avatar">
+            <img [src]="reclamation.user.photoProfil || getAvatarUrl(reclamation.user?.prenom, reclamation.user?.nom)" [alt]="reclamation.user?.prenom || 'Client'" (error)="onImageError($event)">
+            <div class="user-status online"></div>
+          </div>
+          <div class="user-details">
+            <span class="user-name">{{ reclamation.user?.prenom || '' }} {{ reclamation.user?.nom || '' }}</span>
+            <span class="user-email">{{ reclamation.user?.email || 'Email non disponible' }}</span>
+            <span class="claim-date"><i class="far fa-calendar-alt"></i> {{ formatDate(reclamation.createdAt) }}</span>
+          </div>
+        </div>
+
+        <!-- Claim Content -->
+        <div class="claim-content">
+          <h3 class="claim-title">{{ reclamation.titre || 'Sans titre' }}</h3>
+          <p class="claim-description">{{ reclamation.description || 'Aucune description' }}</p>
+          <div class="claim-meta">
+            <span class="meta-tag"><i class="fas fa-tag"></i> {{ reclamation.typeDommage || 'Non spécifié' }}</span>
+            <span class="meta-tag"><i class="fas fa-cube"></i> {{ reclamation.dommagesDetectes || 0 }} dommage(s)</span>
+          </div>
+        </div>
+
+        <!-- Image Preview -->
+        <div class="image-preview" *ngIf="reclamation.imageUrl" (click)="openImageFullscreen(reclamation)">
+          <img [src]="getImageUrl(reclamation.imageUrl)" [alt]="'Image ' + reclamation.id" (error)="onImageError($event)">
+          <div class="preview-overlay"><i class="fas fa-search-plus"></i><span>Agrandir</span></div>
+        </div>
+        <div class="image-preview no-image" *ngIf="!reclamation.imageUrl" (click)="openUploadModal(reclamation)">
+          <div class="no-image-placeholder"><i class="fas fa-camera"></i><span>Ajouter une image</span></div>
+        </div>
+
+        <!-- AI Analysis -->
+        <div class="ai-analysis">
+          <div class="ai-header">
+            <div class="ai-icon"><i class="fas fa-microchip"></i></div>
+           
+          </div>
+          <div class="severity-indicator">
+            <div class="severity-label"><span>Gravité</span><strong>{{ reclamation.gravite || 0 }}/10</strong></div>
+            <div class="severity-bar"><div class="severity-fill" [style.width.%]="(reclamation.gravite || 0) * 10"></div></div>
+          </div>
+        </div>
+
+        <!-- Card Actions -->
+        <div class="card-actions">
+          <button class="action-btn action-details" (click)="goToDetails(reclamation)">
+            <i class="fas fa-info-circle"></i>
+            <span>Détails</span>
+          </button>
+          <button class="action-btn action-response" (click)="openResponseModal(reclamation)">
+            <i class="fas fa-reply"></i>
+            <span>Répondre</span>
+          </button>
+          <button class="action-btn action-download" (click)="downloadImage(reclamation)" *ngIf="reclamation.imageUrl" title="Télécharger">
+            <i class="fas fa-download"></i>
+            <span>Télécharger</span>
+          </button>
+          <div class="action-group">
+            <button class="action-btn action-status" (click)="mettreEnCours(reclamation.id)" *ngIf="reclamation.statut !== 'EN_COURS'" title="En cours"><i class="fas fa-spinner"></i></button>
+            <button class="action-btn action-resolve" (click)="resoudreReclamation(reclamation.id)" *ngIf="reclamation.statut !== 'RESOLU'" title="Résoudre"><i class="fas fa-check-circle"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && displayedReclamations.length === 0" class="empty-state">
+      <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+      <h3>Aucune réclamation trouvée</h3>
+      <p>Aucune réclamation ne correspond à vos critères de recherche.</p>
+      <button class="btn-primary" (click)="resetFilters()"><i class="fas fa-sync-alt"></i> Réinitialiser les filtres</button>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1 && !isLoading" class="pagination">
+      <button [disabled]="currentPage === 1" (click)="previousPage()"><i class="fas fa-chevron-left"></i></button>
+      <div class="page-numbers">
+        <button *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage" (click)="goToPage(page)">{{ page }}</button>
+      </div>
+      <button [disabled]="currentPage === totalPages" (click)="nextPage()"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL RÉPONSE ==================== -->
+<div class="modal-overlay" *ngIf="showResponseModal" (click)="closeResponseModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-reply"></i> Répondre à la réclamation #{{ selectedReclamation?.id }}</h3>
+      <button class="modal-close" (click)="closeResponseModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="user-info-bar" *ngIf="selectedReclamation?.user">
+        <img [src]="getAvatarUrl(selectedReclamation?.user?.prenom, selectedReclamation?.user?.nom)" class="user-avatar-small">
+        <span>{{ selectedReclamation?.user?.prenom }} {{ selectedReclamation?.user?.nom }}</span>
+        <span class="user-email">{{ selectedReclamation?.user?.email }}</span>
+      </div>
+      <form [formGroup]="responseForm">
+        <div class="form-group">
+          <label>Message de réponse *</label>
+          <textarea formControlName="message" rows="5" placeholder="Votre réponse détaillée..."></textarea>
+          <div class="error" *ngIf="responseForm.get('message')?.invalid && responseForm.get('message')?.touched">
+            Minimum 10 caractères requis
+          </div>
+        </div>
+        <div class="form-checkboxes">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="sendEmail">
+            <span>Envoyer un email au client</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="sendSMS">
+            <span>Envoyer un SMS (si disponible)</span>
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeResponseModal()">Annuler</button>
+      <button class="btn-primary" [disabled]="responseForm.invalid || isSubmitting" (click)="sendResponse()">
+        <i class="fas fa-paper-plane"></i> 
+        {{ isSubmitting ? 'Envoi...' : 'Envoyer la réponse' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL CORRECTION ==================== -->
+<div class="modal-overlay" *ngIf="showCorrectionModal" (click)="closeCorrectionModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit"></i> Corriger la réclamation #{{ selectedReclamation?.id }}</h3>
+      <button class="modal-close" (click)="closeCorrectionModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="correctionForm">
+        <div class="form-group">
+          <label>Problème détecté *</label>
+          <textarea formControlName="problemDetected" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Gravité (0-10) *</label>
+            <input type="number" formControlName="severity" min="0" max="10">
+          </div>
+          <div class="form-group">
+            <label>Confiance IA % *</label>
+            <input type="number" formControlName="confidence" min="0" max="100">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes d'expert</label>
+          <textarea formControlName="expertNotes" rows="2" placeholder="Observations complémentaires..."></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeCorrectionModal()">Annuler</button>
+      <button class="btn-primary" [disabled]="correctionForm.invalid || isSubmitting" (click)="submitCorrection()">
+        <i class="fas fa-save"></i>
+        {{ isSubmitting ? 'Sauvegarde...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL IMAGE FULLSCREEN AVEC ZOOM ET TÉLÉCHARGEMENT ==================== -->
+<div class="modal-overlay image-viewer-overlay" *ngIf="showImageModal" (click)="closeImageModal()" (wheel)="onWheel($event)">
+  <div class="image-viewer-container" (click)="$event.stopPropagation()">
+    
+    <!-- Header avec contrôles -->
+    <div class="image-viewer-header">
+      <div class="image-viewer-title">
+        <i class="fas fa-image"></i>
+        <span>{{ currentImageName || 'Visualisation d\'image' }}</span>
+      </div>
+      <div class="image-viewer-controls">
+        <button class="control-btn" (click)="zoomOut()" title="Dézoomer">
+          <i class="fas fa-search-minus"></i>
+        </button>
+        <span class="zoom-level">{{ getZoomPercentage() }}%</span>
+        <button class="control-btn" (click)="zoomIn()" title="Zoomer">
+          <i class="fas fa-search-plus"></i>
+        </button>
+        <button class="control-btn" (click)="resetZoom()" title="Réinitialiser">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+        <div class="separator"></div>
+        <button class="control-btn" (click)="downloadCurrentImage()" title="Télécharger">
+          <i class="fas fa-download"></i>
+        </button>
+        <button class="control-btn close-btn" (click)="closeImageModal()" title="Fermer">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Zone d'affichage de l'image avec drag & drop -->
+    <div class="image-viewer-content"
+         (mousedown)="onMouseDown($event)"
+         (mousemove)="onMouseMove($event)"
+         (mouseup)="onMouseUp()"
+         (mouseleave)="onMouseUp()">
+      
+      <div class="image-container">
+        <img [src]="currentImageUrl" 
+             [alt]="currentImageName || 'Image'"
+             [style.transform]="getImageTransform()"
+             [style.cursor]="zoomLevel > 1 ? 'grab' : 'default'"
+             class="viewer-image"
+             draggable="false">
+      </div>
+      
+      <!-- Indicateur de zoom -->
+      <div class="zoom-indicator" *ngIf="zoomLevel > 1">
+        <i class="fas fa-hand-paper"></i>
+        <span>Glissez pour déplacer</span>
+      </div>
+      
+      <!-- Instructions -->
+      <div class="image-instructions">
+        <span><i class="fas fa-mouse-pointer"></i> Click + Glisser pour déplacer</span>
+        <span><i class="fas fa-mouse"></i> Molette pour zoomer</span>
+        <span><i class="fas fa-search-plus"></i> Boutons +/- pour zoomer</span>
+      </div>
+    </div>
+    
+    <!-- Footer avec informations -->
+    <div class="image-viewer-footer">
+      <div class="image-info">
+        <span><i class="far fa-file-image"></i> Format: {{ (currentImageName && currentImageName.split('.').pop()?.toUpperCase()) || 'Image' }}</span>
+        <span><i class="far fa-calendar-alt"></i> {{ currentDate | date:'short' }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL UPLOAD IMAGE ==================== -->
+<div class="modal-overlay" *ngIf="showUploadModal" (click)="closeUploadModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-camera"></i> Ajouter une image</h3>
+      <button class="modal-close" (click)="closeUploadModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="upload-zone" *ngIf="!uploadPreviewUrl" (click)="uploadImageInput.click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p>Cliquez ou glissez une image ici</p>
+        <small>JPG, PNG, WEBP (max 5MB)</small>
+      </div>
+      <input type="file" #uploadImageInput hidden accept="image/*" (change)="onUploadImageSelected($event)">
+      <div class="upload-preview" *ngIf="uploadPreviewUrl">
+        <img [src]="uploadPreviewUrl" alt="Preview">
+        <button class="btn-remove" (click)="uploadPreviewUrl = null; selectedUploadFile = null;">
+          <i class="fas fa-trash"></i> Changer
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeUploadModal()">Annuler</button>
+      <button class="btn-primary" [disabled]="!selectedUploadFile || isSubmitting" (click)="uploadImage()">
+        <i class="fas fa-upload"></i>
+        {{ isSubmitting ? 'Upload...' : 'Uploader' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL YOLO ==================== -->
+<div class="modal-overlay" *ngIf="showYoloModal" (click)="closeYoloModal()">
+  <div class="modal-container yolo-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-robot"></i> Nouvelle analyse IA</h3>
+      <button class="modal-close" (click)="closeYoloModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="yolo-upload" *ngIf="!previewUrl" (click)="fileInput.click()">
+        <i class="fas fa-image"></i>
+        <p>Sélectionnez une image à analyser</p>
+        <small>YOLOv8 détectera automatiquement les dommages</small>
+      </div>
+      <input type="file" #fileInput hidden accept="image/*" (change)="onFileSelected($event)">
+      
+      <div class="yolo-preview" *ngIf="previewUrl">
+        <img [src]="previewUrl" alt="Preview">
+        <div class="progress-bar" *ngIf="uploadProgress < 100 && !yoloResult">
+          <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+          <span>Analyse en cours... {{ uploadProgress }}%</span>
+        </div>
+      </div>
+      
+      <div class="yolo-result" *ngIf="yoloResult">
+        <h4><i class="fas fa-check-circle"></i> Analyse terminée</h4>
+        <div class="result-item"><strong>Type:</strong> {{ yoloResult.category }}</div>
+        <div class="result-item"><strong>Dommages:</strong> {{ yoloResult.damageCount }}</div>
+        <div class="result-item"><strong>Gravité:</strong> {{ yoloResult.averageGravity }}/10</div>
+        <div class="result-item"><strong>Confiance:</strong> {{ (yoloResult.averageConfidence * 100).toFixed(0) }}%</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeYoloModal()">Annuler</button>
+      <button class="btn-primary" *ngIf="yoloResult" [disabled]="isSubmitting" (click)="createReclamationFromYolo()">
+        <i class="fas fa-plus"></i>
+        {{ isSubmitting ? 'Création...' : 'Créer la réclamation' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL RAPPORT ==================== -->
+<div class="modal-overlay" *ngIf="showReportModal" (click)="closeReportModal()">
+  <div class="modal-container report-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-alt"></i> Rapport des réclamations</h3>
+      <button class="modal-close" (click)="closeReportModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="report-summary" *ngIf="reportData">
+        <div class="report-date">Généré le: {{ reportData.generatedAt }}</div>
+        <div class="report-stats">
+          <div class="report-stat">
+            <span class="stat-value">{{ reportData.totalReclamations }}</span>
+            <span class="stat-label">Total</span>
+          </div>
+          <div class="report-stat">
+            <span class="stat-value">{{ reportData.tauxResolution }}%</span>
+            <span class="stat-label">Résolution</span>
+          </div>
+          <div class="report-stat">
+            <span class="stat-value">{{ reportData.graviteMoyenne }}</span>
+            <span class="stat-label">Gravité moy.</span>
+          </div>
+        </div>
+        <div class="report-detail">
+          <h4>Par statut:</h4>
+          <ul>
+            <li><span class="dot detecte"></span> En attente: {{ reportData.parStatut.detecte }}</li>
+            <li><span class="dot encours"></span> En cours: {{ reportData.parStatut.enCours }}</li>
+            <li><span class="dot resolu"></span> Résolues: {{ reportData.parStatut.resolu }}</li>
+            <li><span class="dot rejete"></span> Rejetées: {{ reportData.parStatut.rejete }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeReportModal()">Fermer</button>
+      <button class="btn-primary" (click)="generatePDFReport()">
+        <i class="fas fa-file-pdf"></i> Télécharger PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL ANALYSE IA DÉTAILLÉE ==================== -->
+<div class="modal-overlay" *ngIf="showAnalysisModal" (click)="closeAnalysisModal()">
+  <div class="modal-container analysis-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeAnalysisModal()"><i class="fas fa-times"></i></button>
+    <app-detailes-rec 
+      [reclamation]="selectedReclamationForAnalysis" 
+      (close)="closeAnalysisModal()"
+      (confirm)="onAnalysisConfirm($event)">
+    </app-detailes-rec>
   </div>
 </div>

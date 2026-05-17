@@ -10,10 +10,17 @@ import { DetailesUserComponent } from './dashboard/dashboard-super-admin/detaile
 import { MessangerComponent } from './dashboard/messanger/messanger.component';
 import { GereRolesComponent } from './dashboard/dashboard-super-admin/gere-roles/gere-roles.component';
 import { ParametreComponent } from './dashboard/dashboard-super-admin/parametre/parametre.component';
+import { DetailesRecComponent } from './dashboard/dashboard-super-admin/detailes-rec/detailes-rec.component';
+import { OublierMdpComponent } from './oublier-mdp/oublier-mdp.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { UsersManagementComponent } from './dashboard/dashboard-super-admin/users-management/users-management.component';
+import { SidebarComponent } from './dashboard/dashboard-super-admin/sidebar/sidebar.component';
+import { BoiteMessangerComponent } from './dashboard/boite-messanger/boite-messanger.component';
+import { PageAcceuilComponent } from './page-acceuil/page-acceuil.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
+  { path: '', redirectTo: '/acceuil', pathMatch: 'full' },
+  { path: 'acceuil', component: PageAcceuilComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'predict', component: YoloPredictComponent },
   { path: 'profil', component: ProfilComponent },
@@ -21,6 +28,16 @@ const routes: Routes = [
     { path: 'messanger', component: MessangerComponent },
      { path: 'gereRoles', component: GereRolesComponent },
      { path: 'parametre', component: ParametreComponent },
+          { path: 'detailesRec', component: DetailesRecComponent},
+              { path: 'oubliermotdepasse', component: OublierMdpComponent},
+               { path: 'reset-password', component: ResetPasswordComponent},
+                { path: 'gereusers', component:UsersManagementComponent},
+                 { path: 'menu', component:SidebarComponent},
+                   { path: 'boiteMessanger', component:   BoiteMessangerComponent},
+    
+
+
+
 
 
   {

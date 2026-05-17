@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { DashboardAdminRoutingModule } from './dashboard-admin-routing.module';
 import { GestionEnquetesComponent } from './gestion-enquetes/gestion-enquetes.component';
 import { GestionIaQuestionsComponent } from './gestion-ia-questions/gestion-ia-questions.component';
@@ -11,11 +10,13 @@ import { AdminDashboardComponent } from './admin-dashboard.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AjoutEnqueteComponent } from './ajout-enquete/ajout-enquete.component';
 import { ModifierEnqueteComponent } from './modifier-enquete/modifier-enquete.component';
-import { GestionReclamationComponent } from './gestion-reclamation/gestion-reclamation.component';
+// Supprimer l'import de GestionReclamationComponent ici, car il est déclaré dans DashboardModule
+// import { GestionReclamationComponent } from './gestion-reclamation/gestion-reclamation.component';
 import { EnqueteDetailsComponent } from './enquete-details/enquete-details.component';
 import { UserResponsesComponent } from './user-responses/user-responses.component';
 import { UsersComponent } from './users/users.component';
-
+// Importer DashboardModule pour avoir accès à GestionReclamationComponent et DetailesRecComponent
+import { DashboardModule } from '../dashboard.module'; // à adapter selon le chemin
 
 @NgModule({
   declarations: [
@@ -27,20 +28,22 @@ import { UsersComponent } from './users/users.component';
     GestionIaQuestionsComponent,
     AjoutEnqueteComponent,
     ModifierEnqueteComponent,
-    GestionReclamationComponent,
+    
+    // GestionReclamationComponent,  // ❌ retiré d'ici
     EnqueteDetailsComponent,
     UserResponsesComponent,
-    UsersComponent
+    UsersComponent,
+    // ... autres composants propres à ce module
   ],
   imports: [
     CommonModule,
     DashboardAdminRoutingModule,
-     FormsModule,   
-       ReactiveFormsModule
+    FormsModule,
+    ReactiveFormsModule,
+    DashboardModule,   // ⚠️ IMPORTANT : importe DashboardModule pour utiliser GestionReclamationComponent et DetailesRecComponent
   ],
-    exports: [
+  exports: [
     AdminDashboardComponent
   ]
-
 })
 export class DashboardAdminModule { }

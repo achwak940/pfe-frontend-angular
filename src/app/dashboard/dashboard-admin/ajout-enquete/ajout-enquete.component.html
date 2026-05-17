@@ -5,6 +5,106 @@
         <i class="fas fa-clipboard-list"></i>
         Créer une nouvelle enquête
       </h1>
+      <p class="subtitle">Créez des sondages professionnels en quelques clics</p>
+    </div>
+  </div>
+
+  <!-- Section IA avec langue et vocal -->
+  <div class="ia-toggle-section">
+    <div class="ia-toggle-container">
+      <div class="ia-toggle">
+        <label class="switch">
+          <input type="checkbox" [(ngModel)]="iaModeEnabled" (change)="toggleIAMode()">
+          <span class="slider round"></span>
+        </label>
+        <span class="ia-label">
+          <i class="fas fa-robot"></i>
+          Mode IA {{ iaModeEnabled ? 'Activé' : 'Désactivé' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="ia-section" *ngIf="iaModeEnabled">
+      <div class="ia-prompt-card">
+        <div class="ia-header">
+          <i class="fas fa-magic"></i>
+          <h3>Génération intelligente d'enquête</h3>
+          <span class="ia-badge">Beta</span>
+        </div>
+        
+        <!-- Sélection de la langue -->
+        <div class="ia-language-selector">
+          <label>
+            <i class="fas fa-globe"></i>
+            Langue de l'enquête
+          </label>
+          <div class="language-buttons">
+            <button *ngFor="let lang of languages" 
+                    type="button"
+                    class="lang-btn" 
+                    [class.active]="selectedLanguage === lang.code"
+                    (click)="selectedLanguage = lang.code">
+              <span class="lang-flag">{{lang.flag}}</span>
+              <span class="lang-name">{{lang.name}}</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="ia-form-group">
+          <label>
+            <i class="fas fa-lightbulb"></i>
+            Décrivez l'idée de votre enquête
+          </label>
+          <div class="input-with-voice">
+            <textarea 
+              [(ngModel)]="iaPrompt" 
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Ex: Enquête de satisfaction sur les services d'une banque..."
+              rows="3"
+              [disabled]="isGenerating"
+              class="ia-textarea"
+            ></textarea>
+            <button type="button" class="voice-btn" (click)="startVoiceInput('iaPrompt')" [disabled]="isListening">
+              <i class="fas" [ngClass]="isListening ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+            </button>
+          </div>
+          <div class="voice-status" *ngIf="isListening">
+            <i class="fas fa-circle pulse"></i> Écoute en cours...
+          </div>
+        </div>
+
+        <div class="ia-options">
+          <div class="ia-question-count">
+            <label>
+              <i class="fas fa-question-circle"></i>
+              Nombre de questions
+            </label>
+            <div class="count-selector">
+              <button type="button" (click)="numberOfQuestions = numberOfQuestions > 3 ? numberOfQuestions - 2 : 3" 
+                      [disabled]="isGenerating || numberOfQuestions <= 3">-</button>
+              <span class="count-value">{{ numberOfQuestions }}</span>
+              <button type="button" (click)="numberOfQuestions = numberOfQuestions < 15 ? numberOfQuestions + 2 : 15" 
+                      [disabled]="isGenerating || numberOfQuestions >= 15">+</button>
+            </div>
+            <div class="count-presets">
+              <span *ngFor="let count of availableQuestionCounts" 
+                    (click)="numberOfQuestions = count" 
+                    [class.active]="numberOfQuestions === count"
+                    class="preset-btn">{{ count }}</span>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          type="button" 
+          class="btn-generate-ia" 
+          (click)="generateSurveyWithIA()"
+          [disabled]="isGenerating || !iaPrompt.trim()"
+        >
+          <i class="fas" [ngClass]="isGenerating ? 'fa-spinner fa-spin' : 'fa-wand-magic'"></i>
+          {{ isGenerating ? 'Génération en cours...' : 'Générer l\'enquête avec IA' }}
+        </button>
+      </div>
     </div>
   </div>
 
@@ -57,33 +157,72 @@
       </div>
     </div>
 
+    <!-- Type de participation -->
+    <div class="form-group">
+      <label>
+        <i class="fas fa-users"></i>
+        Type de participation <span class="required">*</span>
+      </label>
+      <div class="participation-options">
+        <label class="participation-option">
+          <input type="radio" formControlName="typeParticipation" value="PUBLIC">
+          <i class="fas fa-globe"></i>
+          <div>
+            <strong>Publique</strong>
+            <small>Tout le monde peut participer</small>
+          </div>
+        </label>
+        <label class="participation-option">
+          <input type="radio" formControlName="typeParticipation" value="PRIVEE">
+          <i class="fas fa-lock"></i>
+          <div>
+            <strong>Privée</strong>
+            <small>Accès sur invitation uniquement</small>
+          </div>
+        </label>
+        <label class="participation-option">
+          <input type="radio" formControlName="typeParticipation" value="RESTREINTE">
+          <i class="fas fa-users-slash"></i>
+          <div>
+            <strong>Restreinte</strong>
+            <small>Accès par code spécifique</small>
+          </div>
+        </label>
+      </div>
+    </div>
+
     <!-- Section Questions -->
     <div class="form-section">
       <h2 class="section-subtitle">
         <i class="fas fa-question-circle"></i>
         Questions de l'enquête
         <span class="badge">{{selectedQuestions.length}} question(s)</span>
+        <button type="button" class="btn-clear-all" *ngIf="selectedQuestions.length > 0" (click)="clearAllQuestions()">
+          <i class="fas fa-trash-alt"></i> Tout supprimer
+        </button>
       </h2>
 
       <!-- Questions existantes -->
-      <div class="available-questions" *ngIf="availableQuestions.length > 0">
+      <div class="available-questions" *ngIf="availableQuestions.length > 0 && !iaModeEnabled">
         <h3>
           <i class="fas fa-database"></i>
-          Questions existantes
+          Bibliothèque de questions
         </h3>
         <div class="questions-grid">
           <div class="question-card" *ngFor="let question of availableQuestions" 
                [class.selected]="isQuestionSelected(question)">
             <div class="question-header">
-              <i class="fas" [ngClass]="{
-                'fa-font': question.type === 'TEXTE',
-                'fa-circle-dot': question.type === 'CHOIX_UNIQUE',
-                'fa-check-square': question.type === 'CHOIX_MULTIPLE',
-                'fa-star': question.type === 'NOTE'
-              }"></i>
+              <i class="fas" [ngClass]="getQuestionTypeIcon(question.type)"></i>
               <span class="question-type">{{question.type}}</span>
             </div>
             <p class="question-text">{{question.texte}}</p>
+            <div class="preview-options" *ngIf="question.options && question.options.length > 0">
+              <span class="preview-option" *ngFor="let opt of question.options.slice(0,3)">{{opt}}</span>
+              <span *ngIf="question.options.length > 3" class="preview-more">+{{question.options.length-3}}</span>
+            </div>
+            <div class="preview-rating" *ngIf="question.type === 'NOTE'">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+            </div>
             <button type="button" class="btn-add" (click)="addExistingQuestion(question)" 
                     *ngIf="!isQuestionSelected(question)">
               <i class="fas fa-plus"></i> Ajouter
@@ -95,11 +234,58 @@
         </div>
       </div>
 
+      <!-- Liste des questions sélectionnées -->
+      <div class="selected-questions" *ngIf="selectedQuestions.length > 0">
+        <h3>
+          <i class="fas fa-check-circle"></i>
+          Questions sélectionnées
+        </h3>
+        <div class="selected-list">
+          <div class="selected-item" *ngFor="let question of selectedQuestions; let i = index">
+            <div class="item-header">
+              <div class="item-type">
+                <i class="fas" [ngClass]="getQuestionTypeIcon(question.type)"></i>
+                <span class="type-badge" [ngClass]="question.type.toLowerCase()">
+                  {{question.type}}
+                </span>
+                <span class="ia-generated-badge" *ngIf="question.generatedByAI">
+                  <i class="fas fa-robot"></i> IA
+                </span>
+              </div>
+              <div class="item-actions">
+                <button type="button" class="btn-edit" (click)="editQuestion(i)" title="Modifier">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button type="button" class="btn-remove" (click)="removeExistingQuestion(i)" title="Supprimer">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="item-content">
+              <p class="question-text-editable">{{question.texte}}</p>
+              <div class="question-options" *ngIf="shouldShowOptions(question)">
+                <div class="options-list">
+                  <span class="option-pill" *ngFor="let opt of question.options">
+                    {{opt}}
+                  </span>
+                </div>
+              </div>
+              <div class="question-rating" *ngIf="shouldShowRating(question)">
+                <div class="stars-display">
+                  <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]"></i>
+                  <span class="rating-label">(1 = Très insatisfait, 5 = Très satisfait)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Bouton nouvelle question -->
       <div class="new-question-toggle">
         <button type="button" class="btn-outline" (click)="toggleNewQuestionForm()">
           <i class="fas" [ngClass]="showNewQuestionForm ? 'fa-times' : 'fa-plus'"></i>
-          {{showNewQuestionForm ? 'Annuler' : 'Créer une nouvelle question'}}
+          {{showNewQuestionForm ? (editingQuestionIndex !== null ? 'Annuler modification' : 'Annuler') : (editingQuestionIndex !== null ? 'Modifier la question' : 'Créer une nouvelle question')}}
         </button>
       </div>
 
@@ -107,12 +293,17 @@
       <div class="new-question-form" *ngIf="showNewQuestionForm" [formGroup]="newQuestionForm">
         <h3>
           <i class="fas fa-pen"></i>
-          Nouvelle question
+          {{ editingQuestionIndex !== null ? 'Modifier la question' : 'Nouvelle question' }}
         </h3>
 
         <div class="form-group">
           <label>Texte de la question <span class="required">*</span></label>
-          <input type="text" formControlName="texte" placeholder="Ex: Comment trouvez-vous notre service ?">
+          <div class="input-with-voice">
+            <textarea formControlName="texte" rows="2" placeholder="Ex: Comment évaluez-vous notre service ?"></textarea>
+            <button type="button" class="voice-btn-small" (click)="startVoiceInput('questionText')">
+              <i class="fas fa-microphone"></i>
+            </button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -128,7 +319,7 @@
         <div class="options-section" *ngIf="newQuestionForm.get('type')?.value === 'CHOIX_UNIQUE' || newQuestionForm.get('type')?.value === 'CHOIX_MULTIPLE'">
           <label>
             <i class="fas fa-list"></i>
-            Options
+            Options de réponse
           </label>
           
           <div formArrayName="options">
@@ -145,44 +336,38 @@
           </button>
         </div>
 
+        <!-- Aperçu pour NOTE -->
+        <div class="rating-preview" *ngIf="newQuestionForm.get('type')?.value === 'NOTE'">
+          <label>Aperçu de l'échelle de note</label>
+          <div class="stars-preview">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+          </div>
+          <small>Les participants pourront noter de 1 à 5 étoiles</small>
+        </div>
+
         <div class="form-actions-small">
-          <button type="button" class="btn-primary" (click)="saveNewQuestion()" [disabled]="newQuestionForm.invalid">
-            <i class="fas fa-save"></i> Enregistrer la question
+          <button type="button" class="btn-primary" (click)="editingQuestionIndex !== null ? updateQuestion() : saveNewQuestion()" 
+                  [disabled]="newQuestionForm.invalid">
+            <i class="fas fa-save"></i> 
+            {{ editingQuestionIndex !== null ? 'Mettre à jour' : 'Enregistrer' }}
+          </button>
+          <button type="button" class="btn-outline" (click)="cancelEdit()">
+            <i class="fas fa-times"></i> Annuler
           </button>
         </div>
       </div>
 
-      <!-- Liste des questions sélectionnées -->
-      <div class="selected-questions" *ngIf="selectedQuestions.length > 0">
-        <h3>
-          <i class="fas fa-check-circle"></i>
-          Questions sélectionnées
-        </h3>
-        <div class="selected-list">
-          <div class="selected-item" *ngFor="let question of selectedQuestions; let i = index">
-            <div class="item-info">
-              <i class="fas" [ngClass]="{
-                'fa-font': question.type === 'TEXTE',
-                'fa-circle-dot': question.type === 'CHOIX_UNIQUE',
-                'fa-check-square': question.type === 'CHOIX_MULTIPLE',
-                'fa-star': question.type === 'NOTE'
-              }"></i>
-              <span class="item-text">{{question.texte}}</span>
-              <span class="item-badge" *ngIf="question.id">Existante</span>
-              <span class="item-badge new" *ngIf="!question.id">Nouvelle</span>
-            </div>
-            <button type="button" class="btn-remove" (click)="removeExistingQuestion(i)">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="no-questions" *ngIf="selectedQuestions.length === 0">
+      <div class="no-questions" *ngIf="selectedQuestions.length === 0 && !showNewQuestionForm">
         <i class="fas fa-info-circle"></i>
-        Aucune question sélectionnée. Vous pourrez ajouter des questions plus tard.
+        <p>Aucune question sélectionnée</p>
+        <small>Ajoutez des questions depuis la bibliothèque ou créez-en de nouvelles</small>
       </div>
     </div>
+
     <!-- Actions -->
     <div class="form-actions">
       <button type="submit" class="btn btn-primary btn-icon" [disabled]="enqueteForm.invalid">

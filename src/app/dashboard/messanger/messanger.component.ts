@@ -186,53 +186,6 @@ export class MessangerComponent implements OnInit, OnDestroy, AfterViewChecked {
     }, 1000);
   }
 
-  sendMessage(): void {
-    if (!this.newMessage.trim() || !this.recipientUser || !this.currentUser) return;
-    
-    this.sending = true;
-    
-    const messageData = {
-      expediteurId: this.currentUserId,
-      destinataireId: this.recipientUser.id,
-      sujet: this.sujet || 'Message',
-      contenu: this.newMessage
-    };
-    
-    const sub = this.messangerService.sendMessage(messageData).subscribe({
-      next: (response: ApiResponse<Message>) => {
-        if (response.success && response.data) {
-          const newMsg: Message = {
-            id: response.data.id,
-            expediteurId: this.currentUserId,
-            destinataireId: this.recipientUser!.id,
-            contenu: this.newMessage,
-            sujet: this.sujet,
-            dateEnvoi: new Date(response.data.dateEnvoi),
-            lu: false,
-            estMoi: true
-          };
-          
-          this.messages.push(newMsg);
-          this.newMessage = '';
-          this.sujet = '';
-          this.autoScroll = true;
-          
-          this.showNotification('success', 'Message envoyé avec succès');
-          this.scrollToBottom();
-        } else {
-          this.showNotification('error', response.message || 'Erreur lors de l\'envoi');
-        }
-        this.sending = false;
-      },
-      error: (error: any) => {
-        console.error('Erreur envoi message:', error);
-        this.showNotification('error', 'Erreur lors de l\'envoi du message');
-        this.sending = false;
-      }
-    });
-    
-    this.subscriptions.push(sub);
-  }
 
   refreshMessages(): void {
     if (!this.loading) {
@@ -293,6 +246,7 @@ export class MessangerComponent implements OnInit, OnDestroy, AfterViewChecked {
     const previousDate = new Date(this.messages[index - 1].dateEnvoi).toDateString();
     return currentDate !== previousDate;
   }
+  
 
   getMessageStatus(message: Message): string {
     if (!this.isCurrentUser(message)) return '';
@@ -320,5 +274,53 @@ onImageError(): void {
   if (this.recipientUser) {
     this.recipientUser.photo_profil = '';
   }
+}
+// Dans src/app/dashboard/messanger/messanger.component.ts
+
+sendMessage(): void {
+  if (!this.newMessage.trim() || !this.recipientUser || !this.currentUser) return;
+  
+  this.sending = true;
+  
+  // Correction: Appeler la méthode avec les bons paramètres
+  const sub = this.messangerService.sendMessage(
+    this.currentUserId,           // expediteurId
+    this.recipientUser.id,        // destinataireId
+    this.sujet || 'Message',      // sujet
+    this.newMessage               // contenu
+  ).subscribe({
+    next: (response: ApiResponse<Message>) => {
+      if (response.success && response.data) {
+        const newMsg: Message = {
+          id: response.data.id,
+          expediteurId: this.currentUserId,
+          destinataireId: this.recipientUser!.id,
+          contenu: this.newMessage,
+          sujet: this.sujet,
+          dateEnvoi: new Date(response.data.dateEnvoi),
+          lu: false,
+          estMoi: true
+        };
+        
+        this.messages.push(newMsg);
+        this.newMessage = '';
+        this.sujet = '';
+        this.autoScroll = true;
+        
+        this.showNotification('success', 'Message envoyé avec succès');
+        this.scrollToBottom();
+      } else {
+        this.showNotification('error', response.message || 'Erreur lors de l\'envoi');
+      }
+      this.sending = false;
+    },
+    error: (error: any) => {
+      console.error('Erreur envoi message:', error);
+      this.showNotification('error', 'Erreur lors de l\'envoi du message');
+      this.sending = false;
+    }
+  });
+  
+  this.subscriptions.push(sub);
 }
 }

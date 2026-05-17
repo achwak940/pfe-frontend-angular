@@ -2,103 +2,396 @@
   <!-- ========== SIDEBAR ========== -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <i class="fas fa-bolt logo-icon"></i>
-      <span class="app-name">Super Admin</span>
+      <div class="logo-wrapper">
+        <i class="fas fa-bolt logo-icon"></i>
+        <span class="app-name">Super Admin</span>
+      </div>
+      <div class="online-badge">
+        <i class="fas fa-circle"></i>
+        <span>En ligne</span>
+      </div>
     </div>
-    
+
     <nav class="sidebar-nav" aria-label="Navigation principale">
       <ul>
-        <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <a routerLink="/dashboard">
-            <i class="fas fa-chart-pie"></i>
-            Tableau de bord
+            <div class="nav-icon"><i class="fas fa-chart-pie"></i></div>
+            <span>Tableau de bord</span>
+        
           </a>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/super-admin-dashboard/users">
-            <i class="fas fa-users"></i>
-            Utilisateurs
-          </a>
-        </li>
-   
-        <li routerLinkActive="active">
-          <a routerLink="/surveys">
-            <i class="fas fa-poll"></i>
-            Sondages
+          <a routerLink="/gereusers">
+            <div class="nav-icon"><i class="fas fa-users"></i></div>
+            <span>Utilisateurs</span>
+            <div class="nav-badge">5</div>
           </a>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/questions-ai">
-            <i class="fas fa-robot"></i>
-            Questions & IA
+          <a routerLink="/gereRoles">
+            <div class="nav-icon"><i class="fas fa-user-tag"></i></div>
+            <span>Rôles</span>
           </a>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/results">
-            <i class="fas fa-chart-line"></i>
-            Résultats
+          <a routerLink="/boiteMessanger">
+            <div class="nav-icon"><i class="fas fa-envelope"></i></div>
+            <span>Messages</span>
+            <div class="nav-badge new">3</div>
           </a>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/exports">
-            <i class="fas fa-file-export"></i>
-            Exportations
+          <a routerLink="/parametre">
+            <div class="nav-icon"><i class="fas fa-cogs"></i></div>
+            <span>Paramètres système</span>
           </a>
         </li>
-        <li routerLinkActive="active">
-          <a routerLink="/settings">
-            <i class="fas fa-cog"></i>
-            Paramètres
-          </a>
-        </li>
-       
       </ul>
     </nav>
-    
+
     <div class="sidebar-footer">
-      <span>v2.4 · thème {{ isDarkTheme ? 'sombre' : 'clair' }}</span>
+      <div class="system-status">
+        <div class="status-indicator"></div>
+        <span>Système opérationnel</span>
+      </div>
       <button class="theme-toggle-btn" (click)="toggleTheme()" aria-label="Changer le thème">
         <i class="fas" [ngClass]="isDarkTheme ? 'fa-sun' : 'fa-moon'"></i>
+        <span>{{ isDarkTheme ? "Clair" : "Sombre" }}</span>
       </button>
     </div>
   </aside>
 
   <!-- ========== MAIN PANEL ========== -->
   <main class="main-area">
-    <!-- top navbar -->
+    <!-- Top navbar -->
     <header class="top-navbar">
-      <div class="page-title">
-        <h1>Tableau de bord <span class="badge subtle">super admin</span></h1>
+      <div class="page-header">
+        <div class="breadcrumb">
+          <span>Accueil</span>
+          <i class="fas fa-chevron-right"></i>
+          <span class="active">Dashboard</span>
+        </div>
+        <div class="page-title">
+          <h1>Tableau de bord <span class="badge premium">Super Admin</span></h1>
+          <p>Bienvenue, {{ getCurrentUserName() }} ! Voici le résumé de votre plateforme</p>
+        </div>
       </div>
       <div class="navbar-actions">
         <div class="search-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" placeholder="Rechercher..." class="search-input" aria-label="Rechercher">
+          <input type="text" placeholder="Rechercher un utilisateur, enquête..." class="search-input" aria-label="Rechercher" (input)="onSearch($event)" />
+          <kbd>Ctrl + K</kbd>
         </div>
-        <button class="icon-button" aria-label="Notifications" (click)="toggleNotifications()">
+        <button class="icon-button notification-btn" aria-label="Notifications" (click)="toggleNotifications()">
           <i class="fas fa-bell"></i>
           <span class="dot-notif" *ngIf="hasNotifications"></span>
         </button>
         <div class="profile-dropdown" (click)="toggleProfileMenu()">
-          <img [src]="profileImage" alt="Admin" class="avatar">
+          <div class="profile-info">
+            <span class="profile-name">{{ getCurrentUserName() }}</span>
+            <span class="profile-role">Super Admin</span>
+          </div>
+          <img [src]="profileImage" alt="Admin" class="avatar" />
           <i class="fas fa-chevron-down"></i>
         </div>
       </div>
     </header>
 
-    <!-- main content -->
+    <!-- Main content -->
     <div class="content">
-      <!-- stats cards -->
-<router-outlet></router-outlet>
-     
-    
+      <!-- Statistiques Cards avec valeurs personnalisées -->
+      <div class="cards-grid">
+        <div class="stat-card" *ngFor="let stat of statsCards">
+          <div class="stat-card-glow"></div>
+          <div class="stat-icon" [style.background]="stat.bgColor">
+            <i class="fas" [ngClass]="stat.icon"></i>
+          </div>
+          <div class="stat-details">
+            <span class="stat-label">{{ stat.label }}</span>
+            <span class="stat-value">{{ stat.value }}</span>
+            <div class="stat-footer">
+              <span class="stat-trend" [class.positive]="stat.trend > 0" [class.negative]="stat.trend < 0">
+                <i class="fas" [ngClass]="stat.trend > 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                {{ stat.trendText }}
+              </span>
+              <span class="stat-period">vs mois dernier</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-   
+      <!-- Graphiques et Performance -->
+      <div class="dashboard-grid">
+        <!-- Graphique d'activité -->
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="header-left">
+              <i class="fas fa-chart-line header-icon"></i>
+              <h3>Performance globale</h3>
+            </div>
+            <select class="period-select" (change)="changeChartPeriod($event)">
+              <option value="week">Cette semaine</option>
+              <option value="month">Ce mois</option>
+              <option value="year">Cette année</option>
+            </select>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="activityChart"></canvas>
+          </div>
+          <div class="chart-stats">
+            <div class="chart-stat-item">
+              <span class="stat-label">Pic d'activité</span>
+              <span class="stat-value">Mercredi</span>
+            </div>
+            <div class="chart-stat-item">
+              <span class="stat-label">Tendance</span>
+              <span class="stat-value positive">+18%</span>
+            </div>
+            <div class="chart-stat-item">
+              <span class="stat-label">Moyenne</span>
+              <span class="stat-value">87 actions/jour</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Distribution des Enquêtes -->
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="header-left">
+              <i class="fas fa-chart-pie header-icon"></i>
+              <h3>Distribution des enquêtes</h3>
+            </div>
+            <span class="total-count">{{ totalSurveys }} enquêtes</span>
+          </div>
+          <div class="pie-chart-wrapper">
+            <canvas id="surveysChart"></canvas>
+          </div>
+          <div class="pie-legend">
+            <div class="legend-item" *ngFor="let category of surveyCategories">
+              <div class="legend-color" [style.background]="category.color"></div>
+              <span class="legend-label">{{ category.label }}</span>
+              <span class="legend-value">{{ category.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enquêtes et Réclamations -->
+      <div class="surveys-complaints-section">
+        <!-- Enquêtes Actives -->
+        <div class="section-card surveys-card">
+          <div class="section-header">
+            <div class="header-title">
+              <i class="fas fa-poll"></i>
+              <h2>Enquêtes & Sondages</h2>
+              <span class="total-badge">{{ activeSurveys.length }}</span>
+            </div>
+            <button class="btn-primary" (click)="createNewSurvey()">
+              <i class="fas fa-plus"></i>
+              Nouvelle enquête
+            </button>
+          </div>
+          
+          <div class="survey-stats-grid">
+            <div class="stat-summary">
+              <div class="summary-item">
+                <span class="summary-label">Taux de participation</span>
+                <span class="summary-value">76%</span>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 76%"></div>
+                </div>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Réponses totales</span>
+                <span class="summary-value">2,847</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Enquêtes terminées</span>
+                <span class="summary-value">4/6</span>
+              </div>
+            </div>
+            
+            <div class="survey-list">
+              <div class="survey-item" *ngFor="let survey of activeSurveys; let i = index">
+                <div class="survey-icon" [style.background]="survey.color">
+                  <i class="fas" [ngClass]="survey.icon"></i>
+                </div>
+                <div class="survey-details">
+                  <div class="survey-header">
+                    <span class="survey-title">{{ survey.title }}</span>
+                    <span class="survey-status" [class]="survey.status">
+                      <i class="fas" [ngClass]="survey.status === 'en cours' ? 'fa-play' : 'fa-check'"></i>
+                      {{ survey.status }}
+                    </span>
+                  </div>
+                  <div class="survey-meta">
+                    <span><i class="fas fa-users"></i> {{ survey.participants }} participants</span>
+                    <span><i class="fas fa-clock"></i> {{ survey.duration }}</span>
+                  </div>
+                  <div class="progress-section">
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width.%]="survey.completion"></div>
+                    </div>
+                    <span class="progress-percent">{{ survey.completion }}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Réclamations -->
+        <div class="section-card complaints-card">
+          <div class="section-header">
+            <div class="header-title">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h2>Centre de réclamations</h2>
+              <span class="total-badge warning">{{ totalComplaints }}</span>
+            </div>
+            <button class="btn-secondary" (click)="viewAllComplaints()">
+              Voir historique
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+          
+          <div class="complaints-dashboard">
+            <div class="complaints-stats">
+              <div class="complaint-stat" *ngFor="let stat of complaintStats">
+                <div class="stat-circle" [style.borderColor]="stat.color">
+                  <span class="stat-number">{{ stat.count }}</span>
+                </div>
+                <span class="stat-label">{{ stat.label }}</span>
+                <span class="stat-percent">{{ stat.percent }}%</span>
+              </div>
+            </div>
+            
+            <div class="complaints-timeline">
+              <h4>Réclamations récentes</h4>
+              <div class="timeline">
+                <div class="timeline-item" *ngFor="let complaint of recentComplaints">
+                  <div class="timeline-marker" [style.background]="complaint.statusColor"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-header">
+                      <span class="user-name">{{ complaint.user }}</span>
+                      <span class="complaint-date">{{ complaint.date | date:'dd MMM' }}</span>
+                    </div>
+                    <p class="complaint-message">{{ complaint.message }}</p>
+                    <span class="complaint-status" [style.background]="complaint.statusColor">
+                      {{ complaint.status }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activités Récentes et Questions IA -->
+      <div class="bottom-section">
+        <div class="recent-activity-card">
+          <div class="card-header">
+            <div class="header-left">
+              <i class="fas fa-history header-icon"></i>
+              <h3>Activités récentes</h3>
+            </div>
+            <div class="header-actions">
+              <button class="btn-icon" (click)="refreshActivities()" title="Rafraîchir">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+              <button class="btn-icon" (click)="exportActivity()" title="Exporter">
+                <i class="fas fa-download"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="activity-timeline">
+            <div class="activity-item" *ngFor="let activity of recentActivities">
+              <div class="activity-avatar">
+                <img [src]="activity.userAvatar" [alt]="activity.user" />
+                <div class="activity-status" [class]="activity.status"></div>
+              </div>
+              <div class="activity-details">
+                <div class="activity-header">
+                  <span class="activity-user">{{ activity.user }}</span>
+                  <span class="activity-action">{{ activity.action }}</span>
+                  <span class="activity-target">{{ activity.survey }}</span>
+                </div>
+                <div class="activity-time">
+                  <i class="fas fa-clock"></i>
+                  {{ activity.time }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Questions IA -->
+        <div class="ia-questions-card">
+          <div class="card-header">
+            <div class="header-left">
+              <i class="fas fa-robot header-icon"></i>
+              <h3>Questions générées par IA</h3>
+              <span class="total-badge ia">{{ iaQuestions.length }}</span>
+            </div>
+            <button class="btn-generate" (click)="generateNewQuestions()">
+              <i class="fas fa-magic"></i>
+              Générer
+            </button>
+          </div>
+          
+          <div class="ia-questions-list">
+            <div class="question-item" *ngFor="let question of iaQuestions; let i = index">
+              <div class="question-number">#{{ i + 1 }}</div>
+              <div class="question-content">
+                <p class="question-text">{{ question.text }}</p>
+                <div class="question-meta">
+                  <span class="question-category">
+                    <i class="fas fa-tag"></i>
+                    {{ question.category }}
+                  </span>
+                  <span class="question-difficulty" [class]="question.difficulty">
+                    <i class="fas fa-chart-line"></i>
+                    {{ question.difficulty }}
+                  </span>
+                  <span class="question-usage">
+                    <i class="fas fa-chart-bar"></i>
+                    Utilisée {{ question.usageCount }} fois
+                  </span>
+                </div>
+              </div>
+              <div class="question-actions">
+                <button class="action-btn edit" title="Modifier">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete" title="Supprimer">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="ia-stats">
+            <div class="ia-stat">
+              <i class="fas fa-brain"></i>
+              <span>Taux de pertinence: 94%</span>
+            </div>
+            <div class="ia-stat">
+              <i class="fas fa-chart-line"></i>
+              <span>Utilisation moyenne: 127 fois/question</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
+
+  <!-- Overlay pour fermer les dropdowns -->
+  <div class="overlay" *ngIf="showNotifications || showProfileMenu" (click)="closeAllDropdowns()"></div>
 </div>
 
-<!-- Panneau de notifications (dropdown) -->
+<!-- Notifications Panel -->
 <div class="notifications-panel" *ngIf="showNotifications">
   <div class="notifications-header">
     <h3>Notifications</h3>
@@ -106,29 +399,56 @@
   </div>
   <div class="notifications-list">
     <div class="notification-item" *ngFor="let notif of notifications">
-      <i class="fas" [ngClass]="notif.icon"></i>
+      <div class="notif-icon" [style.background]="notif.bgColor">
+        <i class="fas" [ngClass]="notif.icon"></i>
+      </div>
       <div class="notification-content">
         <p>{{ notif.message }}</p>
         <span class="notification-time">{{ notif.time }}</span>
       </div>
+      <div class="notif-status" *ngIf="!notif.read"></div>
     </div>
+  </div>
+  <div class="notifications-footer">
+    <button class="btn-text">Marquer tout comme lu</button>
+    <button class="btn-text">Voir toutes</button>
   </div>
 </div>
 
-<!-- Menu profil (dropdown) -->
+<!-- Profile Menu -->
 <div class="profile-menu" *ngIf="showProfileMenu">
   <div class="profile-header">
-    <img [src]="profileImage" alt="Admin">
+    <img [src]="profileImage" alt="Admin" />
     <div>
       <h4>{{ getCurrentUserName() }}</h4>
       <p>{{ getCurrentUserEmail() }}</p>
     </div>
   </div>
   <ul class="profile-menu-items">
-    <li><a href="#"><i class="fas fa-user"></i> Mon profil</a></li>
-    <li><a href="#"><i class="fas fa-cog"></i> Paramètres</a></li>
-    <li><a href="#"><i class="fas fa-shield-alt"></i> Sécurité</a></li>
+    <li>
+      <a routerLink="/super-admin-dashboard/profile">
+        <i class="fas fa-user-astronaut"></i>
+        <span>Mon profil</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/super-admin-dashboard/security">
+        <i class="fas fa-shield-alt"></i>
+        <span>Sécurité</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/super-admin-dashboard/preferences">
+        <i class="fas fa-sliders-h"></i>
+        <span>Préférences</span>
+      </a>
+    </li>
     <li class="divider"></li>
-    <li><a href="#" class="logout" (click)="logout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+    <li>
+      <a href="#" class="logout" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Déconnexion</span>
+      </a>
+    </li>
   </ul>
 </div>

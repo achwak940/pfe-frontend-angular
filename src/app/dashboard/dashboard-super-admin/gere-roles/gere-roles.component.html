@@ -1,48 +1,43 @@
-<!-- gere-roles.component.html -->
 <div class="admin-container">
   <main class="main-content">
-    <!-- Header -->
-    <header class="content-header">
+    <header class="content-header animate-slide-down">
       <div class="header-left">
         <h1><i class="fas fa-shield-alt"></i> Gestion des rôles</h1>
-        <div class="subtitle"><i class="fas fa-users-gear"></i> Gérez les permissions et les accès utilisateurs</div>
+        <div class="subtitle"><i class="fas fa-users-gear"></i> Gérez les rôles et accès utilisateurs</div>
       </div>
       <div class="header-right">
-        <button class="btn-primary" (click)="showRoleModal = true; modalMode='create'">
+        <button class="btn-primary ripple" (click)="showRoleModal = true; modalMode='create'">
           <i class="fas fa-plus-circle"></i> Nouveau rôle
         </button>
-        <button class="btn-outline" (click)="exportToCSV()">
+        <button class="btn-outline ripple" (click)="exportToCSV()">
           <i class="fas fa-download"></i> Exporter
         </button>
       </div>
     </header>
 
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-      <div class="stat-card purple" (click)="statusFilter='all'">
+    <div class="stats-grid animate-stagger">
+      <div class="stat-card purple" (click)="statusFilter='all'; applyFilters()">
         <div class="stat-icon"><i class="fas fa-lock"></i></div>
         <div class="stat-content">
           <span class="stat-value">{{ getTotalRoles() }}</span>
           <span class="stat-label">Total rôles</span>
         </div>
-        <div class="stat-trend up"><i class="fas fa-arrow-up"></i><span>+12%</span></div>
       </div>
-      <div class="stat-card green" (click)="statusFilter='active'">
+      <div class="stat-card green" (click)="statusFilter='active'; applyFilters()">
         <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
         <div class="stat-content">
           <span class="stat-value">{{ getActiveRoles() }}</span>
           <span class="stat-label">Rôles actifs</span>
         </div>
-        <div class="stat-trend up"><i class="fas fa-arrow-up"></i><span>+8%</span></div>
       </div>
-      <div class="stat-card blue" (click)="typeFilter='system'">
+      <div class="stat-card blue" (click)="typeFilter='system'; applyFilters()">
         <div class="stat-icon"><i class="fas fa-cog"></i></div>
         <div class="stat-content">
           <span class="stat-value">{{ getSystemRoles() }}</span>
           <span class="stat-label">Rôles système</span>
         </div>
       </div>
-      <div class="stat-card orange" (click)="typeFilter='custom'">
+      <div class="stat-card orange" (click)="typeFilter='custom'; applyFilters()">
         <div class="stat-icon"><i class="fas fa-palette"></i></div>
         <div class="stat-content">
           <span class="stat-value">{{ getCustomRoles() }}</span>
@@ -51,7 +46,6 @@
       </div>
     </div>
 
-    <!-- View Toggle -->
     <div class="view-toggle-container">
       <div class="view-toggle">
         <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'">
@@ -63,8 +57,7 @@
       </div>
     </div>
 
-    <!-- Filters Section -->
-    <div class="filters-card">
+    <div class="filters-card animate-fade-up">
       <div class="filters-header">
         <h3><i class="fas fa-filter"></i> Filtres</h3>
         <button class="btn-clear" (click)="clearFilters()" *ngIf="getActiveFilterCount()>0">
@@ -76,14 +69,14 @@
           <label>Recherche</label>
           <div class="filter-input">
             <i class="fas fa-search"></i>
-            <input type="text" placeholder="Nom, description..." [(ngModel)]="searchTerm" (input)="currentPage=1">
+            <input type="text" placeholder="Nom, description..." [(ngModel)]="searchTerm" (input)="applyFilters()">
           </div>
         </div>
         <div class="filter-group">
           <label>Statut</label>
           <div class="filter-select">
             <i class="fas fa-circle"></i>
-            <select [(ngModel)]="statusFilter" (change)="currentPage=1">
+            <select [(ngModel)]="statusFilter" (change)="applyFilters()">
               <option value="all">Tous</option>
               <option value="active">Actif</option>
               <option value="inactive">Inactif</option>
@@ -94,7 +87,7 @@
           <label>Type</label>
           <div class="filter-select">
             <i class="fas fa-tag"></i>
-            <select [(ngModel)]="typeFilter" (change)="currentPage=1">
+            <select [(ngModel)]="typeFilter" (change)="applyFilters()">
               <option value="all">Tous</option>
               <option value="system">Système</option>
               <option value="custom">Personnalisé</option>
@@ -104,21 +97,19 @@
       </div>
     </div>
 
-    <!-- Bulk Actions -->
-    <div class="bulk-actions" *ngIf="selectedRoles.size > 0">
+    <div class="bulk-actions animate-slide-up" *ngIf="selectedRoles.size > 0">
       <div class="bulk-info">
         <input type="checkbox" [checked]="isAllRolesSelected()" (change)="toggleSelectAllRoles()">
         <label>{{ selectedRoles.size }} rôle(s) sélectionné(s)</label>
       </div>
       <div class="bulk-buttons">
-        <button class="bulk-btn danger" (click)="bulkDeleteRoles()">
-          <i class="fas fa-trash-alt"></i> Supprimer
-        </button>
+        <button class="bulk-btn" (click)="clearSelection()"><i class="fas fa-times"></i> Annuler sélection</button>
+        <button class="bulk-btn danger" (click)="bulkDeleteRoles()"><i class="fas fa-trash-alt"></i> Supprimer</button>
       </div>
     </div>
 
-    <!-- Roles Grid View -->
-    <div class="roles-grid" *ngIf="viewMode === 'grid'">
+    <!-- Vue Grille -->
+    <div class="roles-grid animate-stagger" *ngIf="viewMode === 'grid'">
       <div class="role-card" *ngFor="let role of getPaginatedRoles()" [style.border-top-color]="role.color">
         <div class="card-select">
           <input type="checkbox" [id]="'role_'+role.id" [checked]="selectedRoles.has(role.id)" (change)="toggleSelectRole(role.id)">
@@ -137,59 +128,53 @@
           <p>{{ role.description }}</p>
           <div class="role-stats">
             <div class="stat-item"><i class="fas fa-users"></i><span>{{ role.userCount }} utilisateurs</span></div>
-            <div class="stat-item"><i class="fas fa-key"></i><span>{{ role.permissions.length }} permissions</span></div>
-          </div>
-          <div class="permissions-preview">
-            <span class="permission-badge" *ngFor="let perm of role.permissions.slice(0,2)">{{ perm }}</span>
-            <span class="permission-badge more" *ngIf="role.permissions.length>2">+{{role.permissions.length-2}}</span>
           </div>
         </div>
         <div class="card-actions">
           <button class="action-btn view" (click)="viewRole(role)"><i class="fas fa-eye"></i><span>Voir</span></button>
           <button class="action-btn edit" (click)="editRole(role)"><i class="fas fa-pencil-alt"></i><span>Modifier</span></button>
-          <button class="action-btn status" (click)="toggleRoleStatus(role)">
-            <i [class.fa-play]="role.status==='inactive'" [class.fa-pause]="role.status==='active'"></i>
+          <button class="action-btn assign" (click)="openAssignModal(role)"><i class="fas fa-user-plus"></i><span>Assigner</span></button>
+          <button class="action-btn status" 
+                  (click)="toggleRoleStatus(role)" 
+                  [title]="role.isSuperAdmin ? 'Le rôle SUPER_ADMIN est protégé' : (role.status==='active'?'Désactiver le rôle':'Activer le rôle')">
+            <span *ngIf="role.status==='inactive'" style="font-size:0.9rem; margin-right:4px;">▶️</span>
+            <span *ngIf="role.status==='active'" style="font-size:0.9rem; margin-right:4px;">⏸️</span>
             <span>{{role.status==='active'?'Désactiver':'Activer'}}</span>
           </button>
-          <button class="action-btn delete" (click)="deleteRole(role)"><i class="fas fa-trash-alt"></i><span>Supprimer</span></button>
+          <button class="action-btn delete" (click)="deleteRole(role)" [disabled]="role.isSuperAdmin" title="Le rôle SUPER_ADMIN ne peut pas être supprimé"><i class="fas fa-trash-alt"></i><span>Supprimer</span></button>
         </div>
       </div>
       <div class="no-results" *ngIf="getFilteredRoles().length===0">
-        <i class="fas fa-search"></i>
-        <p>Aucun rôle trouvé</p>
+        <i class="fas fa-search"></i><p>Aucun rôle trouvé</p>
         <button class="btn-primary" (click)="clearFilters()">Réinitialiser</button>
       </div>
     </div>
 
-    <!-- Roles Table View -->
-    <div class="table-container" *ngIf="viewMode === 'list'">
+    <!-- Vue Tableau -->
+    <div class="table-container animate-fade-up" *ngIf="viewMode === 'list'">
       <table class="data-table">
         <thead>
-          <tr>
-            <th style="width:40px"><input type="checkbox" [checked]="isAllRolesSelected()" (change)="toggleSelectAllRoles()"></th>
-            <th>Nom</th>
-            <th>Description</th>
-            <th>Permissions</th>
-            <th>Utilisateurs</th>
-            <th>Statut</th>
-            <th>Type</th>
-            <th>Actions</th>
-          </tr>
+          <tr><th style="width:40px"><input type="checkbox" [checked]="isAllRolesSelected()" (change)="toggleSelectAllRoles()"></th><th>Nom</th><th>Description</th><th>Utilisateurs</th><th>Statut</th><th>Type</th><th>Actions</th></tr>
         </thead>
         <tbody>
-          <tr *ngFor="let role of getPaginatedRoles()">
+          <tr *ngFor="let role of getPaginatedRoles(); let i = index" [style.animation-delay]="i * 0.05 + 's'">
             <td><input type="checkbox" [checked]="selectedRoles.has(role.id)" (change)="toggleSelectRole(role.id)"></td>
             <td class="role-name"><span class="role-dot" [style.background]="role.color"></span>{{ role.name }}</td>
             <td>{{ role.description }}</td>
-            <td><div class="permissions-list"><span class="permission-badge" *ngFor="let perm of role.permissions.slice(0,2)">{{ perm }}</span><span *ngIf="role.permissions.length>2">+{{role.permissions.length-2}}</span></div></td>
             <td><span class="user-count-badge">{{ role.userCount }}</span></td>
             <td><span class="status-badge" [class.status-active]="role.status==='active'" [class.status-inactive]="role.status==='inactive'">{{role.status==='active'?'Actif':'Inactif'}}</span></td>
             <td><span class="type-badge" [class.system]="role.isSystemRole" [class.custom]="!role.isSystemRole">{{role.isSystemRole?'Système':'Personnalisé'}}</span></td>
             <td class="actions-cell">
               <button class="action-btn view" (click)="viewRole(role)" title="Voir"><i class="fas fa-eye"></i></button>
               <button class="action-btn edit" (click)="editRole(role)" title="Modifier"><i class="fas fa-pencil-alt"></i></button>
-              <button class="action-btn status" (click)="toggleRoleStatus(role)" title="{{role.status==='active'?'Désactiver':'Activer'}}"><i [class.fa-play]="role.status==='inactive'" [class.fa-pause]="role.status==='active'"></i></button>
-              <button class="action-btn delete" (click)="deleteRole(role)" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+              <button class="action-btn assign" (click)="openAssignModal(role)" title="Assigner"><i class="fas fa-user-plus"></i></button>
+              <button class="action-btn status" 
+                      (click)="toggleRoleStatus(role)" 
+                      [title]="role.isSuperAdmin ? 'Le rôle SUPER_ADMIN est protégé' : (role.status==='active'?'Désactiver le rôle':'Activer le rôle')">
+                <span *ngIf="role.status==='inactive'">▶️</span>
+                <span *ngIf="role.status==='active'">⏸️</span>
+              </button>
+              <button class="action-btn delete" (click)="deleteRole(role)" [disabled]="role.isSuperAdmin" title="Le rôle SUPER_ADMIN ne peut pas être supprimé"><i class="fas fa-trash-alt"></i></button>
             </td>
           </tr>
           <tr *ngIf="getFilteredRoles().length===0"><td colspan="8" class="no-results-cell"><div class="no-results-inline">Aucun résultat</div></td></tr>
@@ -197,55 +182,77 @@
       </table>
     </div>
 
-    <!-- Pagination -->
     <div class="pagination" *ngIf="getTotalPages() > 1">
       <button class="page-btn" [disabled]="currentPage===1" (click)="changePage(currentPage-1)"><i class="fas fa-chevron-left"></i></button>
       <button class="page-btn" *ngFor="let page of [].constructor(getTotalPages()); let i=index" [class.active]="currentPage===i+1" (click)="changePage(i+1)">{{i+1}}</button>
       <button class="page-btn" [disabled]="currentPage===getTotalPages()" (click)="changePage(currentPage+1)"><i class="fas fa-chevron-right"></i></button>
     </div>
-    <div class="results-info"><i class="fas fa-chart-line"></i> {{getFilteredRoles().length}} rôle(s) • Page {{currentPage}}/{{Math.max(1,getTotalPages())}}</div>
+    <div class="results-info">{{getFilteredRoles().length}} rôle(s) • Page {{currentPage}}/{{Math.max(1,getTotalPages())}}</div>
   </main>
 
-  <!-- Role Modal (Create/Edit/View) -->
+  <!-- Modal Assignation -->
+  <div class="modal-overlay" *ngIf="showAssignModal" (click)="closeAssignModal()">
+    <div class="modal-container assign-modal animate-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><i class="fas fa-user-plus"></i> Assigner le rôle "{{currentAssignRole?.name}}"</h2>
+        <button class="modal-close" (click)="closeAssignModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Sélectionnez les utilisateurs</label>
+          <div class="users-list">
+            <label *ngFor="let user of allUsers" class="user-item">
+              <input type="checkbox" [value]="user.id" (change)="toggleUserSelection(user.id, $event)">
+              <div class="user-avatar">
+                <img *ngIf="user.photo_profil" [src]="'http://localhost:3000' + user.photo_profil" alt="avatar" (error)="user.photo_profil = null">
+                <div *ngIf="!user.photo_profil" class="default-avatar"><i class="fas fa-user"></i></div>
+              </div>
+              <div class="user-info">
+                <div class="user-name">{{ user.prenom }} {{ user.nom }} <span class="user-email">({{ user.email }})</span></div>
+                <div class="user-status-badge" [class.status-active]="user.statut === 'ACTIF'" [class.status-inactive]="user.statut === 'INACTIF'">
+                  {{ user.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}
+                </div>
+              </div>
+            </label>
+            <div *ngIf="allUsers.length === 0 && !loadingUsers" class="alert-info"><i class="fas fa-info-circle"></i> Aucun utilisateur trouvé</div>
+            <div *ngIf="loadingUsers" class="alert-info"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeAssignModal()">Annuler</button>
+        <button class="btn-primary" (click)="submitAssign()">Assigner</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal CRUD -->
   <div class="modal-overlay" *ngIf="showRoleModal" (click)="closeRoleModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-container animate-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2><i class="fas fa-shield-alt"></i> {{modalMode==='create'?'Créer un rôle':modalMode==='edit'?'Modifier le rôle':'Détails du rôle'}}</h2>
         <button class="modal-close" (click)="closeRoleModal()"><i class="fas fa-times"></i></button>
       </div>
-      
-      <!-- View Mode -->
       <div class="modal-body" *ngIf="modalMode==='view' && selectedRole">
         <div class="role-detail-header">
           <div class="role-icon-large" [style.background]="selectedRole.color"><i class="fas fa-shield-alt"></i></div>
-          <div>
-            <h3>{{selectedRole.name}}</h3>
-            <span class="status-badge" [class.status-active]="selectedRole.status==='active'">{{selectedRole.status==='active'?'Actif':'Inactif'}}</span>
-            <span class="type-badge" [class.system]="selectedRole.isSystemRole"> {{selectedRole.isSystemRole?'Système':'Personnalisé'}}</span>
-          </div>
+          <div><h3>{{selectedRole.name}}</h3><span class="status-badge" [class.status-active]="selectedRole.status==='active'">{{selectedRole.status==='active'?'Actif':'Inactif'}}</span><span class="type-badge" [class.system]="selectedRole.isSystemRole"> {{selectedRole.isSystemRole?'Système':'Personnalisé'}}</span></div>
         </div>
         <div class="detail-item"><label>Description</label><p>{{selectedRole.description}}</p></div>
-        <div class="detail-item"><label>Permissions</label><div class="permissions-tags"><span class="permission-tag" *ngFor="let perm of selectedRole.permissions"><i class="fas fa-check-circle"></i> {{perm}}</span></div></div>
         <div class="stats-row"><div class="stat"><i class="fas fa-users"></i> {{selectedRole.userCount}} utilisateurs</div><div class="stat"><i class="fas fa-calendar"></i> Créé le {{formatDate(selectedRole.createdAt)}}</div></div>
       </div>
-      
-      <!-- Create Mode -->
       <div class="modal-body" *ngIf="modalMode==='create'">
         <div class="form-group"><label>Nom du rôle *</label><input type="text" [(ngModel)]="newRole.name" placeholder="Ex: Chef de projet"></div>
         <div class="form-group"><label>Description *</label><textarea rows="3" [(ngModel)]="newRole.description" placeholder="Description..."></textarea></div>
         <div class="form-group"><label>Couleur</label><div class="color-picker"><div class="color-option" *ngFor="let color of availableColors" [style.background]="color" [class.selected]="newRole.color===color" (click)="newRole.color=color"></div></div></div>
-        <div class="form-group"><label>Permissions</label><select multiple class="permission-select" [(ngModel)]="newRole.permissions"><option *ngFor="let perm of availablePermissions" [value]="perm">{{perm}}</option></select><small>Ctrl+Click pour sélectionner plusieurs</small></div>
         <div class="form-group"><label>Statut</label><select [(ngModel)]="newRole.status"><option value="active">Actif</option><option value="inactive">Inactif</option></select></div>
         <div class="form-group"><label><input type="checkbox" [(ngModel)]="newRole.isSystemRole"> Rôle système (protégé)</label></div>
       </div>
-      
-      <!-- Edit Mode -->
       <div class="modal-body" *ngIf="modalMode==='edit' && editRoleData">
         <div class="form-group"><label>Nom</label><input type="text" [(ngModel)]="editRoleData.name"></div>
         <div class="form-group"><label>Description</label><textarea rows="3" [(ngModel)]="editRoleData.description"></textarea></div>
         <div class="form-group"><label>Statut</label><select [(ngModel)]="editRoleData.status"><option value="active">Actif</option><option value="inactive">Inactif</option></select></div>
       </div>
-      
       <div class="modal-footer">
         <button class="btn-secondary" (click)="closeRoleModal()">Annuler</button>
         <button *ngIf="modalMode==='create'" class="btn-primary" [disabled]="!newRole.name||!newRole.description" (click)="createRole()">Créer</button>
@@ -255,8 +262,7 @@
     </div>
   </div>
 
-  <!-- Notification Toast -->
-  <div class="notification-toast" [class.show]="notification.show" [class.success]="notification.type==='success'" [class.error]="notification.type==='error'" [class.warning]="notification.type==='warning'" [class.info]="notification.type==='info'">
+  <div class="notification-toast animate-slide-right" [class.show]="notification.show" [class.success]="notification.type==='success'" [class.error]="notification.type==='error'" [class.warning]="notification.type==='warning'" [class.info]="notification.type==='info'">
     <i class="fas" [class.fa-check-circle]="notification.type==='success'" [class.fa-exclamation-circle]="notification.type==='error'" [class.fa-exclamation-triangle]="notification.type==='warning'" [class.fa-info-circle]="notification.type==='info'"></i>
     <span>{{notification.message}}</span>
     <button class="close-notif" (click)="closeNotification()"><i class="fas fa-times"></i></button>

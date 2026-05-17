@@ -1,211 +1,332 @@
-// gere-roles.component.ts
 import { Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs/operators';
+import { BackendRole, RoleService, Utilisateur } from '../role.service';
 
 export interface Role {
   id: number;
   name: string;
   description: string;
-  permissions: string[];
-  userCount: number;
+  color: string;
   status: 'active' | 'inactive';
   isSystemRole: boolean;
+  isSuperAdmin: boolean;
+  userCount: number;
   createdAt: Date;
-  lastModified: Date;
-  color: string;
+  users?: Utilisateur[];
 }
 
 @Component({
   selector: 'app-gere-roles',
   templateUrl: './gere-roles.component.html',
-  styleUrls: ['./gere-roles.component.css']
+  styleUrls: ['./gere-roles.component.css'],
 })
 export class GereRolesComponent implements OnInit {
-  Math = Math;
+  roles: Role[] = [];
+  filteredRoles: Role[] = [];
+  paginatedRoles: Role[] = [];
 
-  // ==================== ROLES DATA ====================
-  roles: Role[] = [
-    {
-      id: 1,
-      name: 'Super Administrateur',
-      description: 'Accès complet à toutes les fonctionnalités du système',
-      permissions: ['Gestion totale', 'Configuration système', 'Audit logs', 'Backup/Restore', 'Gestion utilisateurs'],
-      userCount: 2,
-      status: 'active',
-      isSystemRole: true,
-      createdAt: new Date('2024-01-15'),
-      lastModified: new Date('2025-03-10'),
-      color: '#9D50BB'
-    },
-    {
-      id: 2,
-      name: 'Gestionnaire',
-      description: 'Gestion des sondages, questions et contenus IA',
-      permissions: ['Créer/Modifier sondages', 'Modérer IA', 'Analyser résultats', 'Gérer utilisateurs'],
-      userCount: 5,
-      status: 'active',
-      isSystemRole: false,
-      createdAt: new Date('2024-02-20'),
-      lastModified: new Date('2025-03-05'),
-      color: '#3b82f6'
-    },
-    {
-      id: 3,
-      name: 'Éditeur',
-      description: 'Création et validation de contenu éditorial',
-      permissions: ['Créer', 'Modifier', 'Publier', 'Valider'],
-      userCount: 8,
-      status: 'active',
-      isSystemRole: false,
-      createdAt: new Date('2024-03-10'),
-      lastModified: new Date('2025-02-28'),
-      color: '#10b981'
-    },
-    {
-      id: 4,
-      name: 'Observateur',
-      description: 'Visualisation uniquement des données et rapports',
-      permissions: ['Lecture seule', 'Exporter rapports'],
-      userCount: 12,
-      status: 'active',
-      isSystemRole: false,
-      createdAt: new Date('2024-04-01'),
-      lastModified: new Date('2025-01-20'),
-      color: '#f59e0b'
-    },
-    {
-      id: 5,
-      name: 'Rôle Système',
-      description: 'Rôle système intégré - Ne peut être modifié',
-      permissions: ['Accès système', 'Maintenance', 'Monitoring'],
-      userCount: 1,
-      status: 'inactive',
-      isSystemRole: true,
-      createdAt: new Date('2024-01-01'),
-      lastModified: new Date('2024-12-15'),
-      color: '#ef4444'
-    },
-    {
-      id: 6,
-      name: 'Modérateur IA',
-      description: 'Modération des réponses générées par l\'IA',
-      permissions: ['Voir questions', 'Modérer réponses', 'Signaler contenu'],
-      userCount: 3,
-      status: 'active',
-      isSystemRole: false,
-      createdAt: new Date('2024-05-15'),
-      lastModified: new Date('2025-03-01'),
-      color: '#8b5cf6'
-    },
-    {
-      id: 7,
-      name: 'Support Client',
-      description: 'Support et assistance utilisateurs',
-      permissions: ['Voir utilisateurs', 'Répondre tickets', 'Base connaissance'],
-      userCount: 4,
-      status: 'inactive',
-      isSystemRole: false,
-      createdAt: new Date('2024-06-10'),
-      lastModified: new Date('2025-02-10'),
-      color: '#ec4899'
-    },
-    {
-      id: 8,
-      name: 'Analyste',
-      description: 'Analyse avancée des données et reporting',
-      permissions: ['Tous rapports', 'Export avancé', 'Dashboard personnalisé'],
-      userCount: 3,
-      status: 'active',
-      isSystemRole: false,
-      createdAt: new Date('2024-07-20'),
-      lastModified: new Date('2025-03-12'),
-      color: '#06b6d4'
-    }
-  ];
-
-  // ==================== FILTERS & PAGINATION ====================
-  searchTerm: string = '';
-  statusFilter: string = 'all';
-  typeFilter: string = 'all';
-  selectedRole: Role | null = null;
-  
-  currentPage: number = 1;
-  itemsPerPage: number = 6;
   viewMode: 'grid' | 'list' = 'grid';
-  
-  // Modals
-  showRoleModal: boolean = false;
-  modalMode: 'create' | 'edit' | 'view' = 'view';
-  
-  // Form data
-  editRoleData: Partial<Role> = {};
+  searchTerm = '';
+  statusFilter = 'all';
+  typeFilter = 'all';
+  currentPage = 1;
+  itemsPerPage = 9;
+
+  selectedRoles = new Set<number>();
+
+  showRoleModal = false;
+  modalMode: 'create' | 'edit' | 'view' = 'create';
+  selectedRole: Role | null = null;
+  editRoleData: Role | null = null;
   newRole: Partial<Role> = {
     name: '',
     description: '',
-    permissions: [],
+    color: '#9D50BB',
     status: 'active',
     isSystemRole: false,
-    color: '#9D50BB'
-  };
-  
-  // Bulk selection
-  selectedRoles: Set<number> = new Set();
-  
-  // Available permissions
-  availablePermissions: string[] = [
-    'Lecture seule', 'Créer', 'Modifier', 'Supprimer', 'Publier', 'Valider',
-    'Configuration système', 'Gestion utilisateurs', 'Export données', 'Audit logs',
-    'Backup/Restore', 'Monitoring', 'Modérer IA', 'Analyser résultats', 'Gérer tickets'
-  ];
-  
-  availableColors: string[] = [
-    '#9D50BB', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', 
-    '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316'
-  ];
-  
-  notification: { show: boolean; type: string; message: string } = {
-    show: false,
-    type: 'success',
-    message: ''
+    isSuperAdmin: false,
+    userCount: 0,
   };
 
-  constructor() { }
+  showAssignModal = false;
+  currentAssignRole: Role | null = null;
+  allUsers: Utilisateur[] = [];
+  selectedUserIds: number[] = [];
 
-  ngOnInit(): void { }
+  availableColors = [
+    '#9D50BB', '#10b981', '#3b82f6', '#f59e0b',
+    '#ef4444', '#8b5cf6', '#ec489a', '#06b6d4',
+  ];
+  notification = { show: false, type: 'success', message: '' };
+  loading = false;
+  loadingUsers = false;
+  togglingId: number | null = null;  // spinner par rôle pendant le toggle
+  Math = Math;
 
-  // ==================== STATISTICS ====================
-  getTotalRoles(): number { return this.roles.length; }
-  getActiveRoles(): number { return this.roles.filter(r => r.status === 'active').length; }
-  getInactiveRoles(): number { return this.roles.filter(r => r.status === 'inactive').length; }
-  getSystemRoles(): number { return this.roles.filter(r => r.isSystemRole).length; }
-  getCustomRoles(): number { return this.roles.filter(r => !r.isSystemRole).length; }
+  constructor(private roleService: RoleService) {}
 
-  // ==================== FILTERED ROLES ====================
-  getFilteredRoles(): Role[] {
-    let filtered = this.roles;
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(r => r.name.toLowerCase().includes(term) || r.description.toLowerCase().includes(term));
-    }
-    if (this.statusFilter !== 'all') {
-      filtered = filtered.filter(r => r.status === this.statusFilter);
-    }
-    if (this.typeFilter !== 'all') {
-      filtered = filtered.filter(r => this.typeFilter === 'system' ? r.isSystemRole : !r.isSystemRole);
-    }
-    return filtered;
+  ngOnInit(): void {
+    this.loadRoles();
+    this.loadAllUsers();
   }
 
-  getPaginatedRoles(): Role[] {
-    const filtered = this.getFilteredRoles();
+  // ---- Chargement ----
+
+  loadRoles(): void {
+    this.loading = true;
+    this.roleService
+      .getAll()
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (data) => {
+          this.roles = data.map((r) => this.mapBackendToFrontend(r));
+          this.applyFilters();
+        },
+        error: () => this.showNotification('Erreur chargement rôles', 'error'),
+      });
+  }
+
+  loadAllUsers(): void {
+    this.loadingUsers = true;
+    this.roleService
+      .getAllUsers()
+      .pipe(finalize(() => (this.loadingUsers = false)))
+      .subscribe({
+        next: (data) => (this.allUsers = data),
+        error: () =>
+          this.showNotification('Erreur chargement utilisateurs', 'error'),
+      });
+  }
+
+  // ---- Mapping ----
+
+  mapBackendToFrontend(backend: BackendRole): Role {
+    const systemNames = ['Administrateur', 'Utilisateur connecté'];
+    return {
+      id: backend.id,
+      name: backend.nom,
+      description: backend.description || '',
+      color: backend.couleur,
+      status: backend.actif ? 'active' : 'inactive',
+      isSystemRole: systemNames.includes(backend.nom),
+      isSuperAdmin: backend.nom === 'SUPER_ADMIN',
+      userCount: backend.utilisateurs?.length ?? 0,
+      createdAt: new Date(backend.createdAt),
+      users: backend.utilisateurs,
+    };
+  }
+
+  mapFrontendToBackend(role: Partial<Role>): Partial<BackendRole> {
+    return {
+      nom: role.name,
+      description: role.description,
+      couleur: role.color,
+      actif: role.status === 'active',
+    };
+  }
+
+  // ---- Toggle statut (appel dédié → backend notifie + emaile) ----
+
+  toggleRoleStatus(role: Role): void {
+    if (role.isSuperAdmin) {
+      this.showNotification(
+        'Le rôle SUPER_ADMIN ne peut pas être modifié',
+        'warning',
+      );
+      return;
+    }
+
+    this.togglingId = role.id;
+
+    this.roleService
+      .toggleStatut(role.id)
+      .pipe(finalize(() => (this.togglingId = null)))
+      .subscribe({
+        next: (updated) => {
+          const refreshed = this.mapBackendToFrontend(updated);
+          const idx = this.roles.findIndex((r) => r.id === refreshed.id);
+          if (idx !== -1) this.roles[idx] = refreshed;
+          this.applyFilters();
+          const etat = refreshed.status === 'active' ? 'activé' : 'désactivé';
+          this.showNotification(
+            `Rôle "${refreshed.name}" ${etat} — utilisateurs notifiés`,
+            'success',
+          );
+        },
+        error: () =>
+          this.showNotification('Erreur lors du changement de statut', 'error'),
+      });
+  }
+
+  // ---- Assignation ----
+
+  openAssignModal(role: Role): void {
+    this.currentAssignRole = role;
+    this.selectedUserIds = [];
+    this.showAssignModal = true;
+  }
+
+  closeAssignModal(): void {
+    this.showAssignModal = false;
+    this.currentAssignRole = null;
+    this.selectedUserIds = [];
+  }
+
+  toggleUserSelection(userId: number, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      if (!this.selectedUserIds.includes(userId))
+        this.selectedUserIds.push(userId);
+    } else {
+      this.selectedUserIds = this.selectedUserIds.filter((id) => id !== userId);
+    }
+  }
+
+  submitAssign(): void {
+    if (!this.currentAssignRole) return;
+    if (this.selectedUserIds.length === 0) {
+      this.showNotification('Sélectionnez au moins un utilisateur', 'warning');
+      return;
+    }
+    this.roleService
+      .assignRoleToUsers(this.currentAssignRole.id, this.selectedUserIds)
+      .subscribe({
+        next: (res) => {
+          this.showNotification(
+            `${res.updated} utilisateur(s) assignés au rôle "${this.currentAssignRole?.name}" — emails envoyés`,
+            'success',
+          );
+          this.loadRoles();
+          this.closeAssignModal();
+        },
+        error: () =>
+          this.showNotification("Erreur lors de l'assignation", 'error'),
+      });
+  }
+
+  // ---- Filtres & pagination ----
+
+  applyFilters(): void {
+    let filtered = [...this.roles];
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (r) =>
+          r.name.toLowerCase().includes(term) ||
+          r.description.toLowerCase().includes(term),
+      );
+    }
+    if (this.statusFilter !== 'all')
+      filtered = filtered.filter((r) => r.status === this.statusFilter);
+    if (this.typeFilter !== 'all')
+      filtered = filtered.filter((r) =>
+        this.typeFilter === 'system' ? r.isSystemRole : !r.isSystemRole,
+      );
+    this.filteredRoles = filtered;
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  updatePagination(): void {
     const start = (this.currentPage - 1) * this.itemsPerPage;
-    return filtered.slice(start, start + this.itemsPerPage);
+    this.paginatedRoles = this.filteredRoles.slice(
+      start,
+      start + this.itemsPerPage,
+    );
   }
 
   getTotalPages(): number {
-    return Math.ceil(this.getFilteredRoles().length / this.itemsPerPage);
+    return Math.ceil(this.filteredRoles.length / this.itemsPerPage);
   }
 
-  // ==================== ROLE ACTIONS ====================
+  changePage(page: number): void {
+    if (page < 1 || page > this.getTotalPages()) return;
+    this.currentPage = page;
+    this.updatePagination();
+  }
+
+  getPaginatedRoles(): Role[] { return this.paginatedRoles; }
+  getFilteredRoles(): Role[]  { return this.filteredRoles; }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.statusFilter = 'all';
+    this.typeFilter = 'all';
+    this.applyFilters();
+    this.showNotification('Filtres réinitialisés', 'info');
+  }
+
+  getActiveFilterCount(): number {
+    return (
+      (this.searchTerm ? 1 : 0) +
+      (this.statusFilter !== 'all' ? 1 : 0) +
+      (this.typeFilter !== 'all' ? 1 : 0)
+    );
+  }
+
+  getTotalRoles():  number { return this.roles.length; }
+  getActiveRoles(): number { return this.roles.filter((r) => r.status === 'active').length; }
+  getSystemRoles(): number { return this.roles.filter((r) => r.isSystemRole).length; }
+  getCustomRoles(): number { return this.roles.filter((r) => !r.isSystemRole).length; }
+
+  // ---- Sélection multiple ----
+
+  toggleSelectRole(id: number): void {
+    this.selectedRoles.has(id)
+      ? this.selectedRoles.delete(id)
+      : this.selectedRoles.add(id);
+  }
+
+  toggleSelectAllRoles(): void {
+    this.isAllRolesSelected()
+      ? this.selectedRoles.clear()
+      : this.filteredRoles.forEach((r) => this.selectedRoles.add(r.id));
+  }
+
+  isAllRolesSelected(): boolean {
+    return (
+      this.filteredRoles.length > 0 &&
+      this.filteredRoles.every((r) => this.selectedRoles.has(r.id))
+    );
+  }
+
+  clearSelection(): void {
+    this.selectedRoles.clear();
+    this.showNotification('Sélection annulée', 'info');
+  }
+
+  bulkDeleteRoles(): void {
+    if (this.selectedRoles.size === 0) return;
+    const ids = Array.from(this.selectedRoles);
+    const superAdminRole = this.roles.find(
+      (r) => ids.includes(r.id) && r.isSuperAdmin,
+    );
+    if (superAdminRole) {
+      this.showNotification(
+        'Le rôle SUPER_ADMIN ne peut pas être supprimé',
+        'warning',
+      );
+      return;
+    }
+    let completed = 0;
+    ids.forEach((id) => {
+      this.roleService.delete(id).subscribe({
+        next: () => {
+          completed++;
+          if (completed === ids.length) {
+            this.loadRoles();
+            this.selectedRoles.clear();
+            this.showNotification(`${ids.length} rôle(s) supprimé(s)`, 'success');
+          }
+        },
+        error: () =>
+          this.showNotification('Erreur suppression groupée', 'error'),
+      });
+    });
+  }
+
+  // ---- CRUD modales ----
+
   viewRole(role: Role): void {
     this.selectedRole = role;
     this.modalMode = 'view';
@@ -213,137 +334,137 @@ export class GereRolesComponent implements OnInit {
   }
 
   editRole(role: Role): void {
-    this.selectedRole = role;
     this.editRoleData = { ...role };
     this.modalMode = 'edit';
     this.showRoleModal = true;
   }
 
   saveEditRole(): void {
-    if (this.selectedRole && this.editRoleData) {
-      const index = this.roles.findIndex(r => r.id === this.selectedRole!.id);
-      if (index !== -1) {
-        this.roles[index] = { ...this.roles[index], ...this.editRoleData, lastModified: new Date() } as Role;
-        this.showNotification('success', 'Rôle modifié avec succès');
-      }
+    if (!this.editRoleData) return;
+    if (this.editRoleData.isSuperAdmin) {
+      this.showNotification(
+        'Le rôle SUPER_ADMIN ne peut pas être modifié',
+        'warning',
+      );
+      return;
     }
-    this.closeRoleModal();
+    this.roleService
+      .update(this.editRoleData.id, this.mapFrontendToBackend(this.editRoleData))
+      .subscribe({
+        next: (updated) => {
+          const edited = this.mapBackendToFrontend(updated);
+          const idx = this.roles.findIndex((r) => r.id === edited.id);
+          if (idx !== -1) this.roles[idx] = edited;
+          this.applyFilters();
+          this.showNotification(`Rôle "${edited.name}" modifié`, 'success');
+          this.closeRoleModal();
+        },
+        error: () => this.showNotification('Erreur modification', 'error'),
+      });
   }
 
   deleteRole(role: Role): void {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le rôle "${role.name}" ?`)) {
-      this.roles = this.roles.filter(r => r.id !== role.id);
-      this.showNotification('success', 'Rôle supprimé avec succès');
+    if (role.isSuperAdmin) {
+      this.showNotification(
+        'Le rôle SUPER_ADMIN ne peut pas être supprimé',
+        'warning',
+      );
+      return;
     }
-  }
-
-  toggleRoleStatus(role: Role): void {
-    role.status = role.status === 'active' ? 'inactive' : 'active';
-    this.showNotification('success', `Rôle ${role.status === 'active' ? 'activé' : 'désactivé'} avec succès`);
+    if (confirm(`Supprimer "${role.name}" ?`)) {
+      this.roleService.delete(role.id).subscribe({
+        next: () => {
+          this.roles = this.roles.filter((r) => r.id !== role.id);
+          this.selectedRoles.delete(role.id);
+          this.applyFilters();
+          this.showNotification(`Rôle "${role.name}" supprimé`, 'success');
+        },
+        error: () => this.showNotification('Erreur suppression', 'error'),
+      });
+    }
   }
 
   createRole(): void {
-    if (this.newRole.name && this.newRole.description) {
-      const newId = Math.max(...this.roles.map(r => r.id), 0) + 1;
-      const roleToAdd: Role = {
-        id: newId,
-        name: this.newRole.name,
-        description: this.newRole.description,
-        permissions: this.newRole.permissions || [],
-        userCount: 0,
-        status: (this.newRole.status as 'active' | 'inactive') || 'active',
-        isSystemRole: this.newRole.isSystemRole || false,
-        createdAt: new Date(),
-        lastModified: new Date(),
-        color: this.newRole.color || '#9D50BB'
-      };
-      this.roles.unshift(roleToAdd);
-      this.newRole = { name: '', description: '', permissions: [], status: 'active', isSystemRole: false, color: '#9D50BB' };
-      this.showNotification('success', 'Rôle créé avec succès');
-      this.closeRoleModal();
-    }
+    if (!this.newRole.name || !this.newRole.description) return;
+    this.roleService
+      .create(this.mapFrontendToBackend(this.newRole))
+      .subscribe({
+        next: (created) => {
+          const newRole = this.mapBackendToFrontend(created);
+          this.roles.push(newRole);
+          this.applyFilters();
+          this.showNotification(`Rôle "${newRole.name}" créé`, 'success');
+          this.closeRoleModal();
+        },
+        error: () => this.showNotification('Erreur création', 'error'),
+      });
   }
 
-  // ==================== BULK ACTIONS ====================
-  toggleSelectRole(roleId: number): void {
-    if (this.selectedRoles.has(roleId)) this.selectedRoles.delete(roleId);
-    else this.selectedRoles.add(roleId);
+  resetNewRole(): void {
+    this.newRole = {
+      name: '',
+      description: '',
+      color: '#9D50BB',
+      status: 'active',
+      isSystemRole: false,
+      isSuperAdmin: false,
+      userCount: 0,
+    };
   }
 
-  toggleSelectAllRoles(): void {
-    const currentRoles = this.getPaginatedRoles();
-    if (this.selectedRoles.size === currentRoles.length) this.selectedRoles.clear();
-    else currentRoles.forEach(r => this.selectedRoles.add(r.id));
+  closeRoleModal(): void {
+    this.showRoleModal = false;
+    this.selectedRole = null;
+    this.editRoleData = null;
+    this.resetNewRole();
   }
 
-  isAllRolesSelected(): boolean {
-    const currentRoles = this.getPaginatedRoles();
-    return currentRoles.length > 0 && this.selectedRoles.size === currentRoles.length;
-  }
-
-  bulkDeleteRoles(): void {
-    if (confirm(`Supprimer ${this.selectedRoles.size} rôle(s) ?`)) {
-      this.roles = this.roles.filter(r => !this.selectedRoles.has(r.id));
-      this.selectedRoles.clear();
-      this.showNotification('success', 'Rôles supprimés avec succès');
-    }
-  }
-
-  // ==================== FILTERS & PAGINATION ====================
-  changePage(page: number): void {
-    if (page >= 1 && page <= this.getTotalPages()) {
-      this.currentPage = page;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  clearFilters(): void {
-    this.searchTerm = '';
-    this.statusFilter = 'all';
-    this.typeFilter = 'all';
-    this.currentPage = 1;
-    this.showNotification('info', 'Filtres réinitialisés');
-  }
-
-  // ==================== UTILITIES ====================
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  }
-
-  getActiveFilterCount(): number {
-    let count = 0;
-    if (this.searchTerm) count++;
-    if (this.statusFilter !== 'all') count++;
-    if (this.typeFilter !== 'all') count++;
-    return count;
-  }
-
-  showNotification(type: string, message: string): void {
-    this.notification = { show: true, type, message };
-    setTimeout(() => { this.notification.show = false; }, 3000);
-  }
-
-  closeNotification(): void { this.notification.show = false; }
-  closeRoleModal(): void { this.showRoleModal = false; this.selectedRole = null; this.editRoleData = {}; }
+  // ---- Export CSV ----
 
   exportToCSV(): void {
-    const data = this.getFilteredRoles();
-    const headers = ['Nom', 'Description', 'Permissions', 'Utilisateurs', 'Statut', 'Type', 'Créé le'];
-    
-    const csvData = data.map(role => [
-      role.name, role.description, role.permissions.join('; '), 
-      role.userCount, role.status, role.isSystemRole ? 'Système' : 'Personnalisé', 
-      this.formatDate(role.createdAt)
-    ]);
-    
-    const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `roles_export_${new Date().toISOString().slice(0, 19)}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    this.showNotification('success', 'Export CSV effectué');
+    const fields = [
+      'id', 'name', 'description', 'status',
+      'isSystemRole', 'userCount', 'createdAt',
+    ];
+    const data = this.roles.map((r) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      status: r.status,
+      isSystemRole: r.isSystemRole ? 'Système' : 'Personnalisé',
+      userCount: r.userCount,
+      createdAt: this.formatDate(r.createdAt),
+    }));
+    const csvRows = [fields.map((f) => `"${f}"`).join(',')];
+    data.forEach((row) => {
+      const values = fields.map(
+        (f) => `"${String((row as any)[f]).replace(/"/g, '""')}"`,
+      );
+      csvRows.push(values.join(','));
+    });
+    const blob = new Blob([csvRows.join('\n')], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'roles_export.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+    this.showNotification('Export CSV réussi', 'success');
+  }
+
+  // ---- Utilitaires ----
+
+  showNotification(message: string, type: string): void {
+    this.notification = { show: true, type, message };
+    setTimeout(() => (this.notification.show = false), 4000);
+  }
+
+  closeNotification(): void {
+    this.notification.show = false;
+  }
+
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString('fr-FR');
   }
 }

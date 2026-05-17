@@ -11,7 +11,7 @@
     <div class="profile-header">
       <div class="profile-image-section">
         <div class="image-frame">
-          <img [src]="'http://localhost:3000/' + userInfo?.photo_profil" class="profile-image">
+          <img [src]="getPhotoUrl()" alt="Photo de profil" class="profile-image">
           <div class="status-badge" [ngClass]="userInfo?.statut === 'ACTIF' ? 'status-active' : 'status-inactive'">
             <i class="fas fa-circle"></i>
             <span>{{userInfo?.statut}}</span>

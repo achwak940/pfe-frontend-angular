@@ -7,6 +7,18 @@
 <body>
 <div class="edit-profile-container">
   <div class="edit-profile-card">
+    
+    <!-- Panneau de débogage -->
+    <div class="debug-panel" *ngIf="debugInfo">
+      <details>
+        <summary><i class="fas fa-bug"></i> Informations de débogage</summary>
+        <pre>{{debugInfo}}</pre>
+        <button type="button" (click)="reloadImage()" class="btn-debug">
+          <i class="fas fa-sync-alt"></i> Recharger l'image
+        </button>
+      </details>
+    </div>
+
     <!-- Header -->
     <div class="edit-header">
       <button class="back-btn" (click)="goBack()">
@@ -29,7 +41,7 @@
         <label class="form-label">Photo de profil</label>
         <div class="photo-upload-container">
           <div class="photo-preview" (click)="triggerFileUpload()">
-            <img *ngIf="photoPreview" [src]="photoPreview" alt="Photo de profil" class="preview-image">
+            <img *ngIf="photoPreview" [src]="photoPreview" alt="Photo de profil" class="preview-image" (error)="onImageError($event)">
             <div *ngIf="!photoPreview" class="photo-placeholder">
               <i class="fas fa-camera"></i>
               <span>Ajouter une photo</span>

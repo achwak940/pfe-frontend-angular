@@ -28,12 +28,13 @@ export class ModfifierProfilComponent implements OnInit {
   profileForm!: FormGroup;
   submitted = false;
   isLoading = false;
-  isLoadingData = true; // Ajout de cette propriété
-  errorMessage: string = ''; // Ajout pour les erreurs
+  isLoadingData = true;
+  errorMessage: string = '';
   userInfo: UserInfo | null = null;
   photoPreview: string | ArrayBuffer | null = null;
   selectedFile: File | null = null;
   userId: number = 0;
+  debugInfo: string = '';
   
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -50,7 +51,6 @@ export class ModfifierProfilComponent implements OnInit {
   loadUserData(): void {
     this.isLoadingData = true;
     
-    // Récupérer l'ID utilisateur
     const storedUser = localStorage.getItem('currentUser');
     if (!storedUser) {
       this.router.navigate(['/login']);
@@ -59,29 +59,29 @@ export class ModfifierProfilComponent implements OnInit {
 
     const currentUser = JSON.parse(storedUser);
     this.userId = currentUser.id;
+    this.debugInfo += `User ID: ${this.userId}\n`;
 
-    // Appel API pour récupérer les données
     this.profilService.consulterProfil(this.userId).subscribe({
       next: (response: any) => {
-        // Vérifier la structure de la réponse
+        console.log('Données reçues du backend:', response);
+        
         if (response && response.profil) {
           this.userInfo = response.profil;
         } else if (response) {
           this.userInfo = response;
         }
         
+        this.debugInfo += `Photo path from backend: ${this.userInfo?.photo_profil}\n`;
+        
         this.isLoadingData = false;
         this.initializeForm();
-        
-        // Définir la prévisualisation de la photo
-        if (this.userInfo?.photo_profil) {
-          this.photoPreview = `http://localhost:3000/${this.userInfo.photo_profil}`;
-        }
+        this.setPhotoPreview();
       },
       error: (err: any) => {
         this.isLoadingData = false;
         this.errorMessage = err.error?.message || 'Impossible de charger vos informations';
         console.error('Erreur:', err);
+        this.debugInfo += `Erreur: ${this.errorMessage}\n`;
         
         Swal.fire({
           title: 'Erreur!',
@@ -92,6 +92,59 @@ export class ModfifierProfilComponent implements OnInit {
         });
       }
     });
+  }
+
+  setPhotoPreview(): void {
+    if (!this.userInfo?.photo_profil) {
+      this.debugInfo += `Aucune photo de profil trouvée\n`;
+      this.photoPreview = null;
+      return;
+    }
+    
+    const photoUrl = this.getCorrectPhotoUrl(this.userInfo.photo_profil);
+    this.debugInfo += `URL générée: ${photoUrl}\n`;
+    this.photoPreview = photoUrl;
+    this.testImageUrl(photoUrl);
+  }
+
+  getCorrectPhotoUrl(photoPath: string): string {
+    if (!photoPath) {
+      return '';
+    }
+    
+    console.log('Photo path original:', photoPath);
+    
+    let normalizedPath = photoPath;
+    if (normalizedPath.startsWith('/')) {
+      normalizedPath = normalizedPath.substring(1);
+    }
+    
+    if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
+      return normalizedPath;
+    }
+    
+    if (normalizedPath.startsWith('uploads/')) {
+      return `http://localhost:3000/${normalizedPath}`;
+    }
+    
+    if (normalizedPath.startsWith('profiles/')) {
+      return `http://localhost:3000/uploads/${normalizedPath}`;
+    }
+    
+    return `http://localhost:3000/uploads/profiles/${normalizedPath}`;
+  }
+
+  testImageUrl(url: string): void {
+    const img = new Image();
+    img.onload = () => {
+      console.log('✅ Image trouvée:', url);
+      this.debugInfo += `✅ Image chargée avec succès: ${url}\n`;
+    };
+    img.onerror = () => {
+      console.error('❌ Image non trouvée:', url);
+      this.debugInfo += `❌ Erreur: Image non trouvée à l'URL: ${url}\n`;
+    };
+    img.src = url;
   }
 
   initializeForm(): void {
@@ -129,14 +182,18 @@ export class ModfifierProfilComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       
+      this.debugInfo += `Fichier sélectionné: ${file.name}, Taille: ${file.size} bytes\n`;
+      
       if (file.size > 5 * 1024 * 1024) {
         this.showError('La taille du fichier doit être inférieure à 5MB');
+        this.debugInfo += `❌ Fichier trop grand: ${file.size} bytes\n`;
         return;
       }
       
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         this.showError('Formats acceptés: JPEG, PNG, JPG, WEBP');
+        this.debugInfo += `❌ Type non accepté: ${file.type}\n`;
         return;
       }
       
@@ -145,9 +202,11 @@ export class ModfifierProfilComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = () => {
         this.photoPreview = reader.result;
+        this.debugInfo += `✅ Photo chargée pour prévisualisation\n`;
       };
       reader.onerror = () => {
         this.showError('Erreur lors de la lecture du fichier');
+        this.debugInfo += `❌ Erreur lecture fichier\n`;
       };
       reader.readAsDataURL(file);
     }
@@ -159,8 +218,10 @@ export class ModfifierProfilComponent implements OnInit {
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
+    this.debugInfo += `Photo supprimée\n`;
   }
 
+  // Version simplifiée sans upload de photo (juste mise à jour des infos)
   onSubmit(): void {
     this.submitted = true;
     
@@ -181,20 +242,22 @@ export class ModfifierProfilComponent implements OnInit {
       telephone: this.profileForm.get('telephone')?.value
     };
 
+    this.updateUserProfile(updatedData);
+  }
+
+  updateUserProfile(updatedData: any): void {
     this.profilService.updateUser(this.userId, updatedData).subscribe({
       next: (response: any) => {
         this.isLoading = false;
         
-        // Mettre à jour localStorage
         const updatedUser = {
           ...this.userInfo,
-          prenom: updatedData.prenom,
-          nom: updatedData.nom,
-          email: updatedData.email,
-          telephone: updatedData.telephone,
+          ...updatedData,
           date_modification: new Date().toISOString()
         };
         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        
+        this.debugInfo += `✅ Profil mis à jour avec succès\n`;
         
         Swal.fire({
           title: 'Succès!',
@@ -220,9 +283,18 @@ export class ModfifierProfilComponent implements OnInit {
           errorMessage = 'Données invalides';
         }
         
+        this.debugInfo += `❌ Erreur mise à jour: ${errorMessage}\n`;
         this.showError(errorMessage);
       }
     });
+  }
+
+  // Gestionnaire d'erreur d'image
+  onImageError(event: any): void {
+    console.error('Erreur de chargement de l\'image:', event.target.src);
+    this.debugInfo += `❌ Erreur chargement image: ${event.target.src}\n`;
+    event.target.src = 'assets/default-avatar.png';
+    this.debugInfo += `🖼️ Utilisation image par défaut\n`;
   }
 
   getFirstFormError(): string | null {
@@ -276,5 +348,9 @@ export class ModfifierProfilComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/profile']);
+  }
+
+  reloadImage(): void {
+    this.setPhotoPreview();
   }
 }

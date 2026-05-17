@@ -3,67 +3,67 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { LoginService } from '../login.service';
 import { Router } from '@angular/router';
 
-// Déclaration pour Google API
 declare const google: any;
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
-  
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [
-      Validators.required, 
+      Validators.required,
       Validators.minLength(8),
-      Validators.pattern(/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/)
+      Validators.pattern(/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/),
     ]),
-    rememberMe: new FormControl(false)
+    rememberMe: new FormControl(false),
   });
-  
+
   errorMessage: string = '';
   currentUser: any = null;
   showPassword: boolean = false;
-  isLoading: boolean = false; // Pour afficher un loader
+  isLoading: boolean = false;
 
   constructor(
     private serviceAuth: LoginService,
-    private router: Router
-  ) { }
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
-    // Vérifier si l'utilisateur est déjà connecté
     const token = localStorage.getItem('token');
+
     if (token) {
       const savedUser = localStorage.getItem('currentUser');
+
       if (savedUser) {
         this.currentUser = JSON.parse(savedUser);
         this.redirectBasedOnRole();
       }
+
+      console.log('TOKEN:', token);
+      console.log('USER:', this.currentUser);
     }
 
-    // Réinitialiser l'erreur quand l'utilisateur tape
     this.loginForm.valueChanges.subscribe(() => {
       this.errorMessage = '';
     });
 
-    // Restaurer l'email si "Remember me" était coché
     const savedEmail = localStorage.getItem('savedEmail');
     if (savedEmail) {
-      this.loginForm.patchValue({ email: savedEmail });
-      this.loginForm.patchValue({ rememberMe: true });
+      this.loginForm.patchValue({
+        email: savedEmail,
+        rememberMe: true,
+      });
     }
 
-    // Initialiser Google Sign-In
     this.initializeGoogleSignIn();
   }
 
-  // Initialiser Google Sign-In
+  // ================= GOOGLE =================
   initializeGoogleSignIn(): void {
-    // Charger le script Google si pas déjà chargé
-    if (!document.querySelector('#google-script')) {
+    if (!document.getElementById('google-script')) {
       const script = document.createElement('script');
       script.id = 'google-script';
       script.src = 'https://accounts.google.com/gsi/client';
@@ -72,116 +72,84 @@ export class LoginComponent implements OnInit {
       document.head.appendChild(script);
     }
 
-    // Attendre que le script soit chargé
     setTimeout(() => {
       if (typeof google !== 'undefined') {
         this.renderGoogleButton();
       }
-    }, 1000);
+    }, 1200);
   }
 
-  // Rendre le bouton Google
   renderGoogleButton(): void {
-    const buttonElement = document.getElementById('google-signin-button');
-    if (buttonElement && typeof google !== 'undefined') {
-      google.accounts.id.initialize({
-        client_id: '161266384329-jr3pa6k3smcc37ke3ambls5gfhdukpdb.apps.googleusercontent.com', // Remplacez par votre client ID
-        callback: (response: any) => this.handleGoogleLogin(response)
-      });
-      
-      google.accounts.id.renderButton(
-        buttonElement,
-        { 
-          theme: 'outline',
-          size: 'large',
-          width: '100%',
-          text: 'continue_with',
-          shape: 'rectangular'
-        }
-      );
-    }
+    const btn = document.getElementById('google-signin-button');
+
+    if (!btn) return;
+
+    google.accounts.id.initialize({
+      client_id:
+        '161266384329-jr3pa6k3smcc37ke3ambls5gfhdukpdb.apps.googleusercontent.com',
+      callback: (res: any) => this.handleGoogleLogin(res),
+    });
+
+    google.accounts.id.renderButton(btn, {
+      theme: 'outline',
+      size: 'large',
+      width: '100%',
+    });
   }
 
-  // Gérer la réponse de Google
-  async handleGoogleLogin(response: any): Promise<void> {
+  handleGoogleLogin(response: any): void {
     this.isLoading = true;
-    this.errorMessage = '';
-    
-    try {
-      const idToken = response.credential;
-      
-      this.serviceAuth.loginWithGoogle(idToken).subscribe({
-        next: (res: any) => {
-          if (res && res.token) {
-            // Sauvegarde du token
-            localStorage.setItem('token', res.token);
-            
-            // Sauvegarde de l'utilisateur
-            if (res.user) {
-              this.currentUser = res.user;
-              localStorage.setItem('currentUser', JSON.stringify(res.user));
-            }
-            
-            this.isLoading = false;
-            this.errorMessage = '';
-            
-            // Redirection basée sur le rôle
-            this.redirectBasedOnRole();
-          } else if (res && res.erreur) {
-            this.errorMessage = res.erreur;
-            this.isLoading = false;
+
+    const idToken = response.credential;
+
+    this.serviceAuth.loginWithGoogle(idToken).subscribe({
+      next: (res: any) => {
+        if (res?.token) {
+          localStorage.setItem('token', res.token);
+
+          if (res.user) {
+            this.currentUser = res.user;
+            localStorage.setItem('currentUser', JSON.stringify(res.user));
           }
-        },
-        error: (err) => {
-          console.error('Google login error:', err);
-          this.errorMessage = 'Erreur lors de l\'authentification Google';
+
+          this.isLoading = false;
+          this.redirectBasedOnRole();
+        } else {
+          this.errorMessage = res?.erreur || 'Google login failed';
           this.isLoading = false;
         }
-      });
-    } catch (error) {
-      console.error('Error:', error);
-      this.errorMessage = 'Erreur lors de l\'authentification Google';
-      this.isLoading = false;
-    }
+      },
+      error: () => {
+        this.errorMessage = 'Erreur Google login';
+        this.isLoading = false;
+      },
+    });
   }
 
-  // Redirection basée sur le rôle
+  // ================= ROLE REDIRECT FIX =================
   private redirectBasedOnRole(): void {
-    if (this.currentUser && this.currentUser.role) {
-      if (this.currentUser.role === "ADMIN" || this.currentUser.role === "ROLE_ADMIN") {
-        this.router.navigate(['/admin-dashboard']);
-      } else if (this.currentUser.role === "SUPER_ADMIN" || this.currentUser.role === "ROLE_SUPER_ADMIN") {
-        this.router.navigate(['/super-admin-dashboard']);
-      } else {
-        this.router.navigate(['/']);
-      }
+    const role = this.currentUser?.role?.nom || this.currentUser?.role;
+
+    if (!role) {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    if (role === 'ROLE_ADMIN' || role === 'Administrateur') {
+      this.router.navigate(['/admin-dashboard']);
+    } else if (role === 'ROLE_SUPER_ADMIN') {
+      this.router.navigate(['/super-admin-dashboard']);
+    } else {
+      this.router.navigate(['/']);
     }
   }
 
-  // Méthode pour afficher/masquer le mot de passe
-  togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
-  }
-
-  // Méthode de soumission
+  // ================= LOGIN =================
   submit(): void {
     this.errorMessage = '';
-    
+
     if (this.loginForm.invalid) {
-      if (this.loginForm.get('email')?.invalid) {
-        this.errorMessage = 'Veuillez entrer un email valide';
-      } else if (this.loginForm.get('password')?.invalid) {
-        const passwordErrors = this.loginForm.get('password')?.errors;
-        if (passwordErrors?.['required']) {
-          this.errorMessage = 'Le mot de passe est obligatoire';
-        } else if (passwordErrors?.['minlength']) {
-          this.errorMessage = 'Le mot de passe doit contenir au moins 8 caractères';
-        } else if (passwordErrors?.['pattern']) {
-          this.errorMessage = 'Le mot de passe doit contenir au moins une majuscule, un chiffre et un symbole';
-        }
-      } else {
-        this.errorMessage = 'Formulaire invalide';
-      }
+      this.errorMessage = 'Formulaire invalide';
       return;
     }
 
@@ -190,7 +158,7 @@ export class LoginComponent implements OnInit {
     const rememberMe = this.loginForm.value.rememberMe;
 
     if (!email || !password) {
-      this.errorMessage = 'Email et mot de passe sont obligatoires';
+      this.errorMessage = 'Email et mot de passe requis';
       return;
     }
 
@@ -204,56 +172,43 @@ export class LoginComponent implements OnInit {
 
     this.serviceAuth.loginPostRequest(email, password).subscribe({
       next: (res: any) => {
-        if (res && res.token) {
+        if (res?.token) {
           localStorage.setItem('token', res.token);
-          
+
           if (res.user) {
             this.currentUser = res.user;
             localStorage.setItem('currentUser', JSON.stringify(res.user));
           }
-          
-          this.errorMessage = '';
+
           this.isLoading = false;
           this.redirectBasedOnRole();
-        } else if (res && res.erreur) {
-          this.errorMessage = res.erreur;
-          this.isLoading = false;
-        } else if (res && res.message) {
-          this.errorMessage = res.message;
-          this.isLoading = false;
         } else {
-          this.errorMessage = 'Erreur lors de la connexion';
+          this.errorMessage = res?.erreur || 'Login failed';
           this.isLoading = false;
         }
       },
+
       error: (err) => {
-        console.error('Http error:', err);
-        
-        if (err.status === 401) {
-          this.errorMessage = 'Email ou mot de passe incorrect';
-        } else if (err.status === 403) {
-          this.errorMessage = 'Accès non autorisé';
-        } else if (err.status === 0) {
-          this.errorMessage = 'Impossible de se connecter au serveur';
-        } else if (err.error && err.error.message) {
-          this.errorMessage = err.error.message;
-        } else {
-          this.errorMessage = 'Erreur serveur, veuillez réessayer plus tard';
-        }
+        this.errorMessage =
+          err.status === 401
+            ? 'Email ou mot de passe incorrect'
+            : err.status === 403
+              ? 'Accès refusé'
+              : 'Erreur serveur';
+
         this.isLoading = false;
-      }
+      },
     });
+  }
+
+  // ================= UI =================
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   forgotPassword(event: Event): void {
     event.preventDefault();
-    const email = this.loginForm.get('email')?.value;
-    
-    if (email && email.trim()) {
-      this.router.navigate(['/forgot-password'], { queryParams: { email: email } });
-    } else {
-      this.router.navigate(['/forgot-password']);
-    }
+    this.router.navigate(['/oubliermotdepasse']);
   }
 
   signUp(event: Event): void {
@@ -262,21 +217,16 @@ export class LoginComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('savedEmail');
+    localStorage.clear();
     this.currentUser = null;
-    this.loginForm.reset();
     this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('token');
-    return !!token && !!this.currentUser;
+    return !!localStorage.getItem('token');
   }
-  // Dans login.component.ts
-handleLogoError() {
-  // Optionnel: logger l'erreur ou utiliser un logo par défaut
-  console.warn('Logo not found, using default');
-}
+
+  handleLogoError(): void {
+    console.warn('Logo error');
+  }
 }

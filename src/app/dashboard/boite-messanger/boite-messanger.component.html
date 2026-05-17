@@ -1,0 +1,306 @@
+<div class="messenger-wrapper" [class.dark-mode]="isDarkMode">
+  <div class="messenger-container">
+    
+    <!-- Sidebar - Liste des conversations -->
+    <div class="conversations-sidebar">
+      
+      <div class="sidebar-header">
+        <div class="logo-area">
+          <div class="logo-icon">
+            <i class="fas fa-comment-dots"></i>
+          </div>
+          <h2>Messages</h2>
+        </div>
+      
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" 
+               [(ngModel)]="searchQuery" 
+               (input)="onSearchInput(searchQuery)"
+               placeholder="Rechercher une conversation..."
+               class="search-input">
+        <button class="clear-btn" *ngIf="searchQuery" (click)="clearSearch()">
+          <i class="fas fa-times-circle"></i>
+        </button>
+      </div>
+
+      <!-- Conversations List -->
+      <div class="conversations-list" *ngIf="!isLoading; else loadingSpinner">
+        <div *ngFor="let conv of conversations" 
+             class="conversation-item" 
+             [class.active]="selectedConversation?.user?.id === conv.user?.id"
+             (click)="selectConversation(conv)">
+          
+          <div class="conversation-avatar">
+            <img [src]="getImageUrl(conv.user?.photo_profil)" 
+                 (error)="onImageError($event, conv.user)"
+                 [alt]="conv.user?.prenom">
+            <span class="status-indicator" [class.online]="conv.user?.online"></span>
+          </div>
+          
+          <div class="conversation-info">
+            <div class="conversation-header">
+              <span class="conversation-name">
+                {{ conv.user?.prenom }} {{ conv.user?.nom }}
+              </span>
+              <span class="conversation-time">{{ formatTime(conv.dateDernierMessage) }}</span>
+            </div>
+            <div class="conversation-preview">
+              <span class="last-message">{{ (conv.dernierMessage || '') | slice:0:50 }}{{ (conv.dernierMessage || '').length > 50 ? '...' : '' }}</span>
+              <span class="unread-badge" *ngIf="conv.nonLu > 0">{{ conv.nonLu }}</span>
+            </div>
+            <div class="conversation-role">
+              <span class="role-tag" [ngClass]="getRoleBadgeClass(conv.user?.statut)">
+                {{ getRoleLabel(conv.user?.statut) }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="conversations.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-inbox"></i>
+          </div>
+          <h4>Aucune conversation</h4>
+          <p>Commencez une nouvelle discussion</p>
+        </div>
+      </div>
+      
+      <ng-template #loadingSpinner>
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Chargement...</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="chat-area" *ngIf="selectedConversation; else noConversation">
+      
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="chat-user-info" (click)="toggleUserInfo()">
+          <div class="user-avatar">
+            <img [src]="getImageUrl(selectedConversation.user?.photo_profil)" 
+                 (error)="onImageError($event, selectedConversation.user)"
+                 [alt]="getInterlocuteurName()">
+            <span class="status-indicator" [class.online]="selectedConversation.user?.online"></span>
+          </div>
+          <div class="user-details">
+            <h3>{{ getInterlocuteurName() }}</h3>
+            <span class="status-text" [class.online]="selectedConversation.user?.online">
+              {{ selectedConversation.user?.online ? 'En ligne' : 'Hors ligne' }}
+            </span>
+          </div>
+        </div>
+        <div class="chat-actions">
+          <button class="icon-btn" (click)="toggleUserInfo()" title="Info utilisateur">
+            <i class="fas fa-info-circle"></i>
+          </button>
+          <button class="icon-btn" (click)="shareLocation()" title="Partager la position">
+            <i class="fas fa-location-dot"></i>
+          </button>
+          <button class="icon-btn" (click)="deleteConversation()" title="Supprimer la conversation">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages Container -->
+      <div class="messages-container" #messageContainer>
+        <div class="messages-list" *ngIf="!isLoadingMessages; else loadingMessages">
+          
+          <div *ngIf="messages.length > 0" class="date-separator">
+            <span>{{ getMessageDate() }}</span>
+          </div>
+          
+          <div *ngIf="messages.length === 0" class="no-messages">
+            <i class="fas fa-comment-dots"></i>
+            <p>Aucun message, commencez la conversation !</p>
+          </div>
+          
+          <!-- Messages avec liens cliquables -->
+          <div *ngFor="let message of messages" 
+               class="message-item" 
+               [class.sent]="message.estMoi"
+               [class.received]="!message.estMoi">
+            
+            <div class="message-avatar" *ngIf="!message.estMoi">
+              <img [src]="getImageUrl(selectedConversation.user?.photo_profil)" 
+                   (error)="onImageError($event, selectedConversation.user)"
+                   [alt]="getInterlocuteurName()">
+            </div>
+            
+            <div class="message-content">
+              <!-- Mode édition -->
+              <div *ngIf="editingMessage?.id === message.id" class="edit-message-container">
+                <textarea [(ngModel)]="editingText" 
+                          class="edit-textarea"
+                          rows="3"></textarea>
+                <div class="edit-actions">
+                  <button class="edit-save" (click)="saveEditMessage()">💾 Enregistrer</button>
+                  <button class="edit-cancel" (click)="cancelEditMessage()">❌ Annuler</button>
+                </div>
+              </div>
+              
+              <!-- Mode normal avec liens cliquables -->
+              <div *ngIf="editingMessage?.id !== message.id" class="message-bubble">
+                <div class="message-sujet" *ngIf="message.sujet && message.sujet !== 'Message'">
+                  <strong>{{ message.sujet }}</strong>
+                </div>
+                <p class="message-text" [innerHTML]="formatMessageWithLinks(message.contenu)"></p>
+                <div class="message-meta">
+                  <span class="message-time">{{ formatMessageTime(message.dateEnvoi) }}</span>
+                  <i class="fas fa-check" *ngIf="message.estMoi && message.lu"></i>
+                  <i class="fas fa-check-double" *ngIf="message.estMoi && message.lu"></i>
+                  
+                  <!-- Boutons d'action pour messages envoyés -->
+                  <div class="message-actions" *ngIf="message.estMoi">
+                    <button class="action-edit" (click)="startEditMessage(message)" title="Modifier">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-delete" (click)="deleteMessage(message.id)" title="Supprimer">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <ng-template #loadingMessages>
+          <div class="loading-messages">
+            <div class="spinner-small"></div>
+            <p>Chargement des messages...</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Message Input -->
+      <div class="message-input-area">
+        <div class="input-actions">
+          
+          <button class="action-btn" (click)="toggleEmojiPicker()" title="Émojis">
+            <i class="far fa-smile-wink"></i>
+          </button>
+          <button class="action-btn" (click)="showSujetInput = !showSujetInput" title="Ajouter un sujet">
+            <i class="fas fa-tag"></i>
+          </button>
+          <input type="file" #fileInput hidden (change)="onFileSelected($event)">
+        </div>
+        
+        <div class="input-wrapper">
+          <input type="text" 
+                 *ngIf="showSujetInput"
+                 [(ngModel)]="messageSujet"
+                 placeholder="Sujet (optionnel)"
+                 class="sujet-input">
+          <textarea [(ngModel)]="messageText"
+                    (keyup.enter)="sendMessage()"
+                    placeholder="Écrivez votre message..."
+                    rows="1"
+                    class="message-input"></textarea>
+        </div>
+        
+        <button class="send-btn" (click)="sendMessage()" [disabled]="!messageText || !messageText.trim() || isSending">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+        
+        <!-- Emoji Picker -->
+        <div class="emoji-picker" *ngIf="showEmojiPicker">
+          <div class="emoji-header">
+            <span>Émojis</span>
+            <button class="close-emoji" (click)="showEmojiPicker = false">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="emoji-list">
+            <span *ngFor="let emoji of emojis" class="emoji-item" (click)="addEmoji(emoji)">
+              {{ emoji }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No conversation selected -->
+    <ng-template #noConversation>
+      <div class="welcome-screen">
+        <div class="welcome-content">
+          <div class="welcome-icon">
+            <i class="fas fa-comments"></i>
+          </div>
+          <h2>Bienvenue sur ChatBox</h2>
+          <p>Sélectionnez une conversation pour commencer à discuter</p>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- User Info Sidebar -->
+    <div class="user-info-sidebar" [class.open]="showUserInfo">
+      <div class="info-header">
+        <h3>Profil</h3>
+        <button class="close-btn" (click)="toggleUserInfo()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="user-profile" *ngIf="selectedConversation">
+        <div class="profile-avatar">
+          <img [src]="getImageUrl(selectedConversation.user?.photo_profil)" 
+               (error)="onImageError($event, selectedConversation.user)"
+               [alt]="getInterlocuteurName()">
+          <span class="status-badge" [class.online]="selectedConversation.user?.online"></span>
+        </div>
+        <h4>{{ getInterlocuteurName() }}</h4>
+        <span class="role-badge" [ngClass]="getRoleBadgeClass(selectedConversation.user?.statut)">
+          {{ getRoleLabel(selectedConversation.user?.statut) }}
+        </span>
+        
+        <div class="contact-info">
+          <div class="info-item">
+            <i class="fas fa-envelope"></i>
+            <span>{{ selectedConversation.user?.email || 'Non renseigné' }}</span>
+          </div>
+          <div class="info-item" *ngIf="selectedConversation.user?.telephone">
+            <i class="fas fa-phone"></i>
+            <span>{{ selectedConversation.user?.telephone }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="info-stats" *ngIf="selectedConversation">
+        <div class="stat-card">
+          <i class="fas fa-comments"></i>
+          <div class="stat-info">
+            <span class="stat-value">{{ messages.length }}</span>
+            <span class="stat-label">Messages</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-calendar-alt"></i>
+          <div class="stat-info">
+            <span class="stat-value">{{ formatDate(selectedConversation.dateDernierMessage) }}</span>
+            <span class="stat-label">Dernier message</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="toast-container">
+    <div *ngFor="let notif of notifications" class="toast" [class.error]="notif.type === 'error'" [class.success]="notif.type === 'success'">
+      <i class="fas" [ngClass]="{
+        'fa-info-circle': notif.type === 'info',
+        'fa-check-circle': notif.type === 'success',
+        'fa-exclamation-circle': notif.type === 'error'
+      }"></i>
+      <span>{{ notif.message }}</span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,167 @@
+<!-- oublier-mdp.component.html -->
+<div class="forgot-container">
+
+  <!-- Particules -->
+  <div class="particles">
+    <div class="particle"
+         *ngFor="let p of particles"
+         [style.left.%]="p.x"
+         [style.top.%]="p.y"
+         [style.animation-delay.s]="p.delay">
+    </div>
+  </div>
+
+  <!-- Formes flottantes -->
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
+  </div>
+
+  <div class="forgot-card" [@fadeSlideUp]>
+
+    <!-- Badge sécurisé -->
+    <div class="card-badge">
+      <i class="fas fa-shield-alt"></i>
+      <span>Sécurisé</span>
+    </div>
+
+    <!-- Header -->
+    <div class="forgot-header">
+      <div class="logo" [@logoBounce]>
+        <div class="logo-ring">
+          <div class="logo-inner">
+            <img src="assets/images/logo.png" alt="Logo"
+                 class="logo-img" (error)="onLogoError($event)"/>
+            <i class="fas fa-envelope logo-fallback-icon"></i>
+          </div>
+        </div>
+        <span class="logo-text">Réinitialisation<span class="accent"> de mot de passe</span></span>
+      </div>
+
+      <h1>Mot de passe oublié ?</h1>
+      <p class="subtitle">
+        Entrez votre adresse email. Nous vous enverrons un lien sécurisé
+        <strong>valable 5&nbsp;minutes</strong> pour créer un nouveau mot de passe.
+      </p>
+    </div>
+
+    <!-- ══ ÉTAT SUCCÈS ══════════════════════════════════════════════════════ -->
+    <div class="success-state" *ngIf="successMessage" [@successScale]>
+      <div class="success-icon-wrapper">
+        <div class="success-ring"></div>
+        <i class="fas fa-paper-plane"></i>
+      </div>
+      <h2>Email envoyé !</h2>
+      <p>{{ successMessage }}</p>
+
+      <!-- Timer de renvoi -->
+      <div class="resend-zone">
+        <p class="resend-hint">Vous n'avez pas reçu l'email ?</p>
+
+        <!-- Compteur circulaire -->
+        <div class="timer-wrapper" *ngIf="!resendAvailable">
+          <svg class="timer-ring" viewBox="0 0 44 44">
+            <circle class="timer-track" cx="22" cy="22" r="18"/>
+            <circle class="timer-progress"
+                    cx="22" cy="22" r="18"
+                    [style.stroke-dashoffset]="113 - (timerProgress / 100) * 113"/>
+          </svg>
+          <span class="timer-text">{{ resendCountdownDisplay }}</span>
+        </div>
+
+        <button class="btn-resend"
+                [disabled]="!resendAvailable"
+                [class.active]="resendAvailable"
+                (click)="resendLink()">
+          <i class="fas fa-redo"></i>
+          {{ resendAvailable ? 'Renvoyer le lien' : 'Disponible dans ' + resendCountdownDisplay }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ FORMULAIRE ══════════════════════════════════════════════════════ -->
+    <form [formGroup]="resetForm"
+          (ngSubmit)="onSubmit()"
+          *ngIf="!successMessage"
+          [@formSlide]>
+
+      <!-- Champ Email -->
+      <div class="form-group" [@inputFocus]="emailFocus ? 'true' : 'false'">
+        <label for="email">
+          <i class="fas fa-envelope"></i>
+          Adresse email
+        </label>
+
+        <div class="input-wrapper"
+             [class.has-error]="submitted && f['email'].invalid"
+             [class.has-success]="f['email'].valid && f['email'].touched"
+             [class.is-focusing]="emailFocus">
+
+          <div class="input-icon-left">
+            <i class="fas fa-envelope"
+               [@iconMorph]="emailFocus ? 'focused' : 'default'"></i>
+          </div>
+
+          <input type="email"
+                 id="email"
+                 formControlName="email"
+                 placeholder="exemple@domaine.com"
+                 autocomplete="email"
+                 (focus)="emailFocus = true"
+                 (blur)="emailFocus = false"
+                 [class.is-invalid]="submitted && f['email'].invalid"/>
+
+          <div class="input-icon-right"
+               *ngIf="f['email'].valid && f['email'].touched">
+            <i class="fas fa-check-circle" [@checkPop]></i>
+          </div>
+          <div class="input-glow"></div>
+        </div>
+
+        <!-- Erreurs -->
+        <div class="error-messages"
+             *ngIf="submitted && f['email'].invalid && f['email'].touched"
+             [@errorShake]>
+          <span *ngIf="f['email'].errors?.['required']">
+            <i class="fas fa-exclamation-circle"></i> L'email est requis.
+          </span>
+          <span *ngIf="f['email'].errors?.['email']">
+            <i class="fas fa-envelope-open-text"></i> Adresse email invalide.
+          </span>
+        </div>
+      </div>
+
+      <!-- Erreur API -->
+      <div class="alert alert-error" *ngIf="errorMessage" [@errorShake]>
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>{{ errorMessage }}</span>
+        <button type="button" class="alert-close" (click)="errorMessage = ''">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Bouton submit -->
+      <button type="submit"
+              class="btn-submit"
+              [disabled]="loading"
+              [@btnPulse]="!loading && resetForm.valid ? 'active' : 'inactive'">
+        <span class="btn-content">
+          <i class="fas" [ngClass]="loading ? 'fa-circle-notch fa-spin' : 'fa-paper-plane'"></i>
+          {{ loading ? 'Envoi en cours…' : 'Envoyer le lien de réinitialisation' }}
+        </span>
+      </button>
+    </form>
+
+    <!-- Retour connexion -->
+    <div class="back-link" [@fadeSlideUp]>
+      <div class="divider"><span>ou</span></div>
+      <a routerLink="/login" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Retour à la connexion
+      </a>
+    </div>
+
+  </div>
+</div>

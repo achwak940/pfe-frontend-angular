@@ -15,6 +15,7 @@ import { UserResponsesComponent } from './user-responses/user-responses.componen
 import { UsersComponent } from './users/users.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AiQuestionComponent } from 'src/app/chatBot/ai-question/ai-question.component';
+import { BoiteMessangerComponent } from '../boite-messanger/boite-messanger.component';
 
 const routes: Routes = [
   { 
@@ -34,6 +35,7 @@ const routes: Routes = [
            { path: 'chatbot', component: AiQuestionComponent },
          { path: 'usersNotifier', component: UsersComponent },
                   { path: 'yolo', component: UsersComponent },
+                   { path: 'boiteMessanger', component: BoiteMessangerComponent },
 
     ] 
   }

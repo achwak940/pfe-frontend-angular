@@ -1,0 +1,85 @@
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrapper">
+      <i class="fas fa-bolt logo-icon"></i>
+      <span class="app-name">Super Admin</span>
+    </div>
+    <div class="online-badge">
+      <i class="fas fa-circle"></i>
+      <span>En ligne</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Navigation principale">
+    <ul>
+      <li
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <a routerLink="/dashboard">
+          <div class="nav-icon">
+            <i class="fas fa-chart-pie"></i>
+          </div>
+          <span>Tableau de bord</span>
+        </a>
+      </li>
+      
+      <!-- Gestion des utilisateurs -->
+      <li routerLinkActive="active">
+        <a routerLink="/super-admin-dashboard/users">
+          <div class="nav-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <span>Utilisateurs</span>
+          <div class="nav-badge">5</div>
+        </a>
+      </li>
+      
+      <!-- Gestion des rôles -->
+      <li routerLinkActive="active">
+        <a routerLink="/gereRoles">
+          <div class="nav-icon">
+            <i class="fas fa-user-tag"></i>
+          </div>
+          <span>Rôles</span>
+        </a>
+      </li>
+      
+      <!-- Messagerie / Boîte de messages -->
+      <li routerLinkActive="active">
+        <a routerLink="/super-admin-dashboard/messages">
+          <div class="nav-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <span>Messages</span>
+          <div class="nav-badge new">3</div>
+        </a>
+      </li>
+      
+      <!-- Paramètres système -->
+      <li routerLinkActive="active">
+        <a routerLink="/parametre">
+          <div class="nav-icon">
+            <i class="fas fa-cogs"></i>
+          </div>
+          <span>Paramètres système</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="system-status">
+      <div class="status-indicator"></div>
+      <span>Système opérationnel</span>
+    </div>
+    <button
+      class="theme-toggle-btn"
+      (click)="toggleTheme()"
+      aria-label="Changer le thème"
+    >
+      <i class="fas" [ngClass]="isDarkTheme ? 'fa-sun' : 'fa-moon'"></i>
+      <span>{{ isDarkTheme ? "Clair" : "Sombre" }}</span>
+    </button>
+  </div>
+</div>

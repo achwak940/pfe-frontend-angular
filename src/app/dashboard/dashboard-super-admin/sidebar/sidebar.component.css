@@ -1,0 +1,218 @@
+/* ========== SIDEBAR STYLES ========== */
+.sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  z-index: 10;
+  width: 280px;
+  transition: var(--transition);
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  padding: 28px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.logo-icon {
+  font-size: 32px;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { 
+    filter: drop-shadow(0 0 0px rgba(157, 80, 187, 0)); 
+  }
+  50% { 
+    filter: drop-shadow(0 0 10px rgba(157, 80, 187, 0.5)); 
+  }
+}
+
+.app-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.online-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  color: #10b981;
+}
+
+.online-badge i {
+  font-size: 0.5rem;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 24px 16px;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-nav li a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 12px;
+  transition: var(--transition);
+  position: relative;
+}
+
+.nav-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--hover-bg);
+  border-radius: 10px;
+  transition: var(--transition);
+}
+
+.sidebar-nav li a:hover .nav-icon {
+  background: var(--purple);
+  color: white;
+  transform: scale(1.05);
+}
+
+.sidebar-nav li a:hover {
+  color: var(--purple);
+}
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--purple-soft);
+  color: var(--purple);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.nav-badge.new {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+}
+
+/* Active state */
+.sidebar-nav li.active a {
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+
+.sidebar-nav li.active .nav-icon {
+  background: var(--purple);
+  color: white;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 0.5; 
+    transform: scale(1.2); 
+  }
+}
+
+.theme-toggle-btn {
+  background: var(--hover-bg);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  transition: var(--transition);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--purple);
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Variables CSS nécessaires */
+:host {
+  --purple: #9D50BB;
+  --purple-soft: rgba(157, 80, 187, 0.12);
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg-surface: #FFFFFF;
+  --border-light: #E9EDF4;
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --hover-bg: #F1F5F9;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark theme support */
+:host-context(body.dark-theme) {
+  --bg-surface: #131B2E;
+  --border-light: #1E2A3E;
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --hover-bg: #1E2A3E;
+}
