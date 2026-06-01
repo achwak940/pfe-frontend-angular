@@ -2,114 +2,71 @@
   <!-- En-tête -->
   <div class="header">
     <div class="header-left">
-      <p class="subtitle">{{ enquetes.length }} enquêtes au total</p>
+      <p class="subtitle"><i class="fas fa-clipboard-list"></i> {{ enquetes.length }} enquêtes au total</p>
     </div>
     <div class="header-right">
       <div class="stats-badge">
-        <span class="stat-item">
-          <i class="fas fa-pencil-alt"></i>
-          <span>{{ stats.brouillons }} brouillons</span>
-        </span>
-        <span class="stat-item">
-          <i class="fas fa-paper-plane"></i>
-          <span>{{ stats.publiees }} publiées</span>
-        </span>
-        <span class="stat-item">
-          <i class="fas fa-archive"></i>
-          <span>{{ stats.archivees }} archivées</span>
-        </span>
-        <span class="stat-item">
-          <i class="fas fa-lock"></i>
-          <span>{{ stats.fermes }} fermées</span>
-        </span>
+        <span class="stat-item"><i class="fas fa-pen-fancy"></i><span>{{ stats.brouillons }} brouillons</span></span>
+        <span class="stat-item"><i class="fas fa-share-alt"></i><span>{{ stats.publiees }} publiées</span></span>
+        <span class="stat-item"><i class="fas fa-box-archive"></i><span>{{ stats.archivees }} archivées</span></span>
+        <span class="stat-item"><i class="fas fa-lock"></i><span>{{ stats.fermes }} fermées</span></span>
       </div>
       <button class="btn btn-primary" routerLink="/admin-dashboard/AjoutEnquete">
-        <i class="fas fa-plus"></i> Nouvelle enquête
+        <i class="fas fa-plus-circle"></i> Nouvelle enquête
+      </button>
+      <button class="btn btn-secondary" (click)="showGlobalStatsInSwal()">
+        <i class="fas fa-chart-line"></i> Voir les stats
       </button>
     </div>
   </div>
 
-  <!-- Barre de recherche et filtres améliorée -->
+  <!-- Barre de recherche et filtres -->
   <div class="search-section">
     <div class="search-wrapper">
       <i class="fas fa-search"></i>
       <input type="text" placeholder="Rechercher par titre, description ou ID" 
-             [(ngModel)]="searchText" 
-             (input)="onSearchInput()">
-      <button *ngIf="searchText" class="clear-search" (click)="clearSearch()">
-        <i class="fas fa-times"></i>
-      </button>
+             [(ngModel)]="searchText" (input)="onSearchInput()">
+      <button *ngIf="searchText" class="clear-search" (click)="clearSearch()"><i class="fas fa-times-circle"></i></button>
     </div>
     
-    <!-- Filtres par statut -->
     <div class="filter-group">
       <button *ngFor="let f of ['Toutes','Brouillon','Publiée','Fermee','Archivée']"
-              class="filter-btn" 
-              [class.active]="f === selectedFilter"
-              (click)="onStatutFilterChange(f)">
-        {{ f }}
+              class="filter-btn" [class.active]="f === selectedFilter" (click)="onStatutFilterChange(f)">
+        <i class="fas" [ngClass]="{
+          'fa-list': f === 'Toutes',
+          'fa-pen-fancy': f === 'Brouillon',
+          'fa-share-alt': f === 'Publiée',
+          'fa-lock': f === 'Fermee',
+          'fa-archive': f === 'Archivée'
+        }"></i> {{ f }}
       </button>
     </div>
 
-    <!-- Filtres avancés -->
     <div class="advanced-filters">
       <div class="filter-row">
-        <div class="filter-label">
-          <i class="fas fa-users"></i>
-          <span>Type de participation :</span>
-        </div>
+        <div class="filter-label"><i class="fas fa-users"></i><span>Type de participation :</span></div>
         <div class="filter-options">
-          <button class="filter-btn small" 
-                  [class.active]="selectedTypeParticipation === 'TOUS'"
-                  (click)="onTypeParticipationChange('TOUS')">
-            Tous
-          </button>
-          <button class="filter-btn small" 
-                  [class.active]="selectedTypeParticipation === 'ANONYME'"
-                  (click)="onTypeParticipationChange('ANONYME')">
-            <i class="fas fa-user-secret"></i> Anonyme
-          </button>
-          <button class="filter-btn small" 
-                  [class.active]="selectedTypeParticipation === 'CONNECTE'"
-                  (click)="onTypeParticipationChange('CONNECTE')">
-            <i class="fas fa-user-check"></i> Connecté
-          </button>
+          <button class="filter-btn small" [class.active]="selectedTypeParticipation === 'TOUS'" (click)="onTypeParticipationChange('TOUS')"><i class="fas fa-globe"></i> Tous</button>
+          <button class="filter-btn small" [class.active]="selectedTypeParticipation === 'ANONYME'" (click)="onTypeParticipationChange('ANONYME')"><i class="fas fa-user-secret"></i> Anonyme</button>
+          <button class="filter-btn small" [class.active]="selectedTypeParticipation === 'CONNECTE'" (click)="onTypeParticipationChange('CONNECTE')"><i class="fas fa-user-check"></i> Connecté</button>
         </div>
       </div>
 
       <div class="filter-row">
-        <div class="filter-label">
-          <i class="fas fa-calendar-alt"></i>
-          <span>Période :</span>
-        </div>
+        <div class="filter-label"><i class="fas fa-calendar-alt"></i><span>Période :</span></div>
         <div class="date-filters">
-          <div class="date-input">
-            <span class="date-label">Du</span>
-            <input type="date" [(ngModel)]="dateDebut" (change)="applyDateFilter()">
-          </div>
-          <div class="date-input">
-            <span class="date-label">Au</span>
-            <input type="date" [(ngModel)]="dateFin" (change)="applyDateFilter()">
-          </div>
-          <button *ngIf="dateDebut || dateFin" class="clear-date-btn" (click)="clearDateFilter()">
-            <i class="fas fa-times"></i> Effacer
-          </button>
+          <div class="date-input"><span class="date-label">Du</span><input type="date" [(ngModel)]="dateDebut" (change)="applyDateFilter()"></div>
+          <div class="date-input"><span class="date-label">Au</span><input type="date" [(ngModel)]="dateFin" (change)="applyDateFilter()"></div>
+          <button *ngIf="dateDebut || dateFin" class="clear-date-btn" (click)="clearDateFilter()"><i class="fas fa-times"></i> Effacer</button>
         </div>
       </div>
 
-      <!-- Bouton Annuler la recherche -->
-      <button *ngIf="isFilterActive()" class="btn-clear-all" (click)="clearAllFilters()">
-        <i class="fas fa-undo"></i> Annuler les filtres
-      </button>
+      <button *ngIf="isFilterActive()" class="btn-clear-all" (click)="clearAllFilters()"><i class="fas fa-undo-alt"></i> Annuler les filtres</button>
     </div>
   </div>
 
-  <!-- Afficher le nombre de résultats -->
   <div class="results-info" *ngIf="enquetes.length > 0">
-    <p>
-      <strong>{{ filteredEnquetes.length }}</strong> enquête(s) sur <strong>{{ enquetes.length }}</strong>
-      <span *ngIf="isFilterActive()">(filtres actifs)</span>
-    </p>
+    <p><i class="fas fa-filter"></i> <strong>{{ filteredEnquetes.length }}</strong> enquête(s) sur <strong>{{ enquetes.length }}</strong><span *ngIf="isFilterActive()"> (filtres actifs)</span></p>
   </div>
 
   <!-- Grille des enquêtes -->
@@ -118,7 +75,7 @@
       <div class="survey-card" [ngClass]="enquete.statut?.toLowerCase() || 'brouillon'">
         <div class="card-header">
           <div class="card-title-section">
-            <h3>{{ enquete.titre }}</h3>
+            <h3> {{ enquete.titre }}</h3>
             <div class="card-meta">
               <span class="badge" [ngClass]="enquete.statut?.toLowerCase() || 'brouillon'">{{ enquete.statut || 'Brouillon' }}</span>
               <span class="survey-id">#{{ enquete.id }}</span>
@@ -126,130 +83,72 @@
           </div>
           <div class="card-progress">
             <div class="progress-ring">
-              <svg width="50" height="50" viewBox="0 0 50 50">
-                <circle cx="25" cy="25" r="20" fill="none" stroke="#e9ecf0" stroke-width="4"/>
-                <circle cx="25" cy="25" r="20" fill="none" stroke="#9D50BB" stroke-width="4"
-                        [attr.stroke-dasharray]="(enquete.nombreQuestions || 0) * 10 + ', 100'"
-                        transform="rotate(-90 25 25)"/>
-              </svg>
-              <span class="progress-text">{{ enquete.nombreQuestions || 0 }}Q</span>
+            
+
             </div>
           </div>
         </div>
 
         <div class="card-content">
           <p class="description">{{ enquete.description || 'Aucune description' }}</p>
-          
           <div class="info-grid">
-            <div class="info-item">
-              <i class="far fa-calendar-alt"></i>
-              <div>
-                <span class="info-label">Création</span>
-                <span class="info-value">{{ enquete.createAt | date:'dd/MM/yyyy' }}</span>
-              </div>
-            </div>
-            <div class="info-item">
-              <i class="far fa-calendar-times"></i>
-              <div>
-                <span class="info-label">Date fin</span>
-                <span class="info-value">{{ enquete.dateFin | date:'dd/MM/yyyy' }}</span>
-              </div>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-users"></i>
-              <div>
-                <span class="info-label">Participation</span>
-                <span class="info-value">{{ enquete.typeParticipation || 'CONNECTE' }}</span>
-              </div>
-            </div>
+            <div class="info-item"><i class="far fa-calendar-alt"></i><div><span class="info-label">Création</span><span class="info-value">{{ enquete.createAt | date:'dd/MM/yyyy' }}</span></div></div>
+            <div class="info-item"><i class="far fa-calendar-times"></i><div><span class="info-label">Date fin</span><span class="info-value">{{ enquete.dateFin | date:'dd/MM/yyyy' }}</span></div></div>
+            <div class="info-item"><i class="fas fa-users"></i><div><span class="info-label">Participation</span><span class="info-value">{{ enquete.typeParticipation || 'CONNECTE' }}</span></div></div>
           </div>
-
           <div class="participation-type">
             <span class="type-badge" [ngClass]="(enquete.typeParticipation?.toLowerCase() || 'connecte')">
-              <i class="fas" [ngClass]="{
-                'fa-user-secret': enquete.typeParticipation === 'ANONYME',
-                'fa-user-check': enquete.typeParticipation === 'CONNECTE',
-                'fa-users': enquete.typeParticipation === 'MIXTE'
-              }"></i>
+              <i class="fas" [ngClass]="{'fa-user-secret': enquete.typeParticipation === 'ANONYME', 'fa-user-check': enquete.typeParticipation === 'CONNECTE', 'fa-users': enquete.typeParticipation === 'MIXTE'}"></i>
               {{ enquete.typeParticipation || 'CONNECTE' }}
             </span>
           </div>
-
           <div class="card-actions">
-            <a [routerLink]="['/admin-dashboard/DetailEnquete', enquete.id]" class="action-btn details">
-              <i class="fas fa-eye"></i>
-              <span>Détails</span>
-            </a>
-
-            <a [routerLink]="['/ModifierEnquete', enquete.id]" class="action-btn edit">
-              <i class="fas fa-edit"></i>
-              <span>Modifier</span>
-            </a>
-
-            <button class="action-btn publish" (click)="publishEnquete(enquete)" [disabled]="enquete.statut === 'Publiée'">
-              <i class="fas fa-paper-plane"></i>
-              <span>Publier</span>
-            </button>
-
-            <button class="action-btn stats" (click)="viewStats(enquete)" [disabled]="enquete.statut === 'Brouillon'">
-              <i class="fas fa-chart-bar"></i>
-              <span>Stats</span>
-            </button>
-
-            <button class="action-btn delete" (click)="deleteEnquete(enquete.id)">
-              <i class="fas fa-trash"></i>
-              <span>Supprimer</span>
-            </button>
+            <a [routerLink]="['/admin-dashboard/DetailEnquete', enquete.id]" class="action-btn details"><i class="fas fa-eye"></i><span>Détails</span></a>
+            <a [routerLink]="['/admin-dashboard/ModifierEnquete', enquete.id]" class="action-btn edit"><i class="fas fa-edit"></i><span>Modifier</span></a>
+            <button class="action-btn publish" (click)="publishEnquete(enquete)" [disabled]="enquete.statut === 'Publiée'"><i class="fas fa-paper-plane"></i><span>Publier</span></button>
+            <button class="action-btn stats" (click)="viewStats(enquete)" [disabled]="enquete.statut === 'Brouillon'"><i class="fas fa-chart-bar"></i><span>Stats</span></button>
+            <button class="action-btn delete" (click)="deleteEnquete(enquete.id)"><i class="fas fa-trash-alt"></i><span>Supprimer</span></button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Message si aucun résultat -->
   <div class="no-results" *ngIf="filteredEnquetes.length === 0 && enquetes.length > 0">
     <i class="fas fa-search"></i>
     <h3>Aucune enquête trouvée</h3>
     <p>Aucune enquête ne correspond à vos critères de recherche.</p>
-    <button class="btn btn-outline" (click)="clearAllFilters()">
-      <i class="fas fa-undo"></i> Réinitialiser les filtres
-    </button>
+    <button class="btn btn-outline" (click)="clearAllFilters()"><i class="fas fa-undo-alt"></i> Réinitialiser les filtres</button>
   </div>
 
   <!-- Section Statistiques Avancées -->
-  <h2 class="section-title" *ngIf="enquetes.length > 0">
-    <i class="fas fa-chart-pie"></i> Analyse & Performance
-  </h2>
+  <h2 class="section-title" *ngIf="enquetes.length > 0"><i class="fas fa-chart-line"></i> Analyse & Performance</h2>
 
   <div class="advanced-stats" *ngIf="enquetes.length > 0">
+    <!-- Carte Vue d'ensemble -->
     <div class="stats-card">
-      <div class="stats-header">
-        <h4>Vue d'ensemble</h4>
-        <span class="stats-period">Données en temps réel</span>
-      </div>
+      <div class="stats-header"><h4><i class="fas fa-chart-simple"></i> Vue d'ensemble</h4><span class="stats-period"><i class="fas fa-clock"></i> Données en temps réel</span></div>
       <div class="stats-grid">
-        <div class="stat-block">
-          <span class="stat-value">{{ calculateTotalResponses() }}</span>
-          <span class="stat-label">Réponses totales</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-value">{{ calculateResponseRate() }}%</span>
-          <span class="stat-label">Taux de réponse</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-value">{{ enquetes.length }}</span>
-          <span class="stat-label">Enquêtes créées</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-value">{{ stats.publiees }}</span>
-          <span class="stat-label">Enquêtes actives</span>
-        </div>
+        <div class="stat-block"><i class="fas fa-reply-all"></i><span class="stat-value">{{ calculateTotalResponses() }}</span><span class="stat-label">Réponses totales</span></div>
+        <div class="stat-block"><i class="fas fa-percent"></i><span class="stat-value">{{ calculateResponseRate() }}%</span><span class="stat-label">Taux de réponse</span></div>
+        <div class="stat-block"><i class="fas fa-tasks"></i><span class="stat-value">{{ enquetes.length }}</span><span class="stat-label">Enquêtes créées</span></div>
+        <div class="stat-block"><i class="fas fa-play-circle"></i><span class="stat-value">{{ stats.publiees }}</span><span class="stat-label">Enquêtes actives</span></div>
       </div>
     </div>
 
+    <!-- Carte Réponses par type -->
+    <div class="stats-card">
+      <div class="stats-header"><h4><i class="fas fa-chart-pie"></i> Réponses par type</h4><span class="stats-period"><i class="fas fa-database"></i> Détail des participations</span></div>
+      <div class="stats-grid-2">
+        <div class="stat-block"><i class="fas fa-user-secret"></i><span class="stat-value">{{ getReponsesAnonyme() }}</span><span class="stat-label">Anonymes</span></div>
+        <div class="stat-block"><i class="fas fa-user-check"></i><span class="stat-value">{{ getReponsesConnecte() }}</span><span class="stat-label">Connectées</span></div>
+      </div>
+    </div>
+
+    <!-- Graphique Camembert -->
     <div class="chart-container">
       <div class="chart-header">
-        <h4>Participation par type</h4>
+        <h4><i class="fas fa-chart-pie"></i> Participation par type d'enquête</h4>
         <div class="chart-legend">
           <span><i class="fas fa-circle" style="color: #9D50BB;"></i> Anonyme ({{ getAnonymePercentage() }}%)</span>
           <span><i class="fas fa-circle" style="color: #b48ad4;"></i> Connecté ({{ getConnectePercentage() }}%)</span>
@@ -257,25 +156,27 @@
       </div>
       <div class="participation-pie">
         <svg viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="#9D50BB" stroke-width="20" 
-                  [attr.stroke-dasharray]="getAnonymeDashArray()" stroke-dashoffset="0"/>
-          <circle cx="50" cy="50" r="40" fill="none" stroke="#b48ad4" stroke-width="20" 
-                  [attr.stroke-dasharray]="getConnecteDashArray()" 
-                  [attr.stroke-dashoffset]="getConnecteDashOffset()" transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#e9ecf0" stroke-width="20"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#9D50BB" stroke-width="20"
+                  [attr.stroke-dasharray]="getAnonymeDashArray()"
+                  stroke-dashoffset="0"
+                  transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#b48ad4" stroke-width="20"
+                  [attr.stroke-dasharray]="getConnecteDashArray()"
+                  [attr.stroke-dashoffset]="getConnecteDashOffset()"
+                  transform="rotate(-90 50 50)"/>
         </svg>
+        <div class="pie-center">
+          <span class="pie-total">{{ globalStats.participationParType?.total || 0 }}</span>
+          <span class="pie-label">enquêtes</span>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Toast pour les messages -->
+<!-- Toast -->
 <div *ngIf="showToast" class="toast" [ngClass]="toastType">
-  <i class="fas" [ngClass]="{
-    'fa-check-circle': toastType === 'success',
-    'fa-exclamation-circle': toastType === 'error',
-    'fa-trash-alt': toastType === 'delete'
-  }"></i>
-  <div class="toast-content">
-    <span>{{ toastMessage }}</span>
-  </div>
+  <i class="fas" [ngClass]="{'fa-check-circle': toastType === 'success', 'fa-exclamation-circle': toastType === 'error', 'fa-trash-alt': toastType === 'delete'}"></i>
+  <div class="toast-content"><span>{{ toastMessage }}</span></div>
 </div>

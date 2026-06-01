@@ -1,15 +1,19 @@
-<div class="dashboard-container">
+<div class="dashboard-container" [class.dark-theme]="isDarkTheme">
+  <!-- Loader -->
+  <div class="loader-overlay" *ngIf="isLoading">
+    <div class="loader-spinner"></div>
+  </div>
+
   <!-- ========== SIDEBAR ========== -->
-  <aside class="sidebar">
+  <aside class="sidebar" [class.sidebar-collapsed]="isSidebarCollapsed">
     <div class="sidebar-header">
       <div class="logo-wrapper">
-        <i class="fas fa-bolt logo-icon"></i>
+        <img src="/assets/images/logo.png" alt="Logo" class="logo-img" />
         <span class="app-name">Super Admin</span>
       </div>
-      <div class="online-badge">
-        <i class="fas fa-circle"></i>
-        <span>En ligne</span>
-      </div>
+      <button class="toggle-sidebar" (click)="toggleSidebar()">
+        <i class="fas" [ngClass]="isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+      </button>
     </div>
 
     <nav class="sidebar-nav" aria-label="Navigation principale">
@@ -18,7 +22,6 @@
           <a routerLink="/dashboard">
             <div class="nav-icon"><i class="fas fa-chart-pie"></i></div>
             <span>Tableau de bord</span>
-        
           </a>
         </li>
         <li routerLinkActive="active">
@@ -38,15 +41,10 @@
           <a routerLink="/boiteMessanger">
             <div class="nav-icon"><i class="fas fa-envelope"></i></div>
             <span>Messages</span>
-            <div class="nav-badge new">3</div>
+          
           </a>
         </li>
-        <li routerLinkActive="active">
-          <a routerLink="/parametre">
-            <div class="nav-icon"><i class="fas fa-cogs"></i></div>
-            <span>Paramètres système</span>
-          </a>
-        </li>
+     
       </ul>
     </nav>
 
@@ -64,28 +62,18 @@
 
   <!-- ========== MAIN PANEL ========== -->
   <main class="main-area">
-    <!-- Top navbar -->
     <header class="top-navbar">
       <div class="page-header">
-        <div class="breadcrumb">
-          <span>Accueil</span>
-          <i class="fas fa-chevron-right"></i>
-          <span class="active">Dashboard</span>
-        </div>
         <div class="page-title">
-          <h1>Tableau de bord <span class="badge premium">Super Admin</span></h1>
+          <h1>Tableau de bord</h1>
           <p>Bienvenue, {{ getCurrentUserName() }} ! Voici le résumé de votre plateforme</p>
         </div>
       </div>
       <div class="navbar-actions">
-        <div class="search-wrapper">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" placeholder="Rechercher un utilisateur, enquête..." class="search-input" aria-label="Rechercher" (input)="onSearch($event)" />
-          <kbd>Ctrl + K</kbd>
-        </div>
-        <button class="icon-button notification-btn" aria-label="Notifications" (click)="toggleNotifications()">
+        <button class="icon-button notification-btn" (click)="toggleNotifications()">
           <i class="fas fa-bell"></i>
-          <span class="dot-notif" *ngIf="hasNotifications"></span>
+          <span class="dot-notif" *ngIf="unreadCount > 0"></span>
+          <span class="notification-count" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
         </button>
         <div class="profile-dropdown" (click)="toggleProfileMenu()">
           <div class="profile-info">
@@ -98,9 +86,8 @@
       </div>
     </header>
 
-    <!-- Main content -->
     <div class="content">
-      <!-- Statistiques Cards avec valeurs personnalisées -->
+      <!-- Statistiques Cards -->
       <div class="cards-grid">
         <div class="stat-card" *ngFor="let stat of statsCards">
           <div class="stat-card-glow"></div>
@@ -110,52 +97,43 @@
           <div class="stat-details">
             <span class="stat-label">{{ stat.label }}</span>
             <span class="stat-value">{{ stat.value }}</span>
-            <div class="stat-footer">
-              <span class="stat-trend" [class.positive]="stat.trend > 0" [class.negative]="stat.trend < 0">
-                <i class="fas" [ngClass]="stat.trend > 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
-                {{ stat.trendText }}
-              </span>
-              <span class="stat-period">vs mois dernier</span>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- Graphiques et Performance -->
+      <!-- Graphiques -->
       <div class="dashboard-grid">
-        <!-- Graphique d'activité -->
         <div class="chart-card">
           <div class="card-header">
             <div class="header-left">
-              <i class="fas fa-chart-line header-icon"></i>
-              <h3>Performance globale</h3>
+              <i class="fas fa-users header-icon"></i>
+              <h3>Évolution des utilisateurs</h3>
             </div>
-            <select class="period-select" (change)="changeChartPeriod($event)">
+            <select class="period-select" (change)="changeUsersChartPeriod($event)">
               <option value="week">Cette semaine</option>
-              <option value="month">Ce mois</option>
+              <option value="month" selected>Ce mois</option>
               <option value="year">Cette année</option>
             </select>
           </div>
           <div class="chart-wrapper">
-            <canvas id="activityChart"></canvas>
+            <canvas id="usersChart"></canvas>
           </div>
           <div class="chart-stats">
             <div class="chart-stat-item">
-              <span class="stat-label">Pic d'activité</span>
-              <span class="stat-value">Mercredi</span>
+              <span class="stat-label">Total utilisateurs</span>
+              <span class="stat-value">{{ totalUsers }}</span>
             </div>
             <div class="chart-stat-item">
-              <span class="stat-label">Tendance</span>
-              <span class="stat-value positive">+18%</span>
+              <span class="stat-label">Nouveaux (mois)</span>
+              <span class="stat-value positive">{{ newUsersThisMonth }}</span>
             </div>
             <div class="chart-stat-item">
-              <span class="stat-label">Moyenne</span>
-              <span class="stat-value">87 actions/jour</span>
+              <span class="stat-label">Taux activité</span>
+              <span class="stat-value">{{ activeUsersRate }}%</span>
             </div>
           </div>
         </div>
 
-        <!-- Distribution des Enquêtes -->
         <div class="chart-card">
           <div class="card-header">
             <div class="header-left">
@@ -177,241 +155,80 @@
         </div>
       </div>
 
-      <!-- Enquêtes et Réclamations -->
-      <div class="surveys-complaints-section">
-        <!-- Enquêtes Actives -->
-        <div class="section-card surveys-card">
+      <!-- Section Activités Récentes -->
+      <div class="recent-activities-section">
+        <div class="section-card activities-card">
           <div class="section-header">
             <div class="header-title">
-              <i class="fas fa-poll"></i>
-              <h2>Enquêtes & Sondages</h2>
-              <span class="total-badge">{{ activeSurveys.length }}</span>
+              <i class="fas fa-history"></i>
+              <h2>Activités récentes</h2>
+              <span class="total-badge">{{ recentActivities.length }}</span>
             </div>
-            <button class="btn-primary" (click)="createNewSurvey()">
-              <i class="fas fa-plus"></i>
-              Nouvelle enquête
+            <button class="btn-secondary" (click)="refreshActivities()">
+              <i class="fas fa-sync-alt"></i> Rafraîchir
             </button>
           </div>
           
-          <div class="survey-stats-grid">
-            <div class="stat-summary">
-              <div class="summary-item">
-                <span class="summary-label">Taux de participation</span>
-                <span class="summary-value">76%</span>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 76%"></div>
-                </div>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Réponses totales</span>
-                <span class="summary-value">2,847</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Enquêtes terminées</span>
-                <span class="summary-value">4/6</span>
-              </div>
-            </div>
-            
-            <div class="survey-list">
-              <div class="survey-item" *ngFor="let survey of activeSurveys; let i = index">
-                <div class="survey-icon" [style.background]="survey.color">
-                  <i class="fas" [ngClass]="survey.icon"></i>
-                </div>
-                <div class="survey-details">
-                  <div class="survey-header">
-                    <span class="survey-title">{{ survey.title }}</span>
-                    <span class="survey-status" [class]="survey.status">
-                      <i class="fas" [ngClass]="survey.status === 'en cours' ? 'fa-play' : 'fa-check'"></i>
-                      {{ survey.status }}
-                    </span>
+          <div class="activities-timeline">
+            <div class="timeline-item" *ngFor="let activity of recentActivities">
+              <div class="timeline-marker" [style.background]="activity.statusColor"></div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <div class="activity-user-info">
+                    <i class="fas" [ngClass]="activity.icon" [style.color]="activity.statusColor"></i>
+                    <span class="user-name">{{ activity.user }}</span>
+                    <span class="activity-action">{{ activity.action }}</span>
+                    <span class="activity-target" *ngIf="activity.target">{{ activity.target }}</span>
                   </div>
-                  <div class="survey-meta">
-                    <span><i class="fas fa-users"></i> {{ survey.participants }} participants</span>
-                    <span><i class="fas fa-clock"></i> {{ survey.duration }}</span>
-                  </div>
-                  <div class="progress-section">
-                    <div class="progress-bar">
-                      <div class="progress-fill" [style.width.%]="survey.completion"></div>
-                    </div>
-                    <span class="progress-percent">{{ survey.completion }}%</span>
-                  </div>
+                  <span class="activity-time">{{ activity.time }}</span>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Réclamations -->
-        <div class="section-card complaints-card">
-          <div class="section-header">
-            <div class="header-title">
-              <i class="fas fa-exclamation-triangle"></i>
-              <h2>Centre de réclamations</h2>
-              <span class="total-badge warning">{{ totalComplaints }}</span>
-            </div>
-            <button class="btn-secondary" (click)="viewAllComplaints()">
-              Voir historique
-              <i class="fas fa-arrow-right"></i>
-            </button>
-          </div>
-          
-          <div class="complaints-dashboard">
-            <div class="complaints-stats">
-              <div class="complaint-stat" *ngFor="let stat of complaintStats">
-                <div class="stat-circle" [style.borderColor]="stat.color">
-                  <span class="stat-number">{{ stat.count }}</span>
-                </div>
-                <span class="stat-label">{{ stat.label }}</span>
-                <span class="stat-percent">{{ stat.percent }}%</span>
-              </div>
-            </div>
-            
-            <div class="complaints-timeline">
-              <h4>Réclamations récentes</h4>
-              <div class="timeline">
-                <div class="timeline-item" *ngFor="let complaint of recentComplaints">
-                  <div class="timeline-marker" [style.background]="complaint.statusColor"></div>
-                  <div class="timeline-content">
-                    <div class="timeline-header">
-                      <span class="user-name">{{ complaint.user }}</span>
-                      <span class="complaint-date">{{ complaint.date | date:'dd MMM' }}</span>
-                    </div>
-                    <p class="complaint-message">{{ complaint.message }}</p>
-                    <span class="complaint-status" [style.background]="complaint.statusColor">
-                      {{ complaint.status }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Activités Récentes et Questions IA -->
-      <div class="bottom-section">
-        <div class="recent-activity-card">
-          <div class="card-header">
-            <div class="header-left">
-              <i class="fas fa-history header-icon"></i>
-              <h3>Activités récentes</h3>
-            </div>
-            <div class="header-actions">
-              <button class="btn-icon" (click)="refreshActivities()" title="Rafraîchir">
-                <i class="fas fa-sync-alt"></i>
-              </button>
-              <button class="btn-icon" (click)="exportActivity()" title="Exporter">
-                <i class="fas fa-download"></i>
-              </button>
-            </div>
-          </div>
-          
-          <div class="activity-timeline">
-            <div class="activity-item" *ngFor="let activity of recentActivities">
-              <div class="activity-avatar">
-                <img [src]="activity.userAvatar" [alt]="activity.user" />
-                <div class="activity-status" [class]="activity.status"></div>
-              </div>
-              <div class="activity-details">
-                <div class="activity-header">
-                  <span class="activity-user">{{ activity.user }}</span>
-                  <span class="activity-action">{{ activity.action }}</span>
-                  <span class="activity-target">{{ activity.survey }}</span>
-                </div>
-                <div class="activity-time">
-                  <i class="fas fa-clock"></i>
-                  {{ activity.time }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Questions IA -->
-        <div class="ia-questions-card">
-          <div class="card-header">
-            <div class="header-left">
-              <i class="fas fa-robot header-icon"></i>
-              <h3>Questions générées par IA</h3>
-              <span class="total-badge ia">{{ iaQuestions.length }}</span>
-            </div>
-            <button class="btn-generate" (click)="generateNewQuestions()">
-              <i class="fas fa-magic"></i>
-              Générer
-            </button>
-          </div>
-          
-          <div class="ia-questions-list">
-            <div class="question-item" *ngFor="let question of iaQuestions; let i = index">
-              <div class="question-number">#{{ i + 1 }}</div>
-              <div class="question-content">
-                <p class="question-text">{{ question.text }}</p>
-                <div class="question-meta">
-                  <span class="question-category">
-                    <i class="fas fa-tag"></i>
-                    {{ question.category }}
-                  </span>
-                  <span class="question-difficulty" [class]="question.difficulty">
-                    <i class="fas fa-chart-line"></i>
-                    {{ question.difficulty }}
-                  </span>
-                  <span class="question-usage">
-                    <i class="fas fa-chart-bar"></i>
-                    Utilisée {{ question.usageCount }} fois
+                <p class="activity-message" *ngIf="activity.message">{{ activity.message }}</p>
+                <div class="activity-meta" *ngIf="activity.details">
+                  <span class="meta-badge" [style.background]="activity.statusColor + '20'" [style.color]="activity.statusColor">
+                    <i class="fas" [ngClass]="activity.detailIcon"></i>
+                    {{ activity.details }}
                   </span>
                 </div>
               </div>
-              <div class="question-actions">
-                <button class="action-btn edit" title="Modifier">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="action-btn delete" title="Supprimer">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div class="ia-stats">
-            <div class="ia-stat">
-              <i class="fas fa-brain"></i>
-              <span>Taux de pertinence: 94%</span>
-            </div>
-            <div class="ia-stat">
-              <i class="fas fa-chart-line"></i>
-              <span>Utilisation moyenne: 127 fois/question</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </main>
-
-  <!-- Overlay pour fermer les dropdowns -->
-  <div class="overlay" *ngIf="showNotifications || showProfileMenu" (click)="closeAllDropdowns()"></div>
 </div>
 
 <!-- Notifications Panel -->
 <div class="notifications-panel" *ngIf="showNotifications">
   <div class="notifications-header">
-    <h3>Notifications</h3>
-    <span class="badge">{{ notifications.length }}</span>
+    <h4>Notifications</h4>
+    <div class="notifications-actions">
+      <button class="btn-text" (click)="markAllAsRead()" *ngIf="unreadCount > 0">
+        <i class="fas fa-check-double"></i> Tout marquer lu
+      </button>
+      <button class="btn-text" (click)="closeNotifications()">✕</button>
+    </div>
   </div>
   <div class="notifications-list">
-    <div class="notification-item" *ngFor="let notif of notifications">
+    <div class="notification-item" *ngFor="let notif of notifications" [class.unread]="!notif.read" (click)="markNotificationAsRead(notif.id!)">
       <div class="notif-icon" [style.background]="notif.bgColor">
         <i class="fas" [ngClass]="notif.icon"></i>
       </div>
-      <div class="notification-content">
-        <p>{{ notif.message }}</p>
-        <span class="notification-time">{{ notif.time }}</span>
+      <div class="notif-content">
+        <div class="notif-title">{{ notif.message }}</div>
+        <span class="notif-time">{{ notif.time }}</span>
       </div>
       <div class="notif-status" *ngIf="!notif.read"></div>
     </div>
+    <div class="notifications-empty" *ngIf="notifications.length === 0">
+      <i class="fas fa-bell-slash"></i>
+      <p>Aucune notification</p>
+    </div>
   </div>
   <div class="notifications-footer">
-    <button class="btn-text">Marquer tout comme lu</button>
-    <button class="btn-text">Voir toutes</button>
+    <button class="btn-text" (click)="loadNotifications()">
+      <i class="fas fa-sync-alt"></i> Rafraîchir
+    </button>
   </div>
 </div>
 
@@ -425,30 +242,10 @@
     </div>
   </div>
   <ul class="profile-menu-items">
-    <li>
-      <a routerLink="/super-admin-dashboard/profile">
-        <i class="fas fa-user-astronaut"></i>
-        <span>Mon profil</span>
-      </a>
-    </li>
-    <li>
-      <a routerLink="/super-admin-dashboard/security">
-        <i class="fas fa-shield-alt"></i>
-        <span>Sécurité</span>
-      </a>
-    </li>
-    <li>
-      <a routerLink="/super-admin-dashboard/preferences">
-        <i class="fas fa-sliders-h"></i>
-        <span>Préférences</span>
-      </a>
-    </li>
+    <li><a routerLink="/profil"><i class="fas fa-user-astronaut"></i><span>Mon profil</span></a></li>
     <li class="divider"></li>
-    <li>
-      <a href="#" class="logout" (click)="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Déconnexion</span>
-      </a>
-    </li>
+    <li><a href="#" class="logout" (click)="logout()"><i class="fas fa-sign-out-alt"></i><span>Déconnexion</span></a></li>
   </ul>
 </div>
+
+<div class="overlay" *ngIf="showNotifications || showProfileMenu" (click)="closeAllDropdowns()"></div>

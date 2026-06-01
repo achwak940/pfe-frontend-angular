@@ -8,16 +8,7 @@
 <div class="edit-profile-container">
   <div class="edit-profile-card">
     
-    <!-- Panneau de débogage -->
-    <div class="debug-panel" *ngIf="debugInfo">
-      <details>
-        <summary><i class="fas fa-bug"></i> Informations de débogage</summary>
-        <pre>{{debugInfo}}</pre>
-        <button type="button" (click)="reloadImage()" class="btn-debug">
-          <i class="fas fa-sync-alt"></i> Recharger l'image
-        </button>
-      </details>
-    </div>
+  
 
     <!-- Header -->
     <div class="edit-header">
@@ -98,7 +89,7 @@
         <div class="info-grid">
           <div class="info-display">
             <span class="info-label">Rôle</span>
-            <span class="info-value">{{ userInfo?.role }}</span>
+            <span class="info-value">{{ role }}</span>
           </div>
           <div class="info-display">
             <span class="info-label">Statut</span>

@@ -25,41 +25,35 @@ const routes: Routes = [
   { path: 'predict', component: YoloPredictComponent },
   { path: 'profil', component: ProfilComponent },
   { path: 'modifier-profil', component: ModfifierProfilComponent },
-    { path: 'messanger', component: MessangerComponent },
-     { path: 'gereRoles', component: GereRolesComponent },
-     { path: 'parametre', component: ParametreComponent },
-          { path: 'detailesRec', component: DetailesRecComponent},
-              { path: 'oubliermotdepasse', component: OublierMdpComponent},
-               { path: 'reset-password', component: ResetPasswordComponent},
-                { path: 'gereusers', component:UsersManagementComponent},
-                 { path: 'menu', component:SidebarComponent},
-                   { path: 'boiteMessanger', component:   BoiteMessangerComponent},
-    
-
-
-
-
+  { path: 'messanger', component: MessangerComponent },
+  { path: 'gereRoles', component: GereRolesComponent },
+  { path: 'parametre', component: ParametreComponent },
+  { path: 'detailesRec', component: DetailesRecComponent },
+  { path: 'oubliermotdepasse', component: OublierMdpComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'gereusers', component: UsersManagementComponent },
+  { path: 'menu', component: SidebarComponent },
+  { path: 'boiteMessanger', component: BoiteMessangerComponent },
+  { path: 'login', component: LoginComponent },
 
   {
     path: 'admin-dashboard',
     loadChildren: () =>
       import('./dashboard/dashboard-admin/dashboard-admin.module').then(
-        (m) => m.DashboardAdminModule
+        (m) => m.DashboardAdminModule,
       ),
   },
   {
     path: 'super-admin-dashboard',
     loadChildren: () =>
       import('./dashboard/dashboard-super-admin/super-admin/super-admin.module').then(
-        (m) => m.SuperAdminModule
+        (m) => m.SuperAdminModule,
       ),
   },
 
-  // 👇 حطها قبل **
   { path: 'detailes-user', component: DetailesUserComponent },
 
-  // 👇 ديما في الاخر
-  { path: '**', redirectTo: '/login' }
+  { path: '**', redirectTo: '/login' },
 ];
 
 @NgModule({

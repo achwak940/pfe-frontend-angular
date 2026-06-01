@@ -8,49 +8,61 @@
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <h1>Gestion des Questions</h1>
-      <p class="subtitle">Créez et gérez vos questionnaires</p>
+      <h1>
+        <i class="fas fa-question-circle"></i>
+        Gestion des Questions
+      </h1>
+      <p class="subtitle">Créez, gérez et organisez vos questionnaires</p>
     </div>
     <div class="header-right">
       <div class="stats-badge">
-        <span class="stat-item">
+        <div class="stat-item" [style.background]="'linear-gradient(135deg, #667eea20, #764ba220)'">
           <i class="fas fa-check-circle"></i>
-          <span>{{ questions.length }} questions</span>
-        </span>
-        <span class="stat-item">
-          <i class="fas fa-star"></i>
-          <span>{{ getRatingCount() }} évaluations</span>
-        </span>
-        <span class="stat-item">
-          <i class="fas fa-calendar"></i>
-          <span>{{ getDateCount() }} dates</span>
-        </span>
+          <span>{{ questions.length }} total</span>
+        </div>
+        <div class="stat-item" [style.background]="'#d5f5e3'">
+          <i class="fas fa-check"></i>
+          <span>{{ getActiveCount() }} actives</span>
+        </div>
+        <div class="stat-item" [style.background]="'#fdedec'">
+          <i class="fas fa-ban"></i>
+          <span>{{ getInactiveCount() }} inactives</span>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Barre d'actions -->
   <div class="action-bar">
-    <div class="ia-toggle-container">
-      <div class="toggle-wrapper">
-        <label class="toggle-switch">
-          <input type="checkbox" id="iaToggle" checked>
-          <span class="toggle-slider"></span>
-        </label>
-        <span class="toggle-label"><i class="fas fa-robot"></i> Génération IA activée</span>
-      </div>
-      <span class="ia-badge">IA prête</span>
+    <div class="action-left">
+      <button class="btn btn-primary" (click)="resetForm()">
+        <i class="fas fa-plus-circle"></i> Nouvelle question
+      </button>
+      <button class="btn btn-outline" (click)="exportToCSV()">
+        <i class="fas fa-download"></i> Exporter CSV
+      </button>
     </div>
-    <button class="btn btn-primary" (click)="resetForm()">
-      <i class="fas fa-plus-circle"></i> Nouvelle question
-    </button>
+    <div class="action-right">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (input)="filterQuestions(currentFilter)"
+          placeholder="Rechercher une question..."
+        >
+        <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Formulaire création/modification question -->
   <div class="question-form-card" [class.edit-mode]="isEditing">
     <div class="form-header">
       <h3>
-        <i class="fas fa-pen" style="color: #9D50BB;"></i>
+        <i class="fas" [ngClass]="{'fa-plus-circle': !isEditing, 'fa-edit': isEditing}"></i>
         {{ isEditing ? 'Modifier la question' : 'Créer une nouvelle question' }}
       </h3>
       <div *ngIf="isEditing" class="edit-badge">
@@ -59,7 +71,6 @@
     </div>
 
     <div class="form-body">
-      <!-- Titre question -->
       <div class="form-row">
         <div class="form-group large">
           <label>Titre / Énoncé <span class="required">*</span></label>
@@ -67,26 +78,24 @@
         </div>
       </div>
 
-      <!-- Type et statut -->
       <div class="form-row grid-2">
         <div class="form-group">
           <label>Type de question <span class="required">*</span></label>
           <select [(ngModel)]="questionType" (change)="onTypeChange()">
             <option *ngFor="let type of questionTypes" [value]="type.value">
-              {{ type.label }}
+              <i class="fas" [ngClass]="type.icon"></i> {{ type.label }}
             </option>
           </select>
         </div>
         <div class="form-group">
           <label>Statut</label>
           <select [(ngModel)]="questionStatus">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active">✅ Active</option>
+            <option value="inactive">⛔ Inactive</option>
           </select>
         </div>
       </div>
 
-      <!-- Configuration pour le type rating (étoiles) -->
       <div class="form-row config-section" *ngIf="questionType === 'rating'">
         <div class="form-group">
           <label>Configuration de l'évaluation par étoiles</label>
@@ -115,7 +124,6 @@
         </div>
       </div>
 
-      <!-- Configuration pour le type scale (échelle linéaire) -->
       <div class="form-row config-section" *ngIf="questionType === 'scale'">
         <div class="form-group">
           <label>Configuration de l'échelle linéaire</label>
@@ -148,12 +156,15 @@
         </div>
       </div>
 
-      <!-- Options pour multiple/unique -->
       <div class="form-row" *ngIf="questionType === 'multiple' || questionType === 'unique'">
         <div class="form-group">
           <label>Options de réponse <span class="required">*</span> <small>(minimum 2 options)</small></label>
           <div class="options-list">
             <div class="option-item" *ngFor="let opt of options; let i = index; trackBy: trackByIndex">
+              <div class="option-drag-icon">
+                <i class="fas fa-grip-vertical"></i>
+              </div>
+              <div class="option-prefix">{{ i + 1 }}.</div>
               <input type="text" [(ngModel)]="options[i]" placeholder="Option {{i+1}}">
               <button class="remove-option" type="button" (click)="removeOptions(i)" [disabled]="options.length <= 2">
                 <i class="fas fa-times"></i>
@@ -166,7 +177,6 @@
         </div>
       </div>
 
-      <!-- Indication pour les types spéciaux -->
       <div class="form-row info-section" *ngIf="questionType === 'date'">
         <div class="form-group">
           <div class="info-message">
@@ -185,7 +195,6 @@
         </div>
       </div>
 
-      <!-- Question obligatoire -->
       <div class="form-row">
         <div class="form-group checkbox-group">
           <label class="checkbox-label">
@@ -196,7 +205,6 @@
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="form-actions">
         <button class="btn btn-outline" type="button" (click)="cancelEdit()" *ngIf="isEditing">
           <i class="fas fa-times"></i> Annuler
@@ -217,15 +225,33 @@
       <i class="fas fa-list"></i> Liste des questions
       <span class="questions-count">{{ filteredQuestions.length }} questions</span>
     </h2>
-    <div class="filter-buttons">
-      <button class="filter-btn" [class.active]="currentFilter === 'all'" (click)="filterQuestions('all')">Toutes</button>
-      <button class="filter-btn" [class.active]="currentFilter === 'active'" (click)="filterQuestions('active')">Actives</button>
-      <button class="filter-btn" [class.active]="currentFilter === 'inactive'" (click)="filterQuestions('inactive')">Inactives</button>
+    <div class="header-controls">
+      <div class="filter-buttons">
+        <button class="filter-btn" [class.active]="currentFilter === 'all'" (click)="filterQuestions('all')">
+          <i class="fas fa-globe"></i> Toutes
+        </button>
+        <button class="filter-btn" [class.active]="currentFilter === 'active'" (click)="filterQuestions('active')">
+          <i class="fas fa-check-circle"></i> Actives
+        </button>
+        <button class="filter-btn" [class.active]="currentFilter === 'inactive'" (click)="filterQuestions('inactive')">
+          <i class="fas fa-ban"></i> Inactives
+        </button>
+      </div>
+      <div class="sort-control">
+        <select [(ngModel)]="sortBy" (change)="filterQuestions(currentFilter)">
+          <option value="date">Trier par date</option>
+          <option value="title">Trier par titre</option>
+          <option value="type">Trier par type</option>
+        </select>
+        <button class="sort-order-btn" (click)="toggleSortOrder()">
+          <i class="fas" [ngClass]="{'fa-arrow-up': sortOrder === 'asc', 'fa-arrow-down': sortOrder === 'desc'}"></i>
+        </button>
+      </div>
     </div>
   </div>
 
   <div class="questions-grid">
-    <div class="question-card" *ngFor="let q of filteredQuestions">
+    <div class="question-card" *ngFor="let q of paginatedQuestions">
       <div class="card-header">
         <div class="card-title">
           <h3>{{ q.texte }}</h3>
@@ -246,18 +272,16 @@
       </div>
 
       <div class="card-content">
-        <!-- Affichage des options pour multiple/unique -->
         <div *ngIf="q.type === 'multiple' || q.type === 'unique'" class="options-section">
           <strong>Options :</strong>
           <div class="options-chips">
             <span class="option-chip" *ngFor="let o of q.options">
-              <i class="fas" [ngClass]="{'fa-check-circle': q.type === 'multiple', 'fa-dot-circle': q.type === 'unique'}"></i>
+              <i class="fas" [ngClass]="{'fa-check-square': q.type === 'multiple', 'fa-dot-circle': q.type === 'unique'}"></i>
               {{ o.texte }}
             </span>
           </div>
         </div>
         
-        <!-- Affichage pour rating (étoiles) -->
         <div *ngIf="q.type === 'rating'" class="rating-display">
           <strong>Évaluation par étoiles</strong>
           <div class="stars-display">
@@ -266,7 +290,6 @@
           </div>
         </div>
         
-        <!-- Affichage pour scale (échelle) -->
         <div *ngIf="q.type === 'scale'" class="scale-display">
           <strong>Échelle linéaire</strong>
           <div class="scale-bar">
@@ -280,23 +303,20 @@
           </div>
         </div>
         
-        <!-- Affichage pour date -->
         <div *ngIf="q.type === 'date'" class="date-display">
           <i class="fas fa-calendar-alt"></i>
           <span>Sélection de date</span>
         </div>
         
-        <!-- Affichage pour text -->
         <div *ngIf="q.type === 'text'" class="text-display">
           <i class="fas fa-font"></i>
           <span>Réponse texte libre</span>
         </div>
         
-        <!-- Indicateur création -->
         <div class="creation-info" *ngIf="q.create_at">
           <small>
             <i class="fas fa-clock"></i>
-            Créée le {{ q.create_at | date:'dd/MM/yyyy' }}
+            Créée le {{ q.create_at | date:'dd/MM/yyyy à HH:mm' }}
           </small>
         </div>
       </div>
@@ -311,7 +331,6 @@
       </div>
     </div>
     
-    <!-- État vide -->
     <div class="empty-state" *ngIf="filteredQuestions.length === 0">
       <i class="fas fa-question-circle"></i>
       <h3>Aucune question trouvée</h3>
@@ -319,6 +338,50 @@
       <button class="btn btn-primary" (click)="resetForm()">
         <i class="fas fa-plus-circle"></i> Créer une question
       </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="filteredQuestions.length > 0">
+    <div class="pagination-info">
+      <i class="fas fa-info-circle"></i>
+      Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à 
+      {{ Math.min(currentPage * itemsPerPage, filteredQuestions.length) }} sur 
+      {{ filteredQuestions.length }} questions
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" (click)="changePage(1)" [disabled]="currentPage === 1">
+        <i class="fas fa-angle-double-left"></i>
+      </button>
+      <button class="pagination-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+        <i class="fas fa-angle-left"></i>
+      </button>
+      
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of getPagesArray()" 
+          class="page-btn" 
+          [class.active]="page === currentPage"
+          (click)="changePage(page)">
+          {{ page }}
+        </button>
+      </div>
+      
+      <button class="pagination-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        <i class="fas fa-angle-right"></i>
+      </button>
+      <button class="pagination-btn" (click)="changePage(totalPages)" [disabled]="currentPage === totalPages">
+        <i class="fas fa-angle-double-right"></i>
+      </button>
+    </div>
+    <div class="pagination-perpage">
+      <span>Afficher :</span>
+      <select [(ngModel)]="itemsPerPage" (change)="updatePagination()">
+        <option [value]="6">6</option>
+        <option [value]="12">12</option>
+        <option [value]="24">24</option>
+        <option [value]="48">48</option>
+      </select>
     </div>
   </div>
 </div>

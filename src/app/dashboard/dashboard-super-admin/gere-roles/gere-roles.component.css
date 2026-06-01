@@ -1121,3 +1121,59 @@
   .modal-container { width: 95%; margin: 1rem; }
   .notification-toast { left: 1rem; right: 1rem; min-width: auto; }
 }
+/* ========== BOUTON RETOUR ========== */
+.header-top-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-back {
+  background: transparent;
+  border: 1.5px solid #e2e8f0;
+  padding: 0.6rem 1.2rem;
+  border-radius: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #334155;
+  transition: all 0.25s ease;
+  font-size: 0.875rem;
+}
+
+.btn-back:hover {
+  border-color: var(--purple-primary);
+  color: var(--purple-primary);
+  background: var(--purple-soft);
+  transform: translateX(-4px);
+}
+
+.btn-back i {
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
+
+.btn-back:hover i {
+  transform: translateX(-2px);
+}
+
+.header-title-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .header-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .btn-back {
+    margin-bottom: 0.5rem;
+    width: 100%;
+    justify-content: center;
+  }
+}

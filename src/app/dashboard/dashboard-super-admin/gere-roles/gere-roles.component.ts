@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { BackendRole, RoleService, Utilisateur } from '../role.service';
+import { Router } from '@angular/router';
 
 export interface Role {
   id: number;
@@ -63,7 +64,7 @@ export class GereRolesComponent implements OnInit {
   togglingId: number | null = null;  // spinner par rôle pendant le toggle
   Math = Math;
 
-  constructor(private roleService: RoleService) {}
+  constructor(private roleService: RoleService,  private router: Router,) {}
 
   ngOnInit(): void {
     this.loadRoles();
@@ -467,4 +468,14 @@ export class GereRolesComponent implements OnInit {
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('fr-FR');
   }
+  goBackToUsers(): void {
+  // Option 1: Navigation avec Router vers la route des utilisateurs
+  this.router.navigate(['/admin/gere-users']); // Ajustez le chemin selon votre route
+  
+  // Option 2: Navigation avec retour en arrière (si vous venez de la page users)
+  // this.location.back();
+  
+  // Option 3: Émettre un événement vers le parent
+  // this.goBack.emit();
+}
 }

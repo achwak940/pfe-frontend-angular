@@ -1,212 +1,684 @@
 <div class="diagnostic-container">
-  <!-- Top Navigation Bar -->
-  <nav class="top-nav">
-    <div class="nav-left">
-      <div class="logo">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <path d="M16 2L28 8V24L16 30L4 24V8L16 2Z" fill="#9D50BB" opacity="0.2"/>
-          <path d="M16 6L24 10V22L16 26L8 22V10L16 6Z" stroke="#9D50BB" stroke-width="2" fill="none"/>
-        </svg>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-content">
+
+      <div class="brand-icon">
+        <i class="fas fa-car-crash"></i>
       </div>
-      <a class="nav-item active"><i class="fas fa-home"></i><span>[Dash]</span></a>
-      <a class="nav-item"><i class="fas fa-file-alt"></i><span>[Reports]</span></a>
-      <a class="nav-item"><i class="fas fa-sliders-h"></i><span>[Settings]</span></a>
+
+      <div class="header-text">
+        <h1 class="title">RAPPORT D'ANALYSE</h1>
+        <p class="subtitle">
+          Diagnostic technique & préconisations de réparation
+        </p>
+      </div>
+
+      <div class="badge">
+        <i class="fas fa-microchip"></i>
+        <span>IA POWERED</span>
+      </div>
+
     </div>
-    <div class="nav-right">
-      <a class="nav-item"><i class="fas fa-cog"></i><span>[Settings]</span></a>
-      <a class="nav-item"><i class="fas fa-question-circle"></i><span>[Support]</span></a>
-    </div>
-  </nav>
+  </div>
 
-  <!-- Header Section -->
-  <header class="page-header">
-    <h1 class="page-title">Diagnostic Sinistre Véhicule</h1>
-    <div class="header-actions">
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" [value]="'Claim #' + (reclamation?.id || 'N/A')" readonly />
-        <i class="fas fa-file-alt search-icon-right"></i>
-      </div>
-      <button class="icon-btn-header"><i class="fas fa-microphone"></i></button>
-      <button class="icon-btn-header active"><i class="fas fa-cog"></i></button>
-    </div>
-  </header>
-
-  <!-- Main Content Grid -->
-  <main class="main-grid" *ngIf="!isLoadingAnalysis && analysisData">
-
-    <!-- Top Row: 3 Columns -->
-    <div class="top-row">
-      <!-- Severity Card -->
-      <div class="card severity-card">
-        <h3 class="card-title">Séverité du Sinistre</h3>
-        <div class="severity-content">
-          <div class="severity-circle">
-            <svg viewBox="0 0 120 120" class="circular-chart">
-              <circle class="circle-bg" cx="60" cy="60" r="50" />
-              <circle class="circle-progress" cx="60" cy="60" r="50"
-                      [style.stroke-dashoffset]="283 - (283 * getSeverityPercent() / 100)" />
-            </svg>
-            <div class="circle-text"><span class="circle-percent">{{ getSeverityPercent() }}%</span></div>
-          </div>
-          <div class="severity-info">
-            <div class="severity-percent-large">{{ getSeverityPercent() }}%</div>
-            <div class="severity-label-text">SEVERITE GLOBALE</div>
-          </div>
-          <div class="severity-grade">
-            <div class="grade-value">{{ analysisData?.severity || 3 }}/4</div>
-            <div class="grade-label">{{ getSeverityLabel() }}</div>
-            <i class="fas fa-arrow-right"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- Vehicle Image Card (corrigée) -->
-      <div class="card vehicle-card">
-        <div class="vehicle-image-wrapper">
-          <div class="skeleton-loader" *ngIf="isLoadingAnalysis"></div>
-          <div class="image-error-badge" *ngIf="imageLoadError && !isLoadingAnalysis" (click)="retryImage()">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>Image non disponible</span>
-          </div>
-          <img [src]="currentImageUrl"
-               alt="Véhicule sinistré"
-               class="vehicle-image"
-               [class.image-loaded]="!imageLoadError"
-               [class.image-error]="imageLoadError"
-               (load)="onImageLoad($event)"
-               (error)="onImageError($event)"
-               (click)="openFullImage(currentImageUrl)">
-          <div class="image-overlay">
-            <button class="image-control-btn" (click)="openFullImage(currentImageUrl)">
-              <i class="fas fa-expand"></i><span>Agrandir</span>
-            </button>
-            <button class="image-control-btn" (click)="downloadImage()">
-              <i class="fas fa-download"></i><span>Télécharger</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Analysis Card -->
-      <div class="card analysis-card">
-        <div class="analysis-section">
-          <h3 class="analysis-title"><i class="fas fa-search"></i> Analyse du cas :</h3>
-          <p class="analysis-text">{{ reclamation?.description || 'Le véhicule présente des dommages nécessitant une évaluation minutieuse...' }}</p>
-        </div>
-        <div class="risks-section">
-          <h3 class="analysis-title"><i class="fas fa-exclamation-triangle"></i> Risques :</h3>
-          <div class="risk-list">
-            <div class="risk-item">
-              <div class="risk-icon-wrapper"><i class="far fa-clock"></i></div>
-              <div class="risk-content">
-                <div class="risk-header"><span class="risk-name">Risque de dégradation</span><span class="risk-badge high">ÉLEVÉ</span></div>
-                <p class="risk-desc">Dégradation progressive de la structure du véhicule.</p>
-              </div>
-            </div>
-            <div class="risk-item">
-              <div class="risk-icon-wrapper"><i class="fas fa-palette"></i></div>
-              <div class="risk-content">
-                <div class="risk-header"><span class="risk-name">Risque esthétique</span><span class="risk-badge medium">MOYEN</span></div>
-                <p class="risk-desc">Impact sur la valeur de revente du véhicule.</p>
-              </div>
-            </div>
-            <div class="risk-item">
-              <div class="risk-icon-wrapper"><i class="fas fa-shield-alt"></i></div>
-              <div class="risk-content">
-                <div class="risk-header"><span class="risk-name">Risque de sécurité</span><span class="risk-badge high">ÉLEVÉ</span></div>
-                <p class="risk-desc">Risque pour la sécurité des passagers.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recommendations Section -->
-    <div class="recommendations-section">
-      <h2 class="section-title">RECOMMANDATIONS DE L'IA</h2>
-      <div class="recommendations-grid">
-        <div *ngFor="let rec of analysisData?.recommendations; let i = index"
-             class="recommendation-card"
-             [class.selected]="selectedSolutionIndex === i"
-             (click)="selectSolution(i)">
-          <div class="rec-header">
-            <h4 class="rec-title">{{ rec.solution }}</h4>
-            <div class="rec-icon">
-              <i class="fas fa-car" *ngIf="i === 0"></i>
-              <i class="fas fa-door-open" *ngIf="i === 1"></i>
-              <i class="fas fa-spray-can" *ngIf="i === 2"></i>
-            </div>
-          </div>
-          <div class="rec-percent">{{ rec.confidence }}%</div>
-          <div class="rec-progress"><div class="rec-progress-fill" [style.width.%]="rec.confidence"></div></div>
-          <div class="rec-action-label">
-            <span *ngIf="i === 0">CONFIRMER</span>
-            <span *ngIf="i === 1">DÉTAILS</span>
-            <span *ngIf="i === 2">IGNORER</span>
-          </div>
-          <button class="rec-btn"
-                  [class.confirm]="i === 0"
-                  [class.details]="i === 1"
-                  [class.ignore]="i === 2"
-                  (click)="$event.stopPropagation(); i === 0 ? confirmSolution() : (i === 1 ? showDetailedComparison() : ignoreSolution(i))">
-            <span *ngIf="i === 0">CONFIRMER</span>
-            <span *ngIf="i === 1">DÉTAILS</span>
-            <span *ngIf="i === 2">IGNORER</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bottom Section -->
-    <div class="bottom-section">
-      <div class="card comparison-card">
-        <h3 class="comparison-title">Comparaison & Décision :</h3>
-        <div class="comparison-body">
-          <div class="chart-area">
-            <div class="chart-y-labels"><span>60%</span><span>40%</span><span>20%</span><span>0</span></div>
-            <div class="chart-bars">
-              <div *ngFor="let rec of analysisData?.recommendations; let i = index" class="chart-bar-item">
-                <div class="bar-wrapper"><div class="bar" [style.height.%]="rec.confidence"></div></div>
-                <div class="bar-label">{{ rec.solution | slice:0:15 }}</div>
-              </div>
-            </div>
-          </div>
-          <div class="decision-area">
-            <div class="decision-text">
-              <i class="fas fa-check-circle"></i>
-              <span><strong>{{ getFirstRecommendationSolution() }}</strong> est la plus appropriée ({{ getFirstRecommendationConfidence() }}%), offrant un équilibre entre coût et efficacité.</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="action-bar">
-        <div class="next-action"><span class="next-label">Next Action</span></div>
-        <button class="btn-primary" (click)="confirmFinalDecision()">CONFIRMER & PROCEED</button>
-        <button class="btn-secondary" (click)="showDetailedComparison()">Détails Comparaison</button>
-        <button class="btn-secondary" (click)="assignExpert()">Assigner Expert</button>
-        <div class="progress-steps">
-          <div class="step completed"><div class="step-dot"></div><span>Réclamation</span></div>
-          <div class="step completed"><div class="step-dot"></div><span>Validation</span></div>
-          <div class="step active"><div class="step-dot"></div><span>Analyse</span></div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Loading State -->
+  <!-- LOADING -->
   <div *ngIf="isLoadingAnalysis" class="loading-wrapper">
-    <div class="spinner-large"></div>
-    <p>Analyse IA en cours...</p>
+
+    <div class="loading-card">
+
+      <div class="spinner"></div>
+
+      <div class="loading-content">
+        <h3>
+          <i class="fas fa-robot"></i>
+          Analyse en cours
+        </h3>
+
+        <p>Traitement intelligent des données du véhicule...</p>
+
+        <div class="loading-progress">
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- Fullscreen Image Modal (corrigée) -->
-  <div class="fullscreen-modal" [class.show]="showFullImage" (click)="closeFullImage()">
-    <div class="fullscreen-content" (click)="$event.stopPropagation()">
-      <button class="close-fullscreen" (click)="closeFullImage()"><i class="fas fa-times"></i></button>
-      <img [src]="fullImageUrl" class="fullscreen-image" alt="Image plein écran">
+  <!-- ERROR -->
+  <div *ngIf="apiError && !isLoadingAnalysis" class="error-wrapper">
+
+    <div class="error-card">
+
+      <div class="error-icon">
+        <i class="fas fa-triangle-exclamation"></i>
+      </div>
+
+      <h3>Erreur de chargement</h3>
+
+      <p>{{ errorMessage }}</p>
+
+      <button class="btn-retry" (click)="loadData()">
+        <i class="fas fa-rotate-right"></i>
+        Réessayer
+      </button>
+
     </div>
+
   </div>
+
+  <!-- CONTENT -->
+  <div
+    class="content"
+    *ngIf="!isLoadingAnalysis && analysisData && !apiError"
+  >
+
+    <!-- SEVERITY -->
+    <div class="severity-section glass-card">
+
+      <div class="section-header">
+
+        <h2 class="section-title">
+          <i class="fas fa-chart-line"></i>
+          SÉVÉRITÉ GLOBALE
+        </h2>
+
+        <div class="severity-badge" [class]="getSeverityClass()">
+          {{ getGaugeActiveLabel() }}
+        </div>
+
+      </div>
+
+      <div class="gauge-container">
+
+        <svg
+          class="gauge-svg"
+          viewBox="0 0 400 240"
+          preserveAspectRatio="xMidYMid meet"
+        >
+
+          <defs>
+
+            <linearGradient id="gradLow" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8B5CF6" />
+              <stop offset="100%" stop-color="#C084FC" />
+            </linearGradient>
+
+            <linearGradient id="gradMedium" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#3B82F6" />
+              <stop offset="100%" stop-color="#60A5FA" />
+            </linearGradient>
+
+            <linearGradient id="gradHigh" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#EF4444" />
+              <stop offset="100%" stop-color="#F87171" />
+            </linearGradient>
+
+          </defs>
+
+          <!-- background -->
+          <path
+            d="M 40 200 A 160 160 0 0 1 360 200"
+            fill="none"
+            stroke="#E5E7EB"
+            stroke-width="28"
+            stroke-linecap="round"
+          />
+
+          <!-- arcs -->
+          <path
+            d="M 40 200 A 160 160 0 0 1 120 61.4"
+            fill="none"
+            stroke="url(#gradLow)"
+            stroke-width="28"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M 120 61.4 A 160 160 0 0 1 280 61.4"
+            fill="none"
+            stroke="url(#gradMedium)"
+            stroke-width="28"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M 280 61.4 A 160 160 0 0 1 360 200"
+            fill="none"
+            stroke="url(#gradHigh)"
+            stroke-width="28"
+            stroke-linecap="round"
+          />
+
+          <!-- labels -->
+          <text
+            x="95"
+            y="145"
+            text-anchor="middle"
+            fill="#8B5CF6"
+            font-size="14"
+            font-weight="700"
+          >
+            LÉGER
+          </text>
+
+          <text
+            x="200"
+            y="85"
+            text-anchor="middle"
+            fill="#3B82F6"
+            font-size="14"
+            font-weight="700"
+          >
+            MODÉRÉ
+          </text>
+
+          <text
+            x="305"
+            y="145"
+            text-anchor="middle"
+            fill="#EF4444"
+            font-size="14"
+            font-weight="700"
+          >
+            CRITIQUE
+          </text>
+
+          <!-- needle -->
+          <g
+            class="gauge-needle"
+            [attr.transform]="'rotate(' + getNeedleAngle() + ' 200 200)'"
+          >
+
+            <circle cx="200" cy="200" r="18" fill="#111827" />
+
+            <path
+              d="M 200 200 L 194 55 L 200 40 L 206 55 Z"
+              fill="#111827"
+            />
+
+            <circle cx="200" cy="200" r="6" fill="#8B5CF6" />
+
+          </g>
+
+        </svg>
+
+        <!-- VALUE -->
+        <div class="gauge-value-container">
+
+          <div class="gauge-value">
+            {{ (getSeverityScore() * 100).toFixed(0) }}
+            <span class="value-unit">%</span>
+          </div>
+
+          <div class="gauge-label">
+            Indice de gravité
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- STATS -->
+      <div class="severity-stats">
+
+        <div class="stat-item">
+          <span class="stat-label">
+            <i class="fas fa-bell"></i>
+            Seuil d'alerte
+          </span>
+
+          <span class="stat-value">0.70</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-label">
+            <i class="fas fa-chart-area"></i>
+            Marge d'erreur
+          </span>
+
+          <span class="stat-value">±0.05</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-label">
+            <i class="fas fa-shield-halved"></i>
+            Confiance
+          </span>
+
+          <span class="stat-value">95%</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ANALYSIS -->
+    <div class="analysis-section">
+
+      <div class="analysis-grid">
+
+        <!-- summary -->
+        <div class="analysis-card glass-card">
+
+          <div class="card-icon purple">
+            <i class="fas fa-file-waveform"></i>
+          </div>
+
+          <h3>RÉSUMÉ DU DIAGNOSTIC</h3>
+
+          <p>
+            {{
+              analysisData?.caseSummary ||
+              'Dommages partiellement réparables avec intervention recommandée'
+            }}
+          </p>
+
+          <div class="card-footer">
+            <span class="confidence-badge high">
+              <i class="fas fa-circle-check"></i>
+              Haute fiabilité
+            </span>
+          </div>
+
+        </div>
+
+        <!-- damage -->
+        <div class="analysis-card glass-card">
+
+          <div class="card-icon blue">
+            <i class="fas fa-triangle-exclamation"></i>
+          </div>
+
+          <h3>NIVEAU DE DOMMAGES</h3>
+
+          <p class="damage-level" [class]="getSeverityClass()">
+            {{ analysisData?.damageLevel || 'Moyen' }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- DEEP ANALYSIS -->
+    <div class="deep-analysis glass-card">
+
+      <div class="section-header">
+
+        <h2 class="section-title">
+          <i class="fas fa-magnifying-glass-chart"></i>
+          ANALYSE APPROFONDIE
+        </h2>
+
+      </div>
+
+      <p>
+        {{
+          analysisData?.deepAnalysis ||
+          'La sévérité des dommages suggère une intervention technique spécialisée.'
+        }}
+      </p>
+
+    </div>
+
+    <!-- META -->
+    <div class="meta-info">
+
+      <div class="case-id">
+        <span class="meta-label">
+          <i class="fas fa-hashtag"></i>
+          ID CAS :
+        </span>
+
+        <span class="meta-value">
+          {{ reclamation?.id || 'N/A' }}
+        </span>
+      </div>
+
+      <div class="timestamp">
+        <span class="meta-label">
+          <i class="fas fa-calendar"></i>
+          Analyse du :
+        </span>
+
+        <span class="meta-value">
+          {{ getCurrentDate() }}
+        </span>
+      </div>
+
+    </div>
+
+    <!-- RISKS -->
+    <div class="risks-section glass-card">
+
+      <div class="section-header">
+
+        <h2 class="section-title">
+          <i class="fas fa-radiation"></i>
+          ANALYSE DES RISQUES
+        </h2>
+
+      </div>
+
+      <div class="risks-grid">
+
+        <!-- HIGH -->
+        <div class="risk-column high">
+
+          <div class="risk-header">
+            <i class="fas fa-circle-exclamation"></i>
+            <h3>CRITIQUE</h3>
+          </div>
+
+          <ul>
+
+            <li *ngFor="let risk of analysisData?.risks?.high">
+              <span class="risk-dot high"></span>
+              {{ risk }}
+            </li>
+
+          </ul>
+
+        </div>
+
+        <!-- MEDIUM -->
+        <div class="risk-column medium">
+
+          <div class="risk-header">
+            <i class="fas fa-triangle-exclamation"></i>
+            <h3>MODÉRÉ</h3>
+          </div>
+
+          <ul>
+
+            <li *ngFor="let risk of analysisData?.risks?.medium">
+              <span class="risk-dot medium"></span>
+              {{ risk }}
+            </li>
+
+          </ul>
+
+        </div>
+
+        <!-- LOW -->
+        <div class="risk-column low">
+
+          <div class="risk-header">
+            <i class="fas fa-circle-check"></i>
+            <h3>MINEUR</h3>
+          </div>
+
+          <ul>
+
+            <li *ngFor="let risk of analysisData?.risks?.low">
+              <span class="risk-dot low"></span>
+              {{ risk }}
+            </li>
+
+          </ul>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RECOMMENDATIONS -->
+    <div class="recommendations-section glass-card">
+
+      <div class="section-header">
+
+        <h2 class="section-title">
+          <i class="fas fa-lightbulb"></i>
+          PRÉCONISATIONS TECHNIQUES
+        </h2>
+
+      </div>
+
+      <div class="recommendations-list">
+
+        <div
+          *ngFor="let rec of analysisData?.recommendations; let i = index"
+          class="recommendation-item"
+          [class.selected]="selectedSolutionIndex === i"
+          (click)="selectSolution(i)"
+        >
+
+          <div class="rec-header">
+
+            <div class="rec-number">
+              {{ i + 1 }}
+            </div>
+
+            <div class="rec-solution">
+              {{ rec.solution }}
+            </div>
+
+            <div class="rec-probability">
+
+              <div class="confidence-circle">
+
+                <svg viewBox="0 0 40 40" width="50" height="50">
+
+                  <circle
+                    cx="20"
+                    cy="20"
+                    r="16"
+                    fill="none"
+                    stroke="#E5E7EB"
+                    stroke-width="3"
+                  />
+
+                  <circle
+                    cx="20"
+                    cy="20"
+                    r="16"
+                    fill="none"
+                    [attr.stroke]="getConfidenceColor(rec.confidence)"
+                    stroke-width="3"
+                    stroke-dasharray="100"
+                    [attr.stroke-dashoffset]="100 - (rec.confidence || 0)"
+                    stroke-linecap="round"
+                    transform="rotate(-90 20 20)"
+                  />
+
+                  <text
+                    x="20"
+                    y="25"
+                    text-anchor="middle"
+                    fill="currentColor"
+                    font-size="10"
+                    font-weight="700"
+                  >
+                    {{ rec.confidence || 0 }}%
+                  </text>
+
+                </svg>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="rec-justification">
+            {{
+              rec.description ||
+              getDefaultJustification(rec.solution)
+            }}
+          </div>
+
+          <div class="rec-tags" *ngIf="rec['tags']?.length">
+
+            <span
+              class="tag"
+              *ngFor="let tag of rec['tags']"
+            >
+              <i class="fas fa-tag"></i>
+              {{ tag }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- DECISION -->
+    <div class="decision-section glass-card">
+
+      <div class="section-header">
+
+        <h2 class="section-title">
+          <i class="fas fa-scale-balanced"></i>
+          DÉCISION FINALE
+        </h2>
+
+      </div>
+
+      <div class="decision-showcase">
+
+        <div class="final-choice-card">
+
+          <div class="choice-badge">
+            <i class="fas fa-circle-check"></i>
+          </div>
+
+          <div class="choice-content">
+
+            <span class="choice-label">
+              SOLUTION RECOMMANDÉE
+            </span>
+
+            <span class="choice-value">
+              {{
+                analysisData?.decision?.finalChoice ||
+                'Réparation partielle'
+              }}
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="decision-grid">
+
+          <!-- justification -->
+          <div class="decision-card">
+
+            <div class="decision-icon">
+              <i class="fas fa-thumbtack"></i>
+            </div>
+
+            <h3>Justification</h3>
+
+            <p>
+              {{
+                analysisData?.decision?.justification ||
+                'La réparation partielle est la meilleure solution.'
+              }}
+            </p>
+
+          </div>
+
+          <!-- risk -->
+          <div class="decision-card warning">
+
+            <div class="decision-icon">
+              <i class="fas fa-skull-crossbones"></i>
+            </div>
+
+            <h3>Risque en cas d'ignorance</h3>
+
+            <p>
+              {{
+                analysisData?.decision?.riskIfIgnored ||
+                'L’absence de réparation peut aggraver les dommages.'
+              }}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- PRICE -->
+    <div
+      class="price-duration-section glass-card"
+      *ngIf="priceDuration"
+    >
+
+      <div class="section-header">
+
+        <h2 class="section-title">
+          <i class="fas fa-sack-dollar"></i>
+          ESTIMATION
+        </h2>
+
+      </div>
+
+      <div class="price-duration-grid">
+
+        <div class="price-card">
+
+        
+
+          <div class="price-amount">
+            {{ priceDuration?.price || '0' }} DT
+          </div>
+
+       
+
+        </div>
+
+        <div class="duration-card">
+
+          <div class="duration-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+
+          <div class="duration-value">
+            {{
+              (priceDuration?.duration_h ||
+                priceDuration?.['duration'] ||
+                '0')
+            }}
+            jours
+          </div>
+
+          <div class="duration-label">
+            Délai d'intervention
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+
+      <button class="btn-secondary" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+        Retour
+      </button>
+
+
+    </div>
+
+  </div>
+
 </div>

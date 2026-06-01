@@ -29,6 +29,7 @@ export class ProfilComponent implements OnInit {
   isLoading: boolean = true;
   errorMessage: string = '';
   debugInfo: string = ''; // Pour le débogage
+  role:string="";
 
   constructor(
     private service: GereProfilService, 
@@ -69,6 +70,7 @@ export class ProfilComponent implements OnInit {
         // Vérifier si les données sont dans data.profil ou directement dans data
         if (data && data.profil) {
           this.userInfo = data.profil;
+          this.role=data.profil.role.nom
         } else if (data) {
           this.userInfo = data;
         }
@@ -79,6 +81,7 @@ export class ProfilComponent implements OnInit {
         
         console.log('Photo path:', this.userInfo?.photo_profil);
         console.log('Photo URL:', this.getPhotoUrl());
+      //  console.log("roleyhdik",this.role)
         
         this.isLoading = false;
         

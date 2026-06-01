@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Feedback, FeedbackService } from '../feedback.service';
 
 @Component({
@@ -6,29 +6,30 @@ import { Feedback, FeedbackService } from '../feedback.service';
   templateUrl: './feedback-support.component.html',
   styleUrls: ['./feedback-support.component.css']
 })
-export class FeedbackSupportComponent implements OnInit {
+export class FeedbackSupportComponent implements OnInit, OnDestroy {
 
   feedbacks: Feedback[] = [];
   filteredFeedbacks: Feedback[] = [];
+  currentUserId: number = 0;
 
   // Stats
   total = 0;
   enCours = 0;
   resolus = 0;
   nouveaux = 0;
+  annules = 0;
 
-  // Stats data for header
   statsData = [
-    { icon: 'fas fa-envelope', value: 0, label: 'Total' },
-    { icon: 'fas fa-clock', value: 0, label: 'En cours' },
-    { icon: 'fas fa-check-circle', value: 0, label: 'Résolus' }
+    { icon: 'fas fa-envelope', value: 0, label: 'Total', color: '#9D50BB' },
+    { icon: 'fas fa-clock', value: 0, label: 'En cours', color: '#f39c12' },
+    { icon: 'fas fa-check-circle', value: 0, label: 'Résolus', color: '#2ecc71' },
+    { icon: 'fas fa-ban', value: 0, label: 'Annulés', color: '#95a5a6' }
   ];
 
-  // Type stats for pie chart
   typeStats = [
-    { label: 'Suggestions', color: '#9D50BB', count: 0, percent: 0 },
-    { label: 'Problèmes', color: '#f39c12', count: 0, percent: 0 },
-    { label: 'Questions', color: '#3498db', count: 0, percent: 0 }
+    { label: 'Suggestions', color: '#9D50BB', count: 0, percent: 0, icon: '💡' },
+    { label: 'Problèmes', color: '#f39c12', count: 0, percent: 0, icon: '🐛' },
+    { label: 'Questions', color: '#3498db', count: 0, percent: 0, icon: '❓' }
   ];
 
   // Filtres
@@ -41,13 +42,23 @@ export class FeedbackSupportComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalPages: number = 1;
-  Math = Math; // Expose Math to template
+  Math = Math;
 
   // Modal
   showDetailModal: boolean = false;
-  showAllActivities: boolean = false;
+  showAddFeedbackModal: boolean = false;
+  showAllActivitiesModal: boolean = false;
   selectedFeedback: Feedback | null = null;
   replyText: string = '';
+  isSubmitting: boolean = false;
+  surveysList: any[] = [];
+
+  // Nouveau feedback
+  newFeedback = {
+    type: 'suggestion' as 'suggestion' | 'probleme_technique' | 'question',
+    message: '',
+    enqueteId: null as number | null
+  };
 
   // Activity
   activityPeriod: string = '7';
@@ -58,104 +69,101 @@ export class FeedbackSupportComponent implements OnInit {
 
   // Toasts
   toasts: any[] = [];
+  private refreshInterval: any;
 
   constructor(private feedbackService: FeedbackService) { }
 
   ngOnInit(): void {
+    this.getCurrentUser();
     this.loadFeedbacks();
-    this.loadActivities();
     this.startActivitySimulation();
   }
 
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  }
+
+  getCurrentUser(): void {
+    const user = localStorage.getItem('currentUser');
+    if (user) {
+      const currentUser = JSON.parse(user);
+      this.currentUserId = currentUser.id;
+    }
+  }
+
   loadFeedbacks() {
-    this.feedbackService.getAllFeedbacks().subscribe((data: Feedback[]) => {
-      this.feedbacks = data;
-      this.applyFilters();
-      this.computeStats();
-      this.updatePagination();
-      this.updateTypeStats();
+    if (!this.currentUserId) {
+      console.error('User ID not found');
+      return;
+    }
+    
+    this.feedbackService.getFeedbacksForAdmin(this.currentUserId).subscribe({
+      next: (data: Feedback[]) => {
+        this.feedbacks = data;
+        this.applyFilters();
+        this.computeStats();
+        this.updatePagination();
+        this.updateTypeStats();
+        this.updateRecentActivities();
+        this.showToast('Succès', `${data.length} feedbacks chargés`, 'success');
+      },
+      error: (err: any) => {
+        console.error('Erreur chargement feedbacks:', err);
+        this.showToast('Erreur', 'Impossible de charger les feedbacks', 'error');
+      }
     });
   }
 
-  loadActivities() {
-    this.updateActivity();
-    this.updateRecentActivities();
-  }
-
   startActivitySimulation() {
-    // Simuler des activités toutes les 30 secondes
-    setInterval(() => {
+    this.refreshInterval = setInterval(() => {
       const newActivity = this.generateRandomActivity();
       this.allActivities.unshift(newActivity);
       this.recentActivities = this.allActivities.slice(0, 20);
       this.displayActivities = this.recentActivities.slice(0, 5);
       
-      // Afficher une notification toast pour les nouvelles activités
       if (newActivity.isNew) {
         this.showToast('Nouvelle activité', newActivity.text, 'info');
       }
-    }, 30000);
+    }, 60000);
   }
 
   generateRandomActivity(): any {
-    const actions = [
-      'Nouveau feedback reçu',
-      'Feedback mis à jour',
-      'Ticket résolu',
-      'Réponse envoyée',
-      'Statut modifié'
-    ];
-    const users = ['Jean Dupont', 'Marie Martin', 'Pierre Lambert', 'Sophie Bernard', 'Lucas Moreau'];
+    const actions = ['Nouveau feedback reçu', 'Feedback mis à jour', 'Ticket résolu', 'Réponse envoyée', 'Ticket annulé'];
     const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    const randomUser = users[Math.floor(Math.random() * users.length)];
     
     return {
-      icon: this.getRandomIcon(),
-      text: `${randomAction} de ${randomUser}`,
+      icon: 'fas fa-envelope',
+      text: randomAction,
       time: new Date(),
       isNew: true
     };
   }
 
-  getRandomIcon(): string {
-    const icons = ['fas fa-envelope', 'fas fa-check-circle', 'fas fa-reply', 'fas fa-edit'];
-    return icons[Math.floor(Math.random() * icons.length)];
-  }
-
   updateRecentActivities() {
-    // Simuler des activités récentes basées sur les feedbacks
-    const activities = [];
+    const activities: any[] = [];
     
-    this.feedbacks.slice(0, 10).forEach((fb, index) => {
+    this.feedbacks.slice(0, 10).forEach((fb) => {
       const date = new Date(fb.date_creation);
       const now = new Date();
       const diffHours = (now.getTime() - date.getTime()) / (1000 * 3600);
       
       if (diffHours < 24) {
+        let icon = 'fas fa-envelope';
+        if (fb.statut === 'resolu') icon = 'fas fa-check-circle';
+        if (fb.statut === 'annule') icon = 'fas fa-ban';
+        if (fb.statut === 'en_cours') icon = 'fas fa-clock';
+        
         activities.push({
-          icon: 'fas fa-envelope',
-          text: `Nouveau feedback de ${fb.utilisateur?.nom || 'Anonyme'}`,
+          icon: icon,
+          text: `${this.getStatusLabel(fb.statut)} - ${fb.utilisateur?.nom || 'Anonyme'}: ${fb.message.substring(0, 50)}...`,
           time: date,
           isNew: diffHours < 1
         });
       }
     });
     
-    // Ajouter des activités simulées si nécessaire
-    if (activities.length < 5) {
-      for (let i = 0; i < 5 - activities.length; i++) {
-        const date = new Date();
-        date.setMinutes(date.getMinutes() - (i + 1) * 30);
-        activities.push({
-          icon: 'fas fa-info-circle',
-          text: `Activité système #${i + 1}`,
-          time: date,
-          isNew: i === 0
-        });
-      }
-    }
-    
-    // Trier par date décroissante
     activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
     
     this.allActivities = activities;
@@ -164,11 +172,11 @@ export class FeedbackSupportComponent implements OnInit {
   }
 
   viewAllActivities() {
-    this.showAllActivities = true;
+    this.showAllActivitiesModal = true;
   }
 
   closeActivityModal() {
-    this.showAllActivities = false;
+    this.showAllActivitiesModal = false;
   }
 
   refreshData() {
@@ -215,6 +223,7 @@ export class FeedbackSupportComponent implements OnInit {
 
   updatePagination() {
     this.totalPages = Math.ceil(this.filteredFeedbacks.length / this.itemsPerPage);
+    if (this.totalPages === 0) this.totalPages = 1;
   }
 
   getPaginatedFeedbacks(): Feedback[] {
@@ -260,12 +269,13 @@ export class FeedbackSupportComponent implements OnInit {
     this.nouveaux = this.feedbacks.filter(fb => fb.statut === 'nouveau').length;
     this.enCours = this.feedbacks.filter(fb => fb.statut === 'en_cours').length;
     this.resolus = this.feedbacks.filter(fb => fb.statut === 'resolu').length;
+    this.annules = this.feedbacks.filter(fb => fb.statut === 'annule').length;
     
-    // Update statsData for header
     this.statsData = [
-      { icon: 'fas fa-envelope', value: this.total, label: 'Total' },
-      { icon: 'fas fa-clock', value: this.enCours, label: 'En cours' },
-      { icon: 'fas fa-check-circle', value: this.resolus, label: 'Résolus' }
+      { icon: 'fas fa-envelope', value: this.total, label: 'Total', color: '#9D50BB' },
+      { icon: 'fas fa-clock', value: this.enCours, label: 'En cours', color: '#f39c12' },
+      { icon: 'fas fa-check-circle', value: this.resolus, label: 'Résolus', color: '#2ecc71' },
+      { icon: 'fas fa-ban', value: this.annules, label: 'Annulés', color: '#95a5a6' }
     ];
   }
 
@@ -276,30 +286,84 @@ export class FeedbackSupportComponent implements OnInit {
     const total = this.total || 1;
     
     this.typeStats = [
-      { label: 'Suggestions', color: '#9D50BB', count: suggestionCount, percent: Math.round((suggestionCount / total) * 100) },
-      { label: 'Problèmes', color: '#f39c12', count: problemCount, percent: Math.round((problemCount / total) * 100) },
-      { label: 'Questions', color: '#3498db', count: questionCount, percent: Math.round((questionCount / total) * 100) }
+      { label: 'Suggestions', color: '#9D50BB', count: suggestionCount, percent: Math.round((suggestionCount / total) * 100), icon: '💡' },
+      { label: 'Problèmes', color: '#f39c12', count: problemCount, percent: Math.round((problemCount / total) * 100), icon: '🐛' },
+      { label: 'Questions', color: '#3498db', count: questionCount, percent: Math.round((questionCount / total) * 100), icon: '❓' }
     ];
   }
 
   markResolved(fb: Feedback) {
     if (!fb.id) return;
     
-    this.feedbackService.updateFeedback(fb.id, { statut: 'resolu' }).subscribe({
-      next: () => {
-        fb.statut = 'resolu';
-        this.computeStats();
-        this.applyFilters();
-        this.updateTypeStats();
-        this.showToast('Succès', 'Feedback marqué comme résolu', 'success');
-        this.addActivity(`Feedback #${fb.id} marqué comme résolu`, 'fa-check-circle');
-        this.updateRecentActivities();
-      },
-      error: (err) => {
-        console.error('Erreur lors de la mise à jour', err);
-        this.showToast('Erreur', 'Impossible de mettre à jour le statut', 'error');
-      }
-    });
+    if (confirm('Marquer ce feedback comme résolu ?')) {
+      this.feedbackService.updateFeedback(fb.id, { statut: 'resolu' }).subscribe({
+        next: () => {
+          fb.statut = 'resolu';
+          this.computeStats();
+          this.applyFilters();
+          this.updateTypeStats();
+          this.showToast('Succès', 'Feedback marqué comme résolu', 'success');
+          this.updateRecentActivities();
+          this.addActivity(`Feedback #${fb.id} marqué comme résolu`, 'fas fa-check-circle');
+        },
+        error: (err) => {
+          console.error('Erreur lors de la mise à jour', err);
+          this.showToast('Erreur', 'Impossible de mettre à jour le statut', 'error');
+        }
+      });
+    }
+  }
+
+  cancelTicket(fb: Feedback) {
+    if (!fb.id) return;
+    
+    if (confirm('Voulez-vous vraiment annuler ce ticket ?')) {
+      this.feedbackService.updateFeedback(fb.id, { statut: 'annule' }).subscribe({
+        next: () => {
+          fb.statut = 'annule';
+          this.computeStats();
+          this.applyFilters();
+          this.updateTypeStats();
+          this.showToast('Info', 'Ticket annulé avec succès', 'info');
+          this.updateRecentActivities();
+          this.addActivity(`Ticket #${fb.id} annulé`, 'fas fa-ban');
+          
+          if (this.showDetailModal && this.selectedFeedback?.id === fb.id) {
+            this.selectedFeedback.statut = 'annule';
+          }
+        },
+        error: (err) => {
+          console.error('Erreur lors de l\'annulation', err);
+          this.showToast('Erreur', 'Impossible d\'annuler le ticket', 'error');
+        }
+      });
+    }
+  }
+
+  reopenTicket(fb: Feedback) {
+    if (!fb.id) return;
+    
+    if (confirm('Réouvrir ce ticket ?')) {
+      this.feedbackService.updateFeedback(fb.id, { statut: 'nouveau' }).subscribe({
+        next: () => {
+          fb.statut = 'nouveau';
+          this.computeStats();
+          this.applyFilters();
+          this.updateTypeStats();
+          this.showToast('Succès', 'Ticket réouvert avec succès', 'success');
+          this.updateRecentActivities();
+          this.addActivity(`Ticket #${fb.id} réouvert`, 'fas fa-folder-open');
+          
+          if (this.showDetailModal && this.selectedFeedback?.id === fb.id) {
+            this.selectedFeedback.statut = 'nouveau';
+          }
+        },
+        error: (err) => {
+          console.error('Erreur lors de la réouverture', err);
+          this.showToast('Erreur', 'Impossible de réouvrir le ticket', 'error');
+        }
+      });
+    }
   }
 
   deleteFeedback(fb: Feedback) {
@@ -313,8 +377,8 @@ export class FeedbackSupportComponent implements OnInit {
         this.computeStats();
         this.updateTypeStats();
         this.showToast('Succès', 'Feedback supprimé avec succès', 'success');
-        this.addActivity(`Feedback #${fb.id} supprimé`, 'fa-trash');
         this.updateRecentActivities();
+        this.addActivity(`Feedback #${fb.id} supprimé`, 'fas fa-trash');
         
         if (this.showDetailModal && this.selectedFeedback?.id === fb.id) {
           this.closeModal();
@@ -348,7 +412,6 @@ export class FeedbackSupportComponent implements OnInit {
         this.applyFilters();
         this.updateTypeStats();
         this.showToast('Succès', 'Statut mis à jour', 'success');
-        this.addActivity(`Statut du feedback #${fb.id} changé en ${fb.statut}`, 'fa-edit');
         this.updateRecentActivities();
       },
       error: (err) => {
@@ -366,15 +429,9 @@ export class FeedbackSupportComponent implements OnInit {
 
     if (!this.selectedFeedback?.id) return;
 
-    console.log('Envoi de la réponse:', {
-      feedbackId: this.selectedFeedback.id,
-      reply: this.replyText,
-      to: this.selectedFeedback.utilisateur?.email
-    });
-
     this.showToast('Succès', 'Réponse envoyée avec succès', 'success');
-    this.addActivity(`Réponse envoyée au feedback #${this.selectedFeedback.id}`, 'fa-reply');
     this.updateRecentActivities();
+    this.addActivity(`Réponse envoyée au feedback #${this.selectedFeedback.id}`, 'fas fa-reply');
     
     if (this.selectedFeedback.statut === 'nouveau') {
       this.selectedFeedback.statut = 'en_cours';
@@ -382,6 +439,81 @@ export class FeedbackSupportComponent implements OnInit {
     }
     
     this.replyText = '';
+  }
+
+  openNewFeedbackModal() {
+    this.newFeedback = {
+      type: 'suggestion',
+      message: '',
+      enqueteId: null
+    };
+    this.showAddFeedbackModal = true;
+    this.loadSurveysForFeedback();
+  }
+
+  closeAddFeedbackModal() {
+    this.showAddFeedbackModal = false;
+    this.newFeedback = {
+      type: 'suggestion',
+      message: '',
+      enqueteId: null
+    };
+  }
+
+  loadSurveysForFeedback() {
+    this.feedbackService.getFeedbacksForAdmin(this.currentUserId).subscribe({
+      next: (data: Feedback[]) => {
+        const surveysMap = new Map();
+        data.forEach(fb => {
+          if (fb.enquete?.id && fb.enquete?.titre && !surveysMap.has(fb.enquete.id)) {
+            surveysMap.set(fb.enquete.id, {
+              id: fb.enquete.id,
+              titre: fb.enquete.titre
+            });
+          }
+        });
+        this.surveysList = Array.from(surveysMap.values());
+      },
+      error: (err) => console.error('Erreur chargement enquêtes:', err)
+    });
+  }
+
+  submitFeedback() {
+    if (!this.newFeedback.message.trim()) {
+      this.showToast('Attention', 'Veuillez saisir un message', 'warning');
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    const feedbackData: any = {
+      type: this.newFeedback.type,
+      message: this.newFeedback.message
+    };
+
+    if (this.currentUserId) {
+      feedbackData.utilisateurId = this.currentUserId;
+    }
+
+    if (this.newFeedback.enqueteId) {
+      feedbackData.enqueteId = this.newFeedback.enqueteId;
+    }
+
+    this.feedbackService.createFeedback(feedbackData).subscribe({
+      next: (newFeedback: Feedback) => {
+        this.isSubmitting = false;
+        this.closeAddFeedbackModal();
+        this.showToast('Succès', 'Feedback ajouté avec succès', 'success');
+        this.loadFeedbacks();
+        
+        this.addActivity(`Nouveau feedback ajouté (${this.getTypeLabel(newFeedback.type)})`, 'fas fa-plus-circle');
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error('Erreur lors de l\'ajout du feedback:', err);
+        this.showToast('Erreur', 'Impossible d\'ajouter le feedback', 'error');
+      }
+    });
   }
 
   resetFilters() {
@@ -411,7 +543,7 @@ export class FeedbackSupportComponent implements OnInit {
     const url = URL.createObjectURL(blob);
     
     link.setAttribute('href', url);
-    link.setAttribute('download', `feedbacks_${new Date().toISOString()}.csv`);
+    link.setAttribute('download', `feedbacks_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -452,30 +584,16 @@ export class FeedbackSupportComponent implements OnInit {
     return this.feedbacks.filter(fb => fb.type === type).length;
   }
 
-  getTypeOffset(): number {
-    const total = this.feedbacks.length;
-    if (total === 0) return 283;
-    const suggestionCount = this.getTypeCount('suggestion');
-    const percentage = (suggestionCount / total) * 100;
-    return 283 - (283 * percentage / 100);
-  }
-
   getResolutionRate(): number {
     if (this.total === 0) return 0;
     return Math.round((this.resolus / this.total) * 100);
-  }
-
-  getResolutionOffset(): number {
-    const rate = this.getResolutionRate();
-    return 339 - (339 * rate / 100);
   }
 
   getTypeLabel(type: string): string {
     const labels: { [key: string]: string } = {
       'suggestion': 'Suggestion',
       'probleme_technique': 'Problème technique',
-      'question': 'Question',
-      'autre': 'Autre'
+      'question': 'Question'
     };
     return labels[type] || type;
   }
@@ -484,8 +602,7 @@ export class FeedbackSupportComponent implements OnInit {
     const icons: { [key: string]: string } = {
       'suggestion': '💡',
       'probleme_technique': '🐛',
-      'question': '❓',
-      'autre': '📝'
+      'question': '❓'
     };
     return icons[type] || '📌';
   }
@@ -494,20 +611,9 @@ export class FeedbackSupportComponent implements OnInit {
     const classes: { [key: string]: string } = {
       'suggestion': 'suggestion',
       'probleme_technique': 'issue',
-      'question': 'question',
-      'autre': 'autre'
+      'question': 'question'
     };
     return classes[type] || '';
-  }
-
-  getStatusIcon(status: string): string {
-    const icons: { [key: string]: string } = {
-      'nouveau': '🆕',
-      'en_cours': '⏳',
-      'resolu': '✅',
-      'ignore': '⏭️'
-    };
-    return icons[status] || 'fas fa-flag';
   }
 
   getStatusLabel(status: string): string {
@@ -515,7 +621,7 @@ export class FeedbackSupportComponent implements OnInit {
       'nouveau': 'Nouveau',
       'en_cours': 'En cours',
       'resolu': 'Résolu',
-      'ignore': 'Ignoré'
+      'annule': 'Annulé'
     };
     return labels[status] || status;
   }
@@ -525,7 +631,7 @@ export class FeedbackSupportComponent implements OnInit {
       'nouveau': 'new',
       'en_cours': 'in-progress',
       'resolu': 'resolved',
-      'ignore': 'ignored'
+      'annule': 'cancelled'
     };
     return classes[status] || '';
   }
@@ -537,9 +643,10 @@ export class FeedbackSupportComponent implements OnInit {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
+      const randomCount = Math.floor(Math.random() * 20) + 1;
       activityData.push({
         label: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
-        count: Math.floor(Math.random() * 20) + 1
+        count: randomCount
       });
     }
     
@@ -565,18 +672,18 @@ export class FeedbackSupportComponent implements OnInit {
   }
 
   addActivity(text: string, icon: string) {
-    const newActivity = {
-      icon: `fas ${icon}`,
+    this.allActivities.unshift({
+      icon: icon,
       text: text,
       time: new Date(),
       isNew: true
-    };
-    
-    this.allActivities.unshift(newActivity);
+    });
     this.recentActivities = this.allActivities.slice(0, 20);
     this.displayActivities = this.recentActivities.slice(0, 5);
-    
-    this.showToast('Nouvelle activité', text, 'info');
+  }
+
+  removeToast(toast: any) {
+    this.toasts = this.toasts.filter(t => t.id !== toast.id);
   }
 
   showToast(title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
@@ -602,11 +709,15 @@ export class FeedbackSupportComponent implements OnInit {
     }, 5000);
   }
 
-  removeToast(toast: any) {
-    this.toasts = this.toasts.filter(t => t.id !== toast.id);
-  }
-
-  openNewTicket() {
-    this.showToast('Info', 'Fonctionnalité à venir', 'info');
+  copyToClipboard(text: string) {
+    if (!text) {
+      this.showToast('Info', 'Aucun email à copier', 'info');
+      return;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+      this.showToast('Succès', 'Email copié dans le presse-papier', 'success');
+    }).catch(() => {
+      this.showToast('Erreur', 'Impossible de copier', 'error');
+    });
   }
 }

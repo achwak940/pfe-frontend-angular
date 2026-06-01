@@ -9,11 +9,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
   padding: 20px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Poppins', sans-serif;
   position: relative;
   overflow: hidden;
+  /* Ajout d'un arrière-plan dégradé violet clair */
+  background: linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 50%, #e9d5ff 100%);
 }
 
 /* Effet de particules animées */
@@ -22,7 +23,7 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  background-image: radial-gradient(circle, rgba(102, 126, 234, 0.03) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(102, 126, 234, 0.08) 1px, transparent 1px);
   background-size: 40px 40px;
   animation: particleMove 20s linear infinite;
   pointer-events: none;
@@ -43,7 +44,7 @@
   position: absolute;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.12) 0%, transparent 70%);
   border-radius: 50%;
   bottom: -250px;
   right: -250px;

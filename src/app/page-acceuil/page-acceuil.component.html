@@ -1,0 +1,247 @@
+<div class="root" [class.dark]="isDarkTheme">
+
+  <!-- Background -->
+  <div class="bg-layer" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    <div class="particles">
+      <span *ngFor="let p of [1,2,3,4,5,6,7,8,9,10,11,12]" class="particle"></span>
+    </div>
+  </div>
+
+  <!-- ─── HEADER ─── -->
+  <header class="header" [class.scrolled]="isScrolled">
+    <div class="header-inner">
+
+ <div class="logo">
+  <div class="logo-mark">
+    <img 
+      class="logo-img"
+      src="assets/images/logo.png"
+      alt="SatIA"
+    />
+    <div class="logo-glow"></div>
+  </div>
+  <span class="logo-name">Sat<span class="logo-accent">IA</span></span>
+</div>
+
+      <nav class="nav" [class.open]="isMobileMenuOpen">
+        <button class="nav-item" (click)="scrollTo('accueil')" [class.active]="activeNav==='accueil'">Accueil</button>
+        <button class="nav-item" (click)="scrollTo('features')" [class.active]="activeNav==='features'">Solutions</button>
+        <button class="nav-item" (click)="scrollTo('howto')" [class.active]="activeNav==='howto'">Comment ça marche</button>
+        <button class="nav-item" (click)="scrollTo('cta')" [class.active]="activeNav==='cta'">Contact</button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn-icon" (click)="toggleTheme()" [title]="isDarkTheme ? 'Mode clair' : 'Mode sombre'">
+          <span *ngIf="!isDarkTheme">🌙</span>
+          <span *ngIf="isDarkTheme">☀️</span>
+        </button>
+        <button class="btn-ghost" routerLink="/login">Connexion</button>
+        <button class="btn-primary-sm" routerLink="/register">Inscription</button>
+        <button class="btn-burger" (click)="toggleMobileMenu()" aria-label="Menu">
+          <span [class.open]="isMobileMenuOpen"></span>
+          <span [class.open]="isMobileMenuOpen"></span>
+          <span [class.open]="isMobileMenuOpen"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero" id="accueil">
+
+    <div class="hero-left">
+
+      <div class="badge-pill">
+        <span class="pulse-dot"></span>
+        Intelligence Artificielle · Version 3.0
+      </div>
+
+      <h1 class="hero-title">
+        <span class="line">Analyser.</span>
+        <span class="line accent">Prédire.</span>
+        <span class="line">Réparer.</span>
+      </h1>
+
+      <p class="hero-sub">
+        SatIA détecte et analyse les dommages de votre véhicule avec une précision de 98%,
+        génère un devis instantané et vous guide vers la meilleure solution de réparation.
+      </p>
+
+      <div class="hero-cta">
+        <button class="btn-hero-primary" (click)="scrollTo('features')">
+          <span>🚀</span> Démarrer l'analyse
+        </button>
+        <button class="btn-hero-secondary">
+          <span>📷</span> Uploader une image
+        </button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-num">{{ statsDisplayed[0] }}<span class="stat-unit">%</span></span>
+          <span class="stat-lbl">Précision</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <span class="stat-num">&lt;{{ statsDisplayed[1] }}<span class="stat-unit">s</span></span>
+          <span class="stat-lbl">Analyse</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <span class="stat-num">{{ statsDisplayed[2] }}<span class="stat-unit">k+</span></span>
+          <span class="stat-lbl">Véhicules</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="robot-scene">
+
+        <!-- Scan ring animation -->
+        <div class="scan-ring scan-ring-1"></div>
+        <div class="scan-ring scan-ring-2"></div>
+        <div class="scan-ring scan-ring-3"></div>
+
+        <!-- Robot image -->
+        <div class="robot-frame">
+          <img
+            [src]="robotImageUrl"
+            alt="Robot IA SatIA"
+            class="robot-img"
+            (error)="onImageError($event)"
+          />
+          <div class="robot-glow"></div>
+        </div>
+
+        <!-- Floating chips -->
+        <div class="chip chip-tl">
+          <span>🔍</span>
+          <span>Analyse en cours…</span>
+        </div>
+        <div class="chip chip-br">
+          <span>✅</span>
+          <span>Dommage détecté</span>
+        </div>
+
+        <!-- Speech bubble -->
+        <div class="bubble" [class.hidden]="!showMessage">
+          <p class="bubble-text">{{ robotMessage }}</p>
+          <div class="bubble-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── FEATURES ─── -->
+  <section class="section features-section" id="features">
+
+    <div class="section-label aos" data-delay="0">— NOS CAPACITÉS IA —</div>
+    <h2 class="section-title aos" data-delay="100">
+      Ce que <span class="grad-text">SatIA</span> fait pour vous
+    </h2>
+    <p class="section-sub aos" data-delay="200">
+      Une technologie de pointe pour chaque étape de l'évaluation de vos dommages.
+    </p>
+
+    <div class="features-grid">
+      <div class="feature-card aos"
+           *ngFor="let f of features; let i = index"
+           [attr.data-delay]="(i * 100) + 300">
+        <div class="feature-icon">{{ f.icon }}</div>
+        <h3 class="feature-title">{{ f.title }}</h3>
+        <p class="feature-desc">{{ f.desc }}</p>
+        <div class="feature-more">En savoir plus <span>→</span></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── HOW IT WORKS ─── -->
+  <section class="section howto-section" id="howto">
+
+    <div class="section-label aos" data-delay="0">— PROCESSUS SIMPLIFIÉ —</div>
+    <h2 class="section-title aos" data-delay="100">
+      3 étapes vers votre <span class="grad-text">diagnostic</span>
+    </h2>
+
+    <div class="steps-row">
+      <ng-container *ngFor="let s of steps; let i = index; let last = last">
+        <div class="step-card aos" [attr.data-delay]="i * 150">
+          <div class="step-number">{{ s.number }}</div>
+          <div class="step-icon">{{ s.icon }}</div>
+          <h3 class="step-title">{{ s.title }}</h3>
+          <p class="step-desc">{{ s.desc }}</p>
+        </div>
+        <div class="step-arrow aos" *ngIf="!last" [attr.data-delay]="i * 150 + 75">→</div>
+      </ng-container>
+    </div>
+
+  </section>
+
+  <!-- ─── CTA ─── -->
+  <section class="section cta-section" id="cta">
+    <div class="cta-card aos">
+      <div class="cta-badge">🚀 Prêt à commencer ?</div>
+      <h2 class="cta-title">Analysez votre véhicule <span class="grad-text">gratuitement</span></h2>
+      <p class="cta-sub">
+        Rejoignez plus de 50 000 conducteurs qui font confiance à SatIA pour évaluer
+        leurs dommages en quelques secondes.
+      </p>
+      <div class="cta-actions">
+        <button class="btn-hero-primary large">
+          <span>📷</span> Commencer l'analyse gratuite
+        </button>
+        <div class="cta-note">
+          <span class="check">✓</span> Sans inscription ·
+          <span class="check">✓</span> Résultats en 2s ·
+          <span class="check">✓</span> 100% confidentiel
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-mark small">✨</div>
+          <span class="logo-name">Sat<em>IA</em></span>
+        </div>
+        <p class="footer-tagline">L'IA au service de votre véhicule</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <span class="footer-col-title">Produit</span>
+          <a href="#">Fonctionnalités</a>
+          <a href="#">Tarifs</a>
+          <a href="#">API</a>
+        </div>
+        <div class="footer-col">
+          <span class="footer-col-title">Entreprise</span>
+          <a href="#">À propos</a>
+          <a href="#">Blog</a>
+          <a href="#">Carrières</a>
+        </div>
+        <div class="footer-col">
+          <span class="footer-col-title">Support</span>
+          <a href="#">Documentation</a>
+          <a href="#">Contact</a>
+          <a href="#">Confidentialité</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 SatIA · Intelligence Artificielle pour Véhicules · Tous droits réservés</span>
+    </div>
+  </footer>
+
+</div>

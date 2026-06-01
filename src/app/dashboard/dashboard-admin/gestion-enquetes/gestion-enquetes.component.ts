@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { EnqueteService } from '../enquete.service';
 import Swal from 'sweetalert2';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-gestion-enquetes',
   templateUrl: './gestion-enquetes.component.html',
   styleUrls: ['./gestion-enquetes.component.css']
 })
-export class GestionEnquetesComponent implements OnInit {
+export class GestionEnquetesComponent implements OnInit, OnDestroy {
   currentUser!: any;
   userID!: number;
   enquetes: any[] = [];
@@ -20,31 +21,37 @@ export class GestionEnquetesComponent implements OnInit {
     archivees: 0
   };
 
-  // Pour la recherche et le filtre
   searchText: string = '';
   selectedFilter: string = 'Toutes';
   selectedTypeParticipation: string = 'TOUS';
   dateDebut: string = '';
   dateFin: string = '';
 
-  // Statistiques dynamiques globales
   globalStats: any = {
     totalReponses: 0,
     tauxReponseGlobal: 0,
     reponsesParJour: [],
     participationParType: {
       anonyme: 0,
-      connecte: 0
+      connecte: 0,
+      total: 0,
+      anonymePercentage: 0,
+      connectePercentage: 0
+    },
+    reponsesParType: {
+      anonyme: 0,
+      connecte: 0,
+      total: 0
     },
     evolutionParMois: []
   };
 
   loadingStats: boolean = false;
-
-  // Toast
   showToast = false;
   toastMessage = '';
   toastType = 'success';
+
+  private subscriptions: Subscription[] = [];
 
   constructor(private service: EnqueteService, private router: Router) { }
 
@@ -54,9 +61,12 @@ export class GestionEnquetesComponent implements OnInit {
       this.currentUser = JSON.parse(user);
       this.userID = this.currentUser.id;
     }
-
     this.loadEnquetes();
     this.loadGlobalStats();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   loadEnquetes(): void {
@@ -73,74 +83,74 @@ export class GestionEnquetesComponent implements OnInit {
     );
   }
 
-  // Charger les statistiques globales depuis l'API
-  loadGlobalStats(): void {
+  async loadGlobalStats(): Promise<void> {
     this.loadingStats = true;
     
-    // Récupérer les statistiques globales
-    this.service.getTauxReponseAdmin(this.userID).subscribe(
-      (res: any) => {
-        this.globalStats.tauxReponseGlobal = res.taux_reponse || 0;
-      },
-      (err) => {
-        console.error('Erreur chargement taux réponse', err);
-      }
-    );
+    try {
+      const [taux, participants, evolution, participationType] = await Promise.all([
+        this.service.getTauxReponseAdmin(this.userID).toPromise(),
+        this.service.getNombreParticipants(this.userID).toPromise(),
+        this.service.getEvolutionReponsesAdmin(this.userID).toPromise(),
+        this.service.getParticipationTypeStats(this.userID).toPromise()
+      ]);
 
-    // Récupérer le nombre total de participants
-    this.service.getNombreParticipants(this.userID).subscribe(
-      (res: any) => {
-        this.globalStats.totalReponses = res.totalusers || 0;
-      },
-      (err) => {
-        console.error('Erreur chargement participants', err);
+      this.globalStats.tauxReponseGlobal = taux?.taux_reponse || 0;
+      this.globalStats.totalReponses = participants?.totalusers || 0;
+      this.globalStats.reponsesParJour = evolution || [];
+      
+      if (participationType) {
+        this.globalStats.participationParType = {
+          anonyme: participationType.enquetes?.anonyme || 0,
+          connecte: participationType.enquetes?.connecte || 0,
+          total: participationType.enquetes?.total || 0,
+          anonymePercentage: participationType.enquetes?.anonymePercentage || 0,
+          connectePercentage: participationType.enquetes?.connectePercentage || 0
+        };
+        this.globalStats.reponsesParType = {
+          anonyme: participationType.reponses?.anonyme || 0,
+          connecte: participationType.reponses?.connecte || 0,
+          total: participationType.reponses?.total || 0
+        };
+      } else {
+        this.calculateLocalParticipationStats();
       }
-    );
 
-    // Récupérer l'évolution des réponses
-    this.service.getEvolutionReponsesAdmin(this.userID).subscribe(
-      (res: any[]) => {
-        this.globalStats.reponsesParJour = res || [];
-        this.prepareEvolutionData();
-      },
-      (err) => {
-        console.error('Erreur chargement évolution', err);
-        this.loadingStats = false;
-      }
-    );
-
-    // Récupérer les statistiques par type de participation
-    setTimeout(() => {
-      this.globalStats.participationParType = {
-        anonyme: this.enquetes.filter(e => e.typeParticipation === 'ANONYME').length,
-        connecte: this.enquetes.filter(e => e.typeParticipation === 'CONNECTE' || !e.typeParticipation).length
-      };
+      this.prepareEvolutionData();
+    } catch (err) {
+      console.error('Erreur chargement stats globales', err);
+      this.showToastMessage('Erreur de chargement des statistiques', 'error');
+      this.calculateLocalParticipationStats();
+    } finally {
       this.loadingStats = false;
-    }, 1000);
+    }
+  }
+
+  private calculateLocalParticipationStats(): void {
+    const total = this.enquetes.length;
+    const anonymeCount = this.enquetes.filter(e => e.typeParticipation === 'ANONYME').length;
+    const connecteCount = this.enquetes.filter(e => e.typeParticipation === 'CONNECTE' || !e.typeParticipation).length;
+    this.globalStats.participationParType = {
+      anonyme: anonymeCount,
+      connecte: connecteCount,
+      total: total,
+      anonymePercentage: total ? (anonymeCount / total) * 100 : 0,
+      connectePercentage: total ? (connecteCount / total) * 100 : 0
+    };
   }
 
   prepareEvolutionData(): void {
-    // Traiter les données d'évolution pour le graphique
-    if (this.globalStats.reponsesParJour && this.globalStats.reponsesParJour.length > 0) {
-      const groupedByMonth = this.groupByMonth(this.globalStats.reponsesParJour);
-      this.globalStats.evolutionParMois = groupedByMonth;
+    if (this.globalStats.reponsesParJour?.length) {
+      this.globalStats.evolutionParMois = this.groupByMonth(this.globalStats.reponsesParJour);
     }
   }
 
   groupByMonth(data: any[]): any[] {
     const months: { [key: string]: number } = {};
-    
     data.forEach(item => {
       const date = new Date(item.date);
       const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-      const monthName = date.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
-      
-      if (!months[monthKey]) {
-        months[monthKey] = 0;
-      }
-      months[monthKey] += item.count;
+      months[monthKey] = (months[monthKey] || 0) + item.count;
     });
-    
     return Object.keys(months).map(key => ({
       month: key,
       monthName: this.getMonthName(key),
@@ -161,63 +171,50 @@ export class GestionEnquetesComponent implements OnInit {
     this.stats.archivees = this.enquetes.filter(e => e.statut === 'Archivée').length;
   }
 
-  // Appliquer tous les filtres
   applyFilters(): void {
     let filtered = [...this.enquetes];
 
-    // Filtre par statut
     if (this.selectedFilter !== 'Toutes') {
-      filtered = filtered.filter(e => {
-        const statut = e.statut?.toLowerCase().trim();
-        const filterStatut = this.selectedFilter.toLowerCase().trim();
-        
-        if (filterStatut === 'fermee') return statut === 'fermee';
-        if (filterStatut === 'publiée') return statut === 'publiée';
-        if (filterStatut === 'brouillon') return statut === 'brouillon';
-        if (filterStatut === 'archivée') return statut === 'archivée';
-        
-        return false;
-      });
+      const filterMap: Record<string, string> = {
+        'Fermee': 'fermee',
+        'Publiée': 'publiée',
+        'Brouillon': 'brouillon',
+        'Archivée': 'archivée'
+      };
+      const target = filterMap[this.selectedFilter];
+      if (target) {
+        filtered = filtered.filter(e => e.statut?.toLowerCase() === target);
+      }
     }
 
-    // Filtre par type de participation
     if (this.selectedTypeParticipation !== 'TOUS') {
-      filtered = filtered.filter(e => {
-        const typeParticipation = e.typeParticipation?.toUpperCase().trim();
-        return typeParticipation === this.selectedTypeParticipation;
-      });
+      filtered = filtered.filter(e => e.typeParticipation?.toUpperCase() === this.selectedTypeParticipation);
     }
 
-    // Filtre par recherche texte
-    if (this.searchText.trim() !== '') {
-      const text = this.searchText.toLowerCase().trim();
+    if (this.searchText.trim()) {
+      const text = this.searchText.toLowerCase();
       filtered = filtered.filter(e =>
-        (e.titre?.toLowerCase() || '').includes(text) ||
-        (e.description?.toLowerCase() || '').includes(text) ||
-        (e.id?.toString() || '').includes(text)
+        e.titre?.toLowerCase().includes(text) ||
+        e.description?.toLowerCase().includes(text) ||
+        e.id?.toString().includes(text)
       );
     }
 
-    // Filtre par date
     if (this.dateDebut || this.dateFin) {
       filtered = filtered.filter(e => {
         if (!e.createAt) return true;
-        
-        const dateCreation = new Date(e.createAt);
-        dateCreation.setHours(0, 0, 0, 0);
-        
+        const creation = new Date(e.createAt);
+        creation.setHours(0, 0, 0, 0);
         if (this.dateDebut) {
           const debut = new Date(this.dateDebut);
           debut.setHours(0, 0, 0, 0);
-          if (dateCreation < debut) return false;
+          if (creation < debut) return false;
         }
-        
         if (this.dateFin) {
           const fin = new Date(this.dateFin);
           fin.setHours(23, 59, 59, 999);
-          if (dateCreation > fin) return false;
+          if (creation > fin) return false;
         }
-        
         return true;
       });
     }
@@ -225,28 +222,24 @@ export class GestionEnquetesComponent implements OnInit {
     this.filteredEnquetes = filtered;
   }
 
-  // Méthode appelée quand le filtre de statut change
   onStatutFilterChange(statut: string): void {
     this.selectedFilter = statut;
     this.applyFilters();
   }
 
-  // Méthode appelée quand le filtre de type de participation change
   onTypeParticipationChange(type: string): void {
     this.selectedTypeParticipation = type;
     this.applyFilters();
   }
 
-  // Vérifier si un filtre est actif
   isFilterActive(): boolean {
-    return this.searchText.trim() !== '' || 
-           this.selectedFilter !== 'Toutes' || 
-           this.selectedTypeParticipation !== 'TOUS' || 
-           this.dateDebut !== '' || 
-           this.dateFin !== '';
+    return !!this.searchText.trim() ||
+           this.selectedFilter !== 'Toutes' ||
+           this.selectedTypeParticipation !== 'TOUS' ||
+           !!this.dateDebut ||
+           !!this.dateFin;
   }
 
-  // Réinitialiser tous les filtres
   clearAllFilters(): void {
     this.searchText = '';
     this.selectedFilter = 'Toutes';
@@ -257,30 +250,25 @@ export class GestionEnquetesComponent implements OnInit {
     this.showToastMessage('Filtres réinitialisés', 'success');
   }
 
-  // Effacer la recherche
   clearSearch(): void {
     this.searchText = '';
     this.applyFilters();
   }
 
-  // Appliquer le filtre de date
   applyDateFilter(): void {
     this.applyFilters();
   }
 
-  // Effacer le filtre de date
   clearDateFilter(): void {
     this.dateDebut = '';
     this.dateFin = '';
     this.applyFilters();
   }
 
-  // Input search
   onSearchInput(): void {
     this.applyFilters();
   }
 
-  // Supprimer une enquête
   deleteEnquete(id: any): void {
     Swal.fire({
       title: 'Confirmation de suppression',
@@ -290,15 +278,19 @@ export class GestionEnquetesComponent implements OnInit {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler'
+      cancelButtonText: 'Annuler',
+      customClass: {
+        popup: 'swal-delete-popup',
+        confirmButton: 'swal-delete-confirm'
+      }
     }).then((result) => {
       if (result.isConfirmed) {
         this.service.removeEnquete(id).subscribe(
-          (res) => {
+          () => {
             this.enquetes = this.enquetes.filter(e => e.id !== id);
             this.updateStats();
             this.applyFilters();
-            this.loadGlobalStats(); // Recharger les stats globales
+            this.loadGlobalStats();
             this.showToastMessage('Enquête supprimée avec succès', 'success');
           },
           (err) => {
@@ -310,7 +302,6 @@ export class GestionEnquetesComponent implements OnInit {
     });
   }
 
-  // Publier une enquête
   publishEnquete(enquete: any): void {
     Swal.fire({
       title: 'Publier l\'enquête',
@@ -320,11 +311,15 @@ export class GestionEnquetesComponent implements OnInit {
       confirmButtonColor: '#9D50BB',
       cancelButtonColor: '#6c757d',
       confirmButtonText: 'Oui, publier',
-      cancelButtonText: 'Annuler'
+      cancelButtonText: 'Annuler',
+      customClass: {
+        popup: 'swal-publish-popup',
+        confirmButton: 'swal-publish-confirm'
+      }
     }).then((result) => {
       if (result.isConfirmed) {
         this.service.publishEnquete(enquete.id).subscribe(
-          (res) => {
+          () => {
             enquete.statut = 'Publiée';
             this.updateStats();
             this.applyFilters();
@@ -339,12 +334,119 @@ export class GestionEnquetesComponent implements OnInit {
     });
   }
 
-  // Voir les statistiques d'une enquête
   viewStats(enquete: any): void {
-    this.router.navigate(['/DetailEnquete', enquete.id]);
+    Swal.fire({
+      title: 'Chargement...',
+      text: 'Récupération des statistiques...',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+      customClass: { popup: 'swal-stats-loading' }
+    });
+
+    this.service.getEnqueteStats(enquete.id).subscribe({
+      next: (stats: any) => {
+        const totalParticipants = stats.totalReponses || 0;
+        const tauxReponse = stats.tauxReponse || 0;
+        let tempsMoyen = stats.tempsMoyenReponse || 0;
+        if (tempsMoyen > 1440) tempsMoyen = 0;
+        const questionsStats = stats.questionsStats || [];
+
+        let titreEnquete = this.escapeHtml(enquete.titre);
+        if (titreEnquete.length > 60) titreEnquete = titreEnquete.substring(0, 57) + '…';
+
+        let contenuHtml = '';
+
+        if (totalParticipants === 0) {
+          contenuHtml = `
+            <div class="stats-empty-state">
+              <i class="fas fa-envelope-open-text" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+              <p>Aucune participation enregistrée pour cette enquête.</p>
+           
+            </div>
+          `;
+        } else {
+          contenuHtml = `
+            <div class="stats-metrics">
+              <div class="stats-metric">
+                <div class="stats-metric-icon"><i class="fas fa-user-group"></i></div>
+                <div class="stats-metric-value">${totalParticipants}</div>
+                <div class="stats-metric-label">Participants</div>
+              </div>
+              <div class="stats-metric">
+                <div class="stats-metric-icon"><i class="fas fa-chart-simple"></i></div>
+                <div class="stats-metric-value">${tauxReponse}%</div>
+                <div class="stats-metric-label">Taux de réponse</div>
+              </div>
+              <div class="stats-metric">
+                <div class="stats-metric-icon"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stats-metric-value">${tempsMoyen}</div>
+                <div class="stats-metric-label">min en moyenne</div>
+              </div>
+            </div>
+          `;
+
+          if (questionsStats.length > 0) {
+            let questionsHtml = '<div class="stats-questions-header"><i class="fas fa-list-check"></i> <strong>Détail par question</strong></div>';
+            questionsStats.forEach((q: any) => {
+              const reponsesCount = q.reponsesCount || 0;
+              const pourcentage = totalParticipants > 0 ? (reponsesCount / totalParticipants) * 100 : 0;
+              let questionTexte = this.escapeHtml(q.questionText);
+              if (questionTexte.length > 80) questionTexte = questionTexte.substring(0, 77) + '…';
+              questionsHtml += `
+                <div class="stats-question-item">
+                  <div class="stats-question-text">
+                    <span title="${this.escapeHtml(q.questionText)}">${questionTexte}</span>
+                    <span class="stats-question-count">${reponsesCount} réponse(s)</span>
+                  </div>
+                  <div class="stats-progress-bar">
+                    <div class="stats-progress-fill" style="width: ${pourcentage}%;"></div>
+                  </div>
+                </div>
+              `;
+            });
+            contenuHtml += questionsHtml;
+          } else {
+            contenuHtml += '<div class="stats-empty"><i class="fas fa-chart-pie"></i> Aucune réponse détaillée</div>';
+          }
+        }
+
+        Swal.fire({
+          title: `📊 ${titreEnquete}`,
+          html: `<div class="stats-global-container">${contenuHtml}</div>`,
+          icon: totalParticipants === 0 ? 'info' : 'success',
+          confirmButtonText: 'Fermer',
+          confirmButtonColor: '#9D50BB',
+          width: '700px',
+          customClass: {
+            popup: 'swal-stats-popup',
+            title: 'swal-stats-title',
+            htmlContainer: 'swal-stats-html',
+            confirmButton: 'swal-stats-confirm'
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Erreur chargement stats enquête', err);
+        Swal.fire({
+          title: 'Erreur',
+          text: 'Impossible de charger les statistiques.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    });
   }
 
-  // Afficher un toast
+  private escapeHtml(text: string): string {
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   showToastMessage(message: string, type: string): void {
     this.toastMessage = message;
     this.toastType = type;
@@ -352,7 +454,6 @@ export class GestionEnquetesComponent implements OnInit {
     setTimeout(() => this.showToast = false, 3000);
   }
 
-  // Statistiques calculées dynamiquement
   calculateTotalResponses(): number {
     return this.globalStats.totalReponses;
   }
@@ -362,40 +463,168 @@ export class GestionEnquetesComponent implements OnInit {
   }
 
   getAnonymePercentage(): number {
-    const total = this.enquetes.length;
-    if (total === 0) return 0;
-    const anonymeCount = this.enquetes.filter(e => e.typeParticipation === 'ANONYME').length;
-    return Math.round((anonymeCount / total) * 100);
+    return Math.round(this.globalStats.participationParType?.anonymePercentage || 0);
   }
 
   getConnectePercentage(): number {
-    const total = this.enquetes.length;
-    if (total === 0) return 0;
-    const connecteCount = this.enquetes.filter(e => e.typeParticipation === 'CONNECTE' || !e.typeParticipation).length;
-    return Math.round((connecteCount / total) * 100);
+    return Math.round(this.globalStats.participationParType?.connectePercentage || 0);
   }
 
   getAnonymeDashArray(): string {
-    const percentage = this.getAnonymePercentage();
     const circumference = 2 * Math.PI * 40;
-    return (percentage / 100 * circumference).toString();
+    const percent = this.getAnonymePercentage();
+    return `${(percent / 100) * circumference} ${circumference}`;
   }
 
   getConnecteDashArray(): string {
-    const percentage = this.getConnectePercentage();
     const circumference = 2 * Math.PI * 40;
-    return (percentage / 100 * circumference).toString();
+    const percent = this.getConnectePercentage();
+    return `${(percent / 100) * circumference} ${circumference}`;
   }
 
   getConnecteDashOffset(): string {
-    const anonymePercentage = this.getAnonymePercentage();
     const circumference = 2 * Math.PI * 40;
-    return (anonymePercentage / 100 * circumference).toString();
+    const anonymePercent = this.getAnonymePercentage();
+    return `${- (anonymePercent / 100) * circumference}`;
   }
 
-  // Méthode pour obtenir le maximum des réponses pour le graphique
   getMaxReponses(): number {
-    if (!this.globalStats.evolutionParMois || this.globalStats.evolutionParMois.length === 0) return 100;
+    if (!this.globalStats.evolutionParMois?.length) return 100;
     return Math.max(...this.globalStats.evolutionParMois.map((item: any) => item.count), 100);
+  }
+
+  getReponsesAnonyme(): number {
+    return this.globalStats.reponsesParType?.anonyme || 0;
+  }
+
+  getReponsesConnecte(): number {
+    return this.globalStats.reponsesParType?.connecte || 0;
+  }
+
+  getProgressDashArray(nombreQuestions: number): string {
+    if (!nombreQuestions) return '0, 100';
+    const circumference = 2 * Math.PI * 20;
+    const progress = (nombreQuestions / 100) * circumference;
+    return `${progress} ${circumference}`;
+  }
+
+  showGlobalStatsInSwal(): void {
+    const totalReponses = this.calculateTotalResponses();
+    const tauxReponse = this.calculateResponseRate();
+    const reponsesAnonyme = this.getReponsesAnonyme();
+    const reponsesConnecte = this.getReponsesConnecte();
+    const totalEnquetes = this.enquetes.length;
+    const enquetesAnonyme = this.globalStats.participationParType?.anonyme || 0;
+    const enquetesConnecte = this.globalStats.participationParType?.connecte || 0;
+    const pourcentAnonyme = this.getAnonymePercentage();
+    const pourcentConnecte = this.getConnectePercentage();
+
+    // CSS inline forcé pour aligner tout à gauche
+    const forcedStyles = `
+      <style>
+        .global-stats-container {
+          text-align: left !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 1rem !important;
+        }
+        .global-stats-section {
+          background: #f8f9fe !important;
+          border-radius: 16px !important;
+          padding: 0.8rem 1.2rem !important;
+          border-left: 4px solid #9D50BB !important;
+          text-align: left !important;
+        }
+        .stats-header-icon {
+          font-weight: 700 !important;
+          margin-bottom: 0.5rem !important;
+          color: #9D50BB !important;
+          font-size: 0.9rem !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 0.4rem !important;
+          text-align: left !important;
+          justify-content: flex-start !important;
+          border-bottom: 1px solid rgba(157, 80, 187, 0.2) !important;
+          padding-bottom: 0.5rem !important;
+        }
+        .stats-row {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          padding: 0.5rem 0 !important;
+          border-bottom: 1px dashed #eef2f6 !important;
+          text-align: left !important;
+          width: 100% !important;
+        }
+        .stats-row:last-child {
+          border-bottom: none !important;
+        }
+        .stats-label {
+          color: #4f5b6f !important;
+          font-weight: 500 !important;
+          font-size: 0.85rem !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 0.6rem !important;
+          text-align: left !important;
+          justify-content: flex-start !important;
+          flex: 1 !important;
+        }
+        .stats-label i {
+          width: 20px !important;
+          color: #9D50BB !important;
+          font-size: 0.9rem !important;
+        }
+        .stats-value {
+          font-weight: 700 !important;
+          color: #1a1a2c !important;
+          background: white !important;
+          padding: 0.2rem 0.8rem !important;
+          border-radius: 20px !important;
+          text-align: right !important;
+          font-size: 0.85rem !important;
+          min-width: 70px !important;
+        }
+      </style>
+    `;
+
+    Swal.fire({
+      title: '📊 Statistiques globales',
+      html: forcedStyles + `
+        <div class="global-stats-container">
+          <div class="global-stats-section">
+            <div class="stats-header-icon"><i class="fas fa-chart-pie"></i> Participation</div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-chart-line"></i> Taux de réponse</span><span class="stats-value">${tauxReponse}%</span></div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-reply-all"></i> Réponses totales</span><span class="stats-value">${totalReponses}</span></div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-user-secret"></i> Réponses anonymes</span><span class="stats-value">${reponsesAnonyme}</span></div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-user-check"></i> Réponses connectées</span><span class="stats-value">${reponsesConnecte}</span></div>
+          </div>
+          <div class="global-stats-section">
+            <div class="stats-header-icon"><i class="fas fa-tasks"></i> Enquêtes</div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-clipboard-list"></i> Enquêtes créées</span><span class="stats-value">${totalEnquetes}</span></div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-user-secret"></i> Anonymes</span><span class="stats-value">${enquetesAnonyme} (${pourcentAnonyme}%)</span></div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-user-check"></i> Connectées</span><span class="stats-value">${enquetesConnecte} (${pourcentConnecte}%)</span></div>
+          </div>
+          <div class="global-stats-section">
+            <div class="stats-header-icon"><i class="fas fa-tag"></i> Statuts</div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-pen-fancy"></i> Brouillons</span><span class="stats-value">${this.stats.brouillons}</span></div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-share-alt"></i> Publiées</span><span class="stats-value">${this.stats.publiees}</span></div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-lock"></i> Fermées</span><span class="stats-value">${this.stats.fermes}</span></div>
+            <div class="stats-row"><span class="stats-label"><i class="fas fa-box-archive"></i> Archivées</span><span class="stats-value">${this.stats.archivees}</span></div>
+          </div>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Fermer',
+      confirmButtonColor: '#9D50BB',
+      width: '650px',
+      customClass: {
+        popup: 'swal-global-stats-popup',
+        title: 'swal-global-title',
+        htmlContainer: 'swal-global-html',
+        confirmButton: 'swal-global-confirm'
+      }
+    });
   }
 }

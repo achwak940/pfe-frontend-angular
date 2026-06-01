@@ -17,7 +17,6 @@ interface UserInfo {
   date_creation: string;
   date_modification: string;
 }
-
 @Component({
   selector: 'app-modfifier-profil',
   templateUrl: './modfifier-profil.component.html',
@@ -35,6 +34,7 @@ export class ModfifierProfilComponent implements OnInit {
   selectedFile: File | null = null;
   userId: number = 0;
   debugInfo: string = '';
+  role:string="";
   
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -67,6 +67,7 @@ export class ModfifierProfilComponent implements OnInit {
         
         if (response && response.profil) {
           this.userInfo = response.profil;
+          this.role=response.profil.role.nom
         } else if (response) {
           this.userInfo = response;
         }

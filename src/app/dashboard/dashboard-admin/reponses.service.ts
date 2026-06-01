@@ -1,5 +1,4 @@
-// reponses.service.ts - Correction de la méthode
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -7,59 +6,81 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ReponsesService {
+  private apiUrl = 'http://localhost:3000/reponse';
 
   constructor(private http: HttpClient) { }
 
   getAllReponsesByAdmin(userId: number): Observable<any> {
-    return this.http.get<any>(`http://localhost:3000/reponse/get/all/${userId}`);
+    return this.http.get<any>(`${this.apiUrl}/get/all/${userId}`);
   }
 
   exportAllReponsesExcel(userId: number): Observable<Blob> {
-    return this.http.get(`http://localhost:3000/reponse/exportExcel/all/${userId}`, {
+    return this.http.get(`${this.apiUrl}/exportExcel/all/${userId}`, {
       responseType: 'blob'
     });
   }
 
-  exportAllReponsesPdf(id: number): Observable<Blob> {
-    return this.http.get(`http://localhost:3000/reponse/export-pdf/reponses/${id}`, {
+  exportAllReponsesPdf(userId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export-pdf/reponses/${userId}`, {
       responseType: 'blob'
     });
   }
 
-  exportReponsesCsv(id: number): Observable<Blob> {
-    return this.http.get(`http://localhost:3000/reponse/export-csv/reponses/${id}`, {
+  exportReponsesCsv(userId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export-csv/reponses/${userId}`, {
       responseType: 'blob'
     });
   }
 
   getNombreReponsesByAdmin(id: number): Observable<any> {
-    return this.http.get(`http://localhost:3000/reponse/count/All/Reponses/${id}`);
+    return this.http.get(`${this.apiUrl}/count/All/Reponses/${id}`);
   }
 
-  // CORRECTION: Méthode avec le bon nom (getDetaillesReponseByid)
   getDetaillesReponseByid(id: number): Observable<any> {
-    return this.http.get(`http://localhost:3000/reponse/detailles/${id}`);
+    return this.http.get(`${this.apiUrl}/detailles/${id}`);
   }
 
-  // Nouveaux endpoints pour les statistiques
   getStatsParEnquete(userId: number): Observable<any> {
-    return this.http.get(`http://localhost:3000/reponse/stats/enquetes/${userId}`);
+    return this.http.get(`${this.apiUrl}/stats/enquetes/${userId}`);
   }
 
-  getTopUtilisateurs(userId: number): Observable<any> {
-    return this.http.get(`http://localhost:3000/reponse/top-users/${userId}`);
+  getTopUtilisateurs(userId: number, limit: number = 5): Observable<any> {
+    return this.http.get(`${this.apiUrl}/top-users/${userId}?limit=${limit}`);
   }
 
   getTauxCompletionGlobal(userId: number): Observable<any> {
-    return this.http.get(`http://localhost:3000/reponse/taux-completion/${userId}`);
+    return this.http.get(`${this.apiUrl}/taux-completion/${userId}`);
   }
 
-  // CORRECTION: Méthode avec un seul paramètre, le deuxième est optionnel via query params
   getParticipationParPeriode(userId: number, periode?: string): Observable<any> {
-    let url = `http://localhost:3000/reponse/participation-periode/${userId}`;
+    let params = new HttpParams();
     if (periode) {
-      url += `?periode=${periode}`;
+      params = params.set('periode', periode);
     }
-    return this.http.get(url);
+    return this.http.get(`${this.apiUrl}/participation-periode/${userId}`, { params });
+  }
+
+  getEvolutionReponses(userId: number, periode: string = 'week'): Observable<any> {
+    return this.http.get(`${this.apiUrl}/evolution-reponses/${userId}?periode=${periode}`);
+  }
+
+  getSurveyStatusStats(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/survey-status/${userId}`);
+  }
+
+  getParticipationParEnquete(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/participation-enquetes/${userId}`);
+  }
+
+  getTopEnquetes(userId: number, periode: string = 'week', limit: number = 5): Observable<any> {
+    return this.http.get(`${this.apiUrl}/top-enquetes/${userId}?periode=${periode}&limit=${limit}`);
+  }
+
+  getRecentEnquetes(userId: number, limit: number = 3): Observable<any> {
+    return this.http.get(`${this.apiUrl}/recent-enquetes/${userId}?limit=${limit}`);
+  }
+
+  getRecentActivities(userId: number, limit: number = 5): Observable<any> {
+    return this.http.get(`${this.apiUrl}/recent-activities/${userId}?limit=${limit}`);
   }
 }

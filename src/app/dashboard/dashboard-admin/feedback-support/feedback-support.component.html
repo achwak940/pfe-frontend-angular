@@ -1,5 +1,5 @@
 <div class="feedback-dashboard">
-  <!-- HEADER AVEC ANIMATION -->
+  <!-- HEADER -->
   <div class="header animate-slide-down">
     <div class="header-left">
       <div class="title-badge">
@@ -18,21 +18,18 @@
     <div class="header-right">
       <div class="stats-badge glass-effect">
         <div class="stat-item" *ngFor="let stat of statsData">
-          <i [class]="stat.icon"></i>
+          <i [class]="stat.icon" [style.color]="stat.color"></i>
           <div class="stat-info">
             <span class="stat-value">{{stat.value}}</span>
             <span class="stat-label">{{stat.label}}</span>
           </div>
         </div>
       </div>
-      <button class="btn btn-primary btn-ripple" (click)="openNewTicket()">
-        <i class="fas fa-plus-circle"></i>
-        <span>Nouveau ticket</span>
-      </button>
+  
     </div>
   </div>
 
-  <!-- FILTRES SECTION AVEC DESIGN MODERNE -->
+  <!-- FILTRES -->
   <div class="filters-section glass-effect animate-slide-up">
     <div class="filters-header">
       <div class="filters-title">
@@ -52,7 +49,6 @@
           [(ngModel)]="searchText" 
           (input)="applyFilters()"
         >
-        <div class="search-shortcut">⌘K</div>
       </div>
       <div class="filter-group">
         <div class="filter-item">
@@ -62,7 +58,6 @@
             <option value="suggestion">💡 Suggestion</option>
             <option value="probleme_technique">🐛 Problème technique</option>
             <option value="question">❓ Question</option>
-            <option value="autre">📝 Autre</option>
           </select>
         </div>
 
@@ -73,7 +68,7 @@
             <option value="nouveau">🆕 Nouveau</option>
             <option value="en_cours">⏳ En cours</option>
             <option value="resolu">✅ Résolu</option>
-            <option value="ignore">⏭️ Ignoré</option>
+            <option value="annule">🚫 Annulé</option>
           </select>
         </div>
 
@@ -121,41 +116,13 @@
         <table class="modern-table">
           <thead>
             <tr>
-              <th>
-                <div class="th-content">
-                  <i class="fas fa-user"></i> Utilisateur
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <i class="fas fa-tag"></i> Type
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <i class="fas fa-poll"></i> Enquête
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <i class="fas fa-comment"></i> Message
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <i class="fas fa-calendar"></i> Date
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <i class="fas fa-flag"></i> Statut
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <i class="fas fa-cog"></i> Actions
-                </div>
-              </th>
+              <th>Utilisateur</th>
+              <th>Type</th>
+              <th>Enquête</th>
+              <th>Message</th>
+              <th>Date</th>
+              <th>Statut</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -205,9 +172,23 @@
                   <button class="action-btn view" (click)="viewDetails(fb)" title="Voir détails">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button class="action-btn resolve" (click)="markResolved(fb)" 
-                          *ngIf="fb.statut !== 'resolu'" title="Marquer comme résolu">
+                  <button class="action-btn resolve" 
+                          (click)="markResolved(fb)" 
+                          *ngIf="fb.statut !== 'resolu'" 
+                          title="Marquer comme résolu">
                     <i class="fas fa-check-circle"></i>
+                  </button>
+                  <button class="action-btn cancel" 
+                          (click)="cancelTicket(fb)" 
+                          *ngIf="fb.statut !== 'annule' && fb.statut !== 'resolu'" 
+                          title="Annuler le ticket">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                  <button class="action-btn reopen" 
+                          (click)="reopenTicket(fb)" 
+                          *ngIf="fb.statut === 'annule' || fb.statut === 'resolu'" 
+                          title="Réouvrir le ticket">
+                    <i class="fas fa-folder-open"></i>
                   </button>
                   <button class="action-btn delete" (click)="deleteFeedback(fb)" title="Supprimer">
                     <i class="fas fa-trash-alt"></i>
@@ -233,7 +214,7 @@
         </table>
       </div>
 
-      <!-- PAGINATION MODERNE -->
+      <!-- PAGINATION -->
       <div class="pagination-modern" *ngIf="totalPages > 1">
         <div class="pagination-info">
           Affichage de {{(currentPage-1)*itemsPerPage+1}} à {{Math.min(currentPage*itemsPerPage, filteredFeedbacks.length)}} sur {{filteredFeedbacks.length}} résultats
@@ -251,10 +232,16 @@
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
+        <select class="items-per-page" [(ngModel)]="itemsPerPage" (change)="updatePagination(); currentPage=1">
+          <option [value]="5">5 par page</option>
+          <option [value]="10">10 par page</option>
+          <option [value]="20">20 par page</option>
+          <option [value]="50">50 par page</option>
+        </select>
       </div>
     </div>
 
-    <!-- ACTIVITY SIDEBAR MODERNE -->
+    <!-- ACTIVITY SIDEBAR -->
     <div class="activity-sidebar glass-effect animate-slide-right">
       <div class="sidebar-header">
         <h3>
@@ -298,223 +285,302 @@
     </div>
   </div>
 
-  <!-- STATISTIQUES GRID AVEC DESIGN MODERNE -->
+  <!-- STATISTIQUES -->
   <div class="stats-grid">
-    <div class="stats-card glass-effect animate-scale-in" style="animation-delay: 0s">
+    <div class="stats-card glass-effect animate-scale-in">
       <div class="card-header">
         <h3>
           <i class="fas fa-chart-pie"></i>
           Répartition par type
         </h3>
-        <div class="card-tooltip">
-          <i class="fas fa-info-circle"></i>
-          <span class="tooltip-text">Distribution des feedbacks par catégorie</span>
-        </div>
       </div>
       <div class="card-content">
-        <div class="pie-chart-container">
-          <div class="pie-chart-small">
-            <svg viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#f3e5f5" stroke-width="10"/>
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#9D50BB" stroke-width="10" 
-                      [attr.stroke-dasharray]="283" [attr.stroke-dashoffset]="getTypeOffset()" 
-                      transform="rotate(-90 50 50)"/>
-            </svg>
-          </div>
-          <div class="legend-modern">
-            <div class="legend-item" *ngFor="let type of typeStats">
-              <span class="legend-dot" [style.backgroundColor]="type.color"></span>
-              <span class="legend-label">{{type.label}}</span>
-              <span class="legend-value">{{type.count}}</span>
-              <span class="legend-percent">{{type.percent}}%</span>
+        <div class="stats-list">
+          <div class="stat-row" *ngFor="let type of typeStats">
+            <div class="stat-info">
+              <span class="stat-icon">{{type.icon}}</span>
+              <span class="stat-label">{{type.label}}</span>
             </div>
+            <div class="stat-bar-container">
+              <div class="stat-bar" [style.width.%]="type.percent" [style.backgroundColor]="type.color"></div>
+            </div>
+            <div class="stat-value">{{type.count}} ({{type.percent}}%)</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="stats-card glass-effect animate-scale-in" style="animation-delay: 0.1s">
+    <div class="stats-card glass-effect animate-scale-in">
       <div class="card-header">
         <h3>
           <i class="fas fa-chart-line"></i>
           Taux de résolution
         </h3>
-        <div class="card-tooltip">
-          <i class="fas fa-info-circle"></i>
-          <span class="tooltip-text">Pourcentage de feedbacks résolus</span>
-        </div>
       </div>
       <div class="card-content">
-        <div class="progress-container">
-          <div class="progress-circle-large">
+        <div class="resolution-stats">
+          <div class="resolution-circle">
             <svg viewBox="0 0 120 120">
               <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(157, 80, 187, 0.1)" stroke-width="12"/>
-              <circle class="progress-ring" cx="60" cy="60" r="54" fill="none" stroke="url(#gradient)" stroke-width="12" 
-                      [attr.stroke-dasharray]="339" [attr.stroke-dashoffset]="getResolutionOffset()" 
+              <circle cx="60" cy="60" r="54" fill="none" stroke="#9D50BB" stroke-width="12" 
+                      [attr.stroke-dasharray]="339" 
+                      [attr.stroke-dashoffset]="339 - (339 * getResolutionRate() / 100)" 
                       transform="rotate(-90 60 60)"/>
-              <defs>
-                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#9D50BB"/>
-                  <stop offset="100%" stop-color="#b46fd3"/>
-                </linearGradient>
-              </defs>
             </svg>
-            <div class="progress-text">
-              <span class="progress-value">{{getResolutionRate()}}%</span>
-              <span class="progress-label">Résolu</span>
+            <div class="resolution-text">
+              <span class="resolution-value">{{getResolutionRate()}}%</span>
+              <span class="resolution-label">Résolu</span>
             </div>
           </div>
-          <div class="stats-numbers-modern">
-            <div class="stat-number-item">
-              <div class="stat-number-value">{{resolus}}</div>
-              <div class="stat-number-label">Résolus</div>
+          <div class="stats-numbers">
+            <div class="stat-number">
+              <span class="number">{{resolus}}</span>
+              <span class="label">Résolus</span>
             </div>
-            <div class="stat-number-item">
-              <div class="stat-number-value">{{enCours}}</div>
-              <div class="stat-number-label">En cours</div>
+            <div class="stat-number">
+              <span class="number">{{enCours}}</span>
+              <span class="label">En cours</span>
             </div>
-            <div class="stat-number-item">
-              <div class="stat-number-value">{{nouveaux}}</div>
-              <div class="stat-number-label">Nouveaux</div>
+            <div class="stat-number">
+              <span class="number">{{nouveaux}}</span>
+              <span class="label">Nouveaux</span>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="stats-card glass-effect animate-scale-in" style="animation-delay: 0.2s">
-      <div class="card-header">
-        <h3>
-          <i class="fas fa-chart-bar"></i>
-          Activité hebdomadaire
-        </h3>
-        <select class="period-select-modern" [(ngModel)]="activityPeriod" (change)="updateActivity()">
-          <option value="7">7 derniers jours</option>
-          <option value="30">30 derniers jours</option>
-          <option value="90">90 derniers jours</option>
-        </select>
-      </div>
-      <div class="card-content">
-        <div class="bar-chart-modern">
-          <div class="bar-group" *ngFor="let day of getActivityData()">
-            <div class="bar-wrapper">
-              <div class="bar" [style.height.px]="day.count * 3" [style.animation-delay]="'0.' + i + 's'" *ngFor="let day of getActivityData(); let i = index"></div>
+            <div class="stat-number">
+              <span class="number">{{annules}}</span>
+              <span class="label">Annulés</span>
             </div>
-            <div class="bar-label">{{day.label}}</div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL DÉTAILS FEEDBACK AVEC DESIGN MODERNE -->
-<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeModal()">
-  <div class="modal-container glass-effect" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>
-        <i class="fas fa-info-circle"></i>
-        Détail du feedback
-      </h3>
-      <button class="modal-close" (click)="closeModal()">
-        <i class="fas fa-times"></i>
-      </button>
+  <!-- MODAL DÉTAILS FEEDBACK -->
+  <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeModal()">
+    <div class="modal-container glass-effect" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-info-circle"></i>
+          Détail du feedback
+        </h3>
+        <button class="modal-close" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body" *ngIf="selectedFeedback">
+        <div class="feedback-detail-modern">
+          <div class="detail-header">
+            <div class="user-info-large">
+              <div class="user-avatar-large">
+                {{(selectedFeedback.utilisateur?.nom || 'A')[0] | uppercase}}
+              </div>
+              <div class="user-info-text">
+                <h4>{{selectedFeedback.utilisateur?.nom || 'Anonyme'}}</h4>
+                <span>{{selectedFeedback.utilisateur?.email || '-'}}</span>
+              </div>
+            </div>
+            <div class="status-badge-large" [ngClass]="getStatusClass(selectedFeedback.statut)">
+              {{getStatusLabel(selectedFeedback.statut)}}
+            </div>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-card">
+              <div class="detail-label">
+                <i class="fas fa-tag"></i> Type
+              </div>
+              <div class="detail-value">
+                <span class="badge type" [ngClass]="getTypeClass(selectedFeedback.type)">
+                  {{getTypeIcon(selectedFeedback.type)}} {{getTypeLabel(selectedFeedback.type)}}
+                </span>
+              </div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-label">
+                <i class="fas fa-poll"></i> Enquête
+              </div>
+              <div class="detail-value">{{selectedFeedback.enquete?.titre || '-'}}</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-label">
+                <i class="fas fa-calendar"></i> Date
+              </div>
+              <div class="detail-value">{{selectedFeedback.date_creation | date:'dd/MM/yyyy HH:mm'}}</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-label">
+                <i class="fas fa-flag"></i> Statut
+              </div>
+              <div class="detail-value">
+                <select class="status-select-modern" [(ngModel)]="selectedFeedback.statut" 
+                        (change)="updateStatus(selectedFeedback)">
+                  <option value="nouveau">🆕 Nouveau</option>
+                  <option value="en_cours">⏳ En cours</option>
+                  <option value="resolu">✅ Résolu</option>
+                  <option value="annule">🚫 Annulé</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="message-card">
+            <div class="message-label">
+              <i class="fas fa-comment-dots"></i> Message
+            </div>
+            <div class="message-content">{{selectedFeedback.message}}</div>
+          </div>
+
+          <div class="reply-card" *ngIf="selectedFeedback.statut !== 'resolu' && selectedFeedback.statut !== 'annule'">
+            <div class="reply-label">
+              <i class="fas fa-reply-all"></i> Réponse
+            </div>
+            <textarea rows="4" placeholder="Écrire une réponse..." [(ngModel)]="replyText" class="reply-textarea"></textarea>
+            <div class="reply-actions">
+              <button class="btn btn-outline" (click)="closeModal()">Annuler</button>
+              <button class="btn btn-primary" (click)="sendReply()">
+                <i class="fas fa-paper-plane"></i> Envoyer la réponse
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-actions-left">
+          <button class="btn btn-outline" (click)="closeModal()">
+            <i class="fas fa-times"></i> Fermer
+          </button>
+        </div>
+        <div class="modal-actions-right">
+          <ng-container *ngIf="selectedFeedback">
+            <ng-container *ngIf="selectedFeedback.statut !== 'resolu' && selectedFeedback.statut !== 'annule'">
+              <button class="btn btn-success" (click)="markResolved(selectedFeedback); closeModal()">
+                <i class="fas fa-check-circle"></i> Résoudre
+              </button>
+              <button class="btn btn-warning" (click)="cancelTicket(selectedFeedback); closeModal()">
+                <i class="fas fa-ban"></i> Annuler
+              </button>
+            </ng-container>
+            <ng-container *ngIf="selectedFeedback.statut === 'annule' || selectedFeedback.statut === 'resolu'">
+              <button class="btn btn-primary" (click)="reopenTicket(selectedFeedback); closeModal()">
+                <i class="fas fa-folder-open"></i> Réouvrir
+              </button>
+            </ng-container>
+          </ng-container>
+          <button class="btn btn-outline" (click)="copyToClipboard(selectedFeedback?.utilisateur?.email || '')">
+            <i class="fas fa-copy"></i> Copier email
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="modal-body" *ngIf="selectedFeedback">
-      <div class="feedback-detail-modern">
-        <div class="detail-header">
-          <div class="user-info-large">
-            <div class="user-avatar-large">
-              {{(selectedFeedback.utilisateur?.nom || 'A')[0] | uppercase}}
-            </div>
-            <div class="user-info-text">
-              <h4>{{selectedFeedback.utilisateur?.nom || 'Anonyme'}}</h4>
-              <span>{{selectedFeedback.utilisateur?.email || '-'}}</span>
-            </div>
-          </div>
-          <div class="status-badge-large" [ngClass]="getStatusClass(selectedFeedback.statut)">
-            <i [class]="getStatusIcon(selectedFeedback.statut)"></i>
-            {{getStatusLabel(selectedFeedback.statut)}}
-          </div>
-        </div>
+  </div>
 
-        <div class="detail-grid">
-          <div class="detail-card">
-            <div class="detail-label">
-              <i class="fas fa-tag"></i> Type
-            </div>
-            <div class="detail-value">
-              <span class="badge type" [ngClass]="getTypeClass(selectedFeedback.type)">
-                {{getTypeIcon(selectedFeedback.type)}} {{getTypeLabel(selectedFeedback.type)}}
-              </span>
-            </div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-label">
-              <i class="fas fa-poll"></i> Enquête
-            </div>
-            <div class="detail-value">{{selectedFeedback.enquete?.titre || '-'}}</div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-label">
-              <i class="fas fa-calendar"></i> Date
-            </div>
-            <div class="detail-value">{{selectedFeedback.date_creation | date:'dd/MM/yyyy HH:mm'}}</div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-label">
-              <i class="fas fa-flag"></i> Statut
-            </div>
-            <div class="detail-value">
-              <select class="status-select-modern" [(ngModel)]="selectedFeedback.statut" 
-                      (change)="updateStatus(selectedFeedback)">
-                <option value="nouveau">🆕 Nouveau</option>
-                <option value="en_cours">⏳ En cours</option>
-                <option value="resolu">✅ Résolu</option>
-                <option value="ignore">⏭️ Ignoré</option>
-              </select>
+  <!-- MODAL AJOUTER FEEDBACK -->
+  <div class="modal-overlay" *ngIf="showAddFeedbackModal" (click)="closeAddFeedbackModal()">
+    <div class="modal-container glass-effect" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-plus-circle"></i>
+          Ajouter un feedback
+        </h3>
+        <button class="modal-close" (click)="closeAddFeedbackModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="submitFeedback()" #feedbackForm="ngForm">
+          <div class="form-group">
+            <label>
+              <i class="fas fa-tag"></i>
+              Type de feedback *
+            </label>
+            <div class="type-buttons">
+              <button type="button" class="type-btn" [class.active]="newFeedback.type === 'suggestion'" (click)="newFeedback.type = 'suggestion'">
+                💡 Suggestion
+              </button>
+              <button type="button" class="type-btn" [class.active]="newFeedback.type === 'probleme_technique'" (click)="newFeedback.type = 'probleme_technique'">
+                🐛 Problème technique
+              </button>
+              <button type="button" class="type-btn" [class.active]="newFeedback.type === 'question'" (click)="newFeedback.type = 'question'">
+                ❓ Question
+              </button>
             </div>
           </div>
-        </div>
 
-        <div class="message-card">
-          <div class="message-label">
-            <i class="fas fa-comment-dots"></i> Message
+          <div class="form-group">
+            <label>
+              <i class="fas fa-comment"></i>
+              Message *
+            </label>
+            <textarea rows="5" [(ngModel)]="newFeedback.message" name="message" class="form-control" placeholder="Décrivez votre suggestion, problème ou question..." required></textarea>
           </div>
-          <div class="message-content">{{selectedFeedback.message}}</div>
-        </div>
 
-        <div class="reply-card" *ngIf="selectedFeedback.statut !== 'resolu'">
-          <div class="reply-label">
-            <i class="fas fa-reply-all"></i> Réponse
+          <div class="form-group" *ngIf="surveysList.length > 0">
+            <label>
+              <i class="fas fa-poll"></i>
+              Enquête associée (optionnel)
+            </label>
+            <select class="form-control" [(ngModel)]="newFeedback.enqueteId" name="enqueteId">
+              <option [value]="null">-- Aucune enquête --</option>
+              <option *ngFor="let survey of surveysList" [value]="survey.id">{{ survey.titre }}</option>
+            </select>
           </div>
-          <textarea rows="4" placeholder="Écrire une réponse..." [(ngModel)]="replyText" class="reply-textarea"></textarea>
-          <div class="reply-actions">
-            <button class="btn btn-outline" (click)="closeModal()">Annuler</button>
-            <button class="btn btn-primary" (click)="sendReply()">
-              <i class="fas fa-paper-plane"></i> Envoyer la réponse
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" (click)="closeAddFeedbackModal()">
+              <i class="fas fa-times"></i> Annuler
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="!feedbackForm.valid || isSubmitting">
+              <i class="fas fa-paper-plane" [class.fa-spin]="isSubmitting"></i>
+              {{ isSubmitting ? 'Envoi...' : 'Envoyer le feedback' }}
             </button>
           </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TOUTES ACTIVITÉS -->
+  <div class="modal-overlay" *ngIf="showAllActivitiesModal" (click)="closeActivityModal()">
+    <div class="modal-container glass-effect" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-history"></i>
+          Toutes les activités
+        </h3>
+        <button class="modal-close" (click)="closeActivityModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="activity-list-full">
+          <div class="activity-item-full" *ngFor="let activity of recentActivities">
+            <div class="activity-icon-full" [class]="activity.isNew ? 'new' : ''">
+              <i [class]="activity.icon"></i>
+            </div>
+            <div class="activity-content-full">
+              <div class="activity-text-full">{{activity.text}}</div>
+              <div class="activity-time-full">{{formatTimeAgo(activity.time)}}</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- TOAST NOTIFICATIONS MODERNES -->
-<div class="toast-container">
-  <div class="toast-modern" *ngFor="let toast of toasts" [class]="toast.type" 
-       (click)="removeToast(toast)">
-    <div class="toast-icon">
-      <i [class]="toast.icon"></i>
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-container">
+    <div class="toast-modern" *ngFor="let toast of toasts" [class]="toast.type" (click)="removeToast(toast)">
+      <div class="toast-icon">
+        <i [class]="toast.icon"></i>
+      </div>
+      <div class="toast-content">
+        <strong>{{toast.title}}</strong>
+        <span>{{toast.message}}</span>
+      </div>
+      <button class="toast-close" (click)="$event.stopPropagation(); removeToast(toast)">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="toast-progress"></div>
     </div>
-    <div class="toast-content">
-      <strong>{{toast.title}}</strong>
-      <span>{{toast.message}}</span>
-    </div>
-    <button class="toast-close">
-      <i class="fas fa-times"></i>
-    </button>
-    <div class="toast-progress" [style.animationDuration]="'5s'"></div>
   </div>
 </div>

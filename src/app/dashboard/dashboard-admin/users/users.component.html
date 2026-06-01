@@ -1,242 +1,283 @@
 <div class="user-selection-dashboard">
-       
-        <div class="header">
-            <div class="header-left">
-                <h1>
-                    <i class="fas fa-users" style="margin-right: 0.5rem;"></i>
-                    Sélection des participants
-                </h1>
-                <p class="subtitle">Filtrez et sélectionnez les utilisateurs pour envoyer vos enquêtes</p>
-            </div>
-            <div class="header-right">
-                 <div class="quick-filters">
-                <button class="filter-chip active" >
-                    <i class="fas fa-users"></i> Tous ({{nombreUsers||0}})
-                </button>
-                <button class="filter-chip">
-                    <i class="fas fa-check-circle"></i> Actifs ({{nombreUsersActifs || 0}})
-                </button>
-                <button class="filter-chip">
-                    <i class="fas fa-clock"></i> Nouveaux ({{nombreUsersNouveaux || 0}})
-                </button>
-            </div>
+  <div class="header">
+    <div class="header-left">
+      <h1>
+        <i class="fas fa-users" style="margin-right: 0.5rem;"></i>
+        Sélection des participants
+      </h1>
+      <p class="subtitle">Filtrez et sélectionnez les utilisateurs pour envoyer vos enquêtes</p>
+    </div>
+    <div class="header-right">
+      <div class="quick-filters">
+        <button class="filter-chip active">
+          <i class="fas fa-users"></i> Tous ({{nombreUsers||0}})
+        </button>
+        <button class="filter-chip">
+          <i class="fas fa-check-circle"></i> Actifs ({{nombreUsersActifs || 0}})
+        </button>
+        <button class="filter-chip">
+          <i class="fas fa-clock"></i> Nouveaux ({{nombreUsersNouveaux || 0}})
+        </button>
+      </div>
       <div class="export-dropdown" style="position: relative;">
-  <button class="btn btn-primary btn-icon" (click)="toggleExportDropdown()">
-   <i class="fas fa-download"></i>
-<span>Exporter tout</span>
-    <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 8px;"></i>
-  </button>
-
-  <div class="dropdown-menu" [class.show]="exportDropdownVisible" style="position: absolute; top: 100%; left: 0; z-index: 1000;">
-    <button class="dropdown-item" (click)="downloadExcel()">
-      <i class="fas fa-file-excel" style="color: #1e7e34;"></i>
-      Excel (XLSX)
-    </button>
-    <button class="dropdown-item" (click)="telechargementPdf()" >
-      <i class="fas fa-file-pdf" style="color: #dc3545;"></i>
-      PDF
-    </button>
-    <button class="dropdown-item" (click)="downloadCSV()" >
-      <i class="fas fa-file-csv" style="color: #28a745;"></i>
-      CSV
-    </button>
+        <button class="btn btn-primary btn-icon" (click)="toggleExportDropdown()">
+          <i class="fas fa-download"></i>
+          <span>Exporter tout</span>
+          <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 8px;"></i>
+        </button>
+        <div class="dropdown-menu" [class.show]="exportDropdownVisible">
+          <button class="dropdown-item" (click)="downloadExcel()">
+            <i class="fas fa-file-excel" style="color: #1e7e34;"></i> Excel (XLSX)
+          </button>
+          <button class="dropdown-item" (click)="telechargementPdf()">
+            <i class="fas fa-file-pdf" style="color: #dc3545;"></i> PDF
+          </button>
+          <button class="dropdown-item" (click)="downloadCSV()">
+            <i class="fas fa-file-csv" style="color: #28a745;"></i> CSV
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
-            </div>
+
+  <div class="search-advanced-section">
+    <div class="search-main">
+      <div class="search-wrapper large">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Rechercher par prenom, nom, email, téléphone..." [(ngModel)]="rechText" (input)="filterUsers()">
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-panel">
+    <div class="filters-row">
+      <select class="filter-select">
+        <option>Tous les statuts</option>
+        <option>Actif</option>
+        <option>Inactif</option>
+      </select>
+      <select class="filter-select">
+        <option>Toutes les enquêtes reçues</option>
+        <option>Ont répondu</option>
+        <option>N'ont pas répondu</option>
+      </select>
+      <div class="date-range-compact">
+        <input type="date" class="date-input">
+        <span>-</span>
+        <input type="date" class="date-input">
+      </div>
+      <button class="btn btn-primary">
+        <i class="fas fa-sliders-h"></i> Appliquer
+      </button>
+    </div>
+  </div>
+
+  <div class="selection-stats">
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #f3e5f5 !important;">
+          <i class="fas fa-check-double" style="color: #9D50BB !important;"></i>
         </div>
-        <div class="search-advanced-section">
-            <div class="search-main">
-                <div class="search-wrapper large">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Rechercher par prenom,nom, email, téléphone..." [(ngModel)]="rechText"
-                    (input)="filterUsers()"
-                    >
-                   
-                </div>
-            </div>
-
-           
+        <div class="stat-details">
+          <span class="stat-value" id="selectedCount">0</span>
+          <span class="stat-label">Sélectionnés</span>
         </div>
-        <div class="filters-panel">
-            <div class="filters-row">
-                <select class="filter-select">
-                    <option>Tous les statuts</option>
-                    <option>Actif</option>
-                    <option>Inactif</option>
-                    <option>En attente</option>
-                    <option>Bloqué</option>
-                </select>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-envelope"></i></div>
+        <div class="stat-details">
+          <span class="stat-value">{{nombreUsers || 0}}</span>
+          <span class="stat-label">À contacter</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-details">
+          <span class="stat-value">{{taux_reponse || 0}}%</span>
+          <span class="stat-label">Taux de réponse</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-details">
+          <span class="stat-value">2.4j</span>
+          <span class="stat-label">Temps moyen</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-                <select class="filter-select">
-                    <option>Toutes les enquêtes reçues</option>
-                    <option>Ont répondu</option>
-                    <option>N'ont pas répondu</option>
-                    <option>En cours</option>
-                </select>
+  <div class="users-table-container">
+    <div class="table-header">
+      <div class="select-all">
+        <label class="checkbox">
+          <input type="checkbox" (change)="changerSelectionTout($event)">
+          <span class="checkmark"></span>
+        </label>
+        <span>Sélectionner tout</span>
+      </div>
+      <div class="table-actions">
+        <button class="btn btn-outline btn-sm" (click)="sendSelectedSurvey()">
+          <i class="fas fa-paper-plane"></i> Envoyer
+        </button>
+        <button class="btn btn-outline btn-sm" (click)="openShareModal(selectedSurveyId, 'Enquête', 'Description')">
+          <i class="fas fa-qrcode"></i> QR Code
+        </button>
+      </div>
+    </div>
 
-                <div class="date-range-compact">
-                    <input type="date" class="date-input" placeholder="Date début" value="2025-03-01">
-                    <span>-</span>
-                    <input type="date" class="date-input" placeholder="Date fin" value="2025-03-31">
-                </div>
-
-                <button class="btn btn-primary">
-                    <i class="fas fa-sliders-h"></i> Appliquer
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th width="40px"></th>
+          <th>Utilisateur</th>
+          <th>Téléphone</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of utilisateursFiltres">
+          <td>
+            <label class="checkbox">
+              <input type="checkbox" class="user-checkbox" (change)="changerSelectionUtilisateur(user.id, $event)">
+              <span class="checkmark"></span>
+            </label>
+          </td>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar" *ngIf="!user.photo_profil">
+                <i class="fas fa-user-circle default-avatar"></i>
+              </div>
+              <div class="user-avatar" *ngIf="user.photo_profil">
+                <img [src]="'http://localhost:3000' + user.photo_profil" (error)="setDefaultImage($event)">
+              </div>
+              <div class="user-info">
+                <div class="user-name">{{user.prenom}} {{user.nom}}</div>
+                <div class="user-email">{{user.email}}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{user.telephone || 'Non renseigné'}}</td>
+          <td>
+            <div class="row-actions">
+              <div class="share-container" style="position: relative;">
+                <button class="icon-btn" (click)="toggleShareDropdown(user.id)" title="Partager">
+                  <i class="fas fa-share-alt"></i>
                 </button>
-            </div>
-        </div>
-        <div class="selection-stats">
-            <div class="stat-cards">
-              <div class="stat-card" id="selectedStat" style="background: white !important; border: 1px solid #eef2f6 !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;">
-    <div class="stat-icon" style="background: #f3e5f5 !important;">
-        <i class="fas fa-check-double" style="color: #9D50BB !important;"></i>
-    </div>
-    <div class="stat-details">
-        <span class="stat-value" id="selectedCount" style="color: #1a1a2c !important;">0</span>
-        <span class="stat-label" style="color: #7c8a9a !important;">Sélectionnés</span>
-    </div>
-</div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="stat-details">
-                        <span class="stat-value">1,284</span>
-                        <span class="stat-label">À contacter</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-details">
-                        <span class="stat-value">{{taux_reponse || 0}}%</span>
-                        <span class="stat-label">Taux de réponse</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-details">
-                        <span class="stat-value">2.4j</span>
-                        <span class="stat-label">Temps moyen</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="users-table-container">
-            <div class="table-header">
-                <div class="select-all" id="selectAllContainer">
-                    <label class="checkbox">
-                        <input type="checkbox" id="selectAll" chnage="changerSelectionTout($event)">
-                        <span class="checkmark"></span>
-                    </label>
-                    <span>Sélectionner tout</span>
-                </div>
-                <div class="table-actions">
-                    <button class="btn btn-outline btn-sm">
-                        <i class="fas fa-envelope"></i> Envoyer email
-                    </button>
-                    <button class="btn btn-outline btn-sm" onclick="openQRModal()">
-                        <i class="fas fa-qrcode"></i> Générer QR
-                    </button>
-                </div>
-            </div>
-
-            <table class="users-table">
-                <thead>
-                    <tr>
-                        <th width="40px"></th>
-                        <th>Utilisateur</th>
-                        <th>Enquêtes</th>
-                        <th>Dernière activité</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="user-row" data-user-id="4" *ngFor="let users of utilisateursFiltres" >
-                        <td>
-                            <label class="checkbox">
-                                <input type="checkbox" class="user-checkbox" (change)="chnagerSelectionUtilisateur(users.id,$event)">
-                                <span class="checkmark"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <div class="user-cell">
-                                <div class="user-avatar">
-                                  <img [src]="'http://localhost:3000/' + users.photo_profil">
-                                </div>
-                                <div class="user-info">
-                                    <div class="user-name"> {{users.prenom}} {{users.nom}}</div>
-                                    <div class="user-email">{{users.email}}</div>
-                                    <div class="user-phone">+216 {{users.telephone || "  .. ... ..."}}</div>
-                                </div>
-                            </div>
-                        </td>
-                     
-                       <td>
-                         <div class="surveys-stats">
-    <span class="stat-badge success">{{users.total_repondues}} répondues</span>
-    <span class="stat-badge warning">{{users.total_en_attente}} en attente</span>
-  </div>
-</td>
-
-<td>
-  <div class="activity-info">
-    <i class="fas fa-calendar-alt"></i>
-    <span>{{users.derniere_activite ? (users.derniere_activite | date:'dd MMM yyyy') : '—'}}</span>
-  </div>
-</td>
-                <td><span class="status-badge active">{{users.statut}}</span></td>
-                        <td>
-                            <div class="row-actions">
-                                <button class="icon-btn" title="Sélectionner pour envoi" onclick="selectUser(4)">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                                <button class="icon-btn" title="Générer QR code" onclick="openQRModal()">
-                                    <i class="fas fa-qrcode"></i>
-                                </button>
-                                <button class="icon-btn" title="Copier le lien">
-                                    <i class="fas fa-link"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="send-panel" id="sendPanel">
-            <div class="send-panel-content">
-                <div class="selected-count">
-                    <i class="fas fa-check-circle"></i>
-                    <span><strong id="panelSelectedCount">0</strong> utilisateur(s) sélectionné(s)</span>
-                </div>
+                <div class="share-dropdown-menu" *ngIf="shareDropdownOpen === user.id">
+                 
                 
-                <div class="send-actions">
-                        <option>Choisir une enquête à envoyer : </option>   
-                        <select class="survey-select" >
-                        <option *ngFor="let titres of  titreEnquetes">{{titres.titre}}</option>
-                      
-                    </select>
-                   
-
-                    <button class="btn btn-outline btn-icon" onclick="openQRModal()">
-                        <i class="fas fa-qrcode"></i>
-                        <span>QR Code</span>
-                    </button>
-
-                    <button class="btn btn-outline btn-icon">
-                        <i class="fas fa-link"></i>
-                        <span>Lien</span>
-                    </button>
-
-                    <button class="btn btn-primary btn-icon">
-                        <i class="fas fa-envelope"></i>
-                        <span>Envoyer par email</span>
-                    </button>
+               
+              
+                  <button (click)="shareUserDirect('email', user)">
+                    <i class="fas fa-envelope" style="color: #ea4335;"></i> Email
+                  </button>
+                  <button (click)="copyUserLink(user.id)">
+                    <i class="fas fa-link"></i> Copier lien
+                  </button>
                 </div>
+              </div>
             </div>
-        </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Panneau d'envoi groupé -->
+  <div class="send-panel">
+    <div class="send-panel-content">
+      <div class="selected-count">
+        <i class="fas fa-check-circle"></i>
+        <span><strong id="panelSelectedCount">0</strong> utilisateur(s) sélectionné(s)</span>
+      </div>
+      <div class="send-actions">
+        <select class="survey-select" [(ngModel)]="selectedSurveyId">
+          <option [value]="null">Choisir une enquête à envoyer</option>
+          <option *ngFor="let enquete of titreEnquetes" [value]="enquete.id">
+            {{enquete.titre}}
+          </option>
+        </select>
+        <button class="btn btn-outline btn-icon" (click)="openShareModal(selectedSurveyId, 'Enquête', 'Description')">
+          <i class="fas fa-qrcode"></i> QR Code
+        </button>
+        <button class="btn btn-outline btn-icon" (click)="copyLink()">
+          <i class="fas fa-link"></i> Lien
+        </button>
+        <button class="btn btn-primary btn-icon" (click)="sendSelectedSurvey()">
+          <i class="fas fa-paper-plane"></i> Envoyer
+        </button>
+      </div>
     </div>
+  </div>
+
+  <!-- MODAL DE PARTAGE -->
+  <div class="modal-overlay" *ngIf="showShareModal" (click)="closeShareModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fas fa-share-alt"></i> Partager : {{selectedEnqueteTitre}}</h3>
+        <button class="modal-close" (click)="closeShareModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- QR Code -->
+        <div class="share-section">
+          <h4><i class="fas fa-qrcode"></i> QR Code</h4>
+          <div class="qr-container">
+            <img [src]="qrCodeUrl" alt="QR Code de l'enquête" class="qr-code-img" *ngIf="qrCodeUrl">
+            <button class="btn-sm btn-outline" (click)="downloadQRCode()">
+              <i class="fas fa-download"></i> Télécharger
+            </button>
+          </div>
+        </div>
+
+        <!-- Lien direct -->
+        <div class="share-section">
+          <h4><i class="fas fa-link"></i> Lien direct</h4>
+          <div class="link-container">
+            <input type="text" [value]="shareUrl" readonly class="link-input">
+            <button class="btn-sm btn-primary" (click)="copyLink()">
+              <i class="fas fa-copy"></i> Copier
+            </button>
+          </div>
+        </div>
+
+        <!-- Partager sur les réseaux sociaux -->
+        <div class="share-section">
+          <h4><i class="fas fa-share-alt"></i> Partager sur</h4>
+          <div class="social-buttons">
+          
+         
+          
+            <button class="social-btn email" (click)="shareByEmailAuto()">
+              <i class="fas fa-envelope"></i> Email
+            </button>
+          </div>
+          <div class="instagram-note" *ngIf="instagramLinkCopied">
+            <i class="fab fa-instagram"></i>
+            <span>Lien copié ! Ouvrez <strong>Instagram</strong> → Story ou Message privé → Collez le lien.</span>
+          </div>
+        </div>
+
+   
+
+        <!-- Partage natif -->
+        <div class="share-section" *ngIf="isNativeShareAvailable">
+          <button class="btn-native-share" (click)="shareNative()">
+            <i class="fas fa-mobile-alt"></i> Partager via l'application mobile
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeShareModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de notification -->
+  <div class="toast-message" *ngIf="showToast" [ngStyle]="{'background': toastMessage.includes('❌') ? '#dc3545' : toastMessage.includes('⚠️') ? '#f59e0b' : '#28a745'}">
+    <i class="fas fa-check-circle" *ngIf="!toastMessage.includes('❌') && !toastMessage.includes('⚠️')"></i>
+    <i class="fas fa-exclamation-circle" *ngIf="toastMessage.includes('⚠️')"></i>
+    <i class="fas fa-times-circle" *ngIf="toastMessage.includes('❌')"></i>
+    {{toastMessage}}
+  </div>
+</div>

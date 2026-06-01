@@ -475,4 +475,7 @@ IMPORTANT: Return ONLY valid JSON.`,
     const upperType = type?.toUpperCase() || 'TEXTE';
     return valid.includes(upperType) ? upperType : 'TEXTE';
   }
+  getParticipationTypeStats(adminId: number): Observable<any> {
+  return this.http.get(`${this.baseUrl}/enquete/participation-type/${adminId}`);
+}
 }

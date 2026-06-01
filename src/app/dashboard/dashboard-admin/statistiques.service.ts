@@ -29,9 +29,8 @@ export class StatistiquesService {
     const apiUrl = `${this.apiUrl}/utilisateur/count/all`;
     return this.http.get(apiUrl);
   }
-  getAllUsersConnecte(): Observable<any> {
-    const apiUrl = `${this.apiUrl}/utilisateur/get/all/connecte`;
-    return this.http.get(apiUrl);
+   getMesClients(){
+  return this.http.get('http://localhost:3000/utilisateur/clients/5')
   }
 
   getAllUsersConnecteNouveaux(): Observable<any> {

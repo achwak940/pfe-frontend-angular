@@ -2,8 +2,15 @@
   <main class="main-content">
     <header class="content-header animate-slide-down">
       <div class="header-left">
-        <h1><i class="fas fa-shield-alt"></i> Gestion des rôles</h1>
-        <div class="subtitle"><i class="fas fa-users-gear"></i> Gérez les rôles et accès utilisateurs</div>
+        <div class="header-top-row">
+          <button class="btn-back ripple" (click)="goBackToUsers()">
+            <i class="fas fa-arrow-left"></i> Retour
+          </button>
+          <div class="header-title-wrapper">
+            <h1><i class="fas fa-shield-alt"></i> Gestion des rôles</h1>
+            <div class="subtitle"><i class="fas fa-users-gear"></i> Gérez les rôles et accès utilisateurs</div>
+          </div>
+        </div>
       </div>
       <div class="header-right">
         <button class="btn-primary ripple" (click)="showRoleModal = true; modalMode='create'">
@@ -179,7 +186,7 @@
           </tr>
           <tr *ngIf="getFilteredRoles().length===0"><td colspan="8" class="no-results-cell"><div class="no-results-inline">Aucun résultat</div></td></tr>
         </tbody>
-      </table>
+       </table>
     </div>
 
     <div class="pagination" *ngIf="getTotalPages() > 1">

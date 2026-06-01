@@ -1,9 +1,8 @@
-<!-- analyse-reporting.component.html -->
 <div class="analytics-dashboard">
   <!-- EN-TÊTE -->
   <div class="header">
     <div class="header-left">
-      <h1>📊 Analyse et Reporting</h1>
+      <h1> Analyse et Reporting</h1>
       <p class="subtitle">Résultats et statistiques de vos enquêtes</p>
     </div>
     <div class="header-right">
@@ -131,34 +130,91 @@
           <span class="user-name">{{ user.prenom }} {{ user.nom }}</span>
           <span class="user-count">{{ user.nombre_reponses }} réponses</span>
         </div>
+        <div *ngIf="topUtilisateurs.length === 0" class="text-center text-muted">Aucune donnée disponible</div>
       </div>
     </div>
     <div class="analytics-card">
       <div class="card-header"><h3>🎯 Taux de complétude</h3><i class="fas fa-chart-pie"></i></div>
       <div class="card-content center">
-        <div class="pie-chart"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#eef2f6" stroke-width="20"/><circle cx="50" cy="50" r="40" fill="none" stroke="url(#gradient)" stroke-width="20" [attr.stroke-dasharray]="251.2" [attr.stroke-dashoffset]="251.2 - (251.2 * tauxCompletion.taux / 100)" transform="rotate(-90 50 50)"/><defs><linearGradient id="gradient"><stop offset="0%" stop-color="#9D50BB"/><stop offset="100%" stop-color="#b46fd3"/></linearGradient></defs></svg><span class="pie-text">{{ tauxCompletion.taux }}%</span></div>
+        <div class="pie-chart">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#eef2f6" stroke-width="20"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="url(#gradient)" stroke-width="20" 
+                    [attr.stroke-dasharray]="251.2" 
+                    [attr.stroke-dashoffset]="251.2 - (251.2 * tauxCompletion.taux / 100)" 
+                    transform="rotate(-90 50 50)"/>
+            <defs>
+              <linearGradient id="gradient">
+                <stop offset="0%" stop-color="#9D50BB"/>
+                <stop offset="100%" stop-color="#b46fd3"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="pie-text">{{ tauxCompletion.taux }}%</span>
+        </div>
         <p class="pie-label">{{ tauxCompletion.repondants }} réponses sur {{ tauxCompletion.total }}</p>
       </div>
     </div>
     <div class="analytics-card wide">
-      <div class="card-header"><h3>📊 Participation par période</h3><select class="period-select" [(ngModel)]="periode" (change)="changePeriode(periode)"><option value="semaine">Semaine</option><option value="mois">Mois</option></select></div>
-      <div class="card-content"><canvas #participationChart style="height: 250px; width: 100%;"></canvas></div>
+      <div class="card-header">
+        <h3>📊 Participation par période</h3>
+        <select class="period-select" [(ngModel)]="periode" (change)="changePeriode(periode)">
+          <option value="semaine">Semaine</option>
+          <option value="mois">Mois</option>
+        </select>
+      </div>
+      <div class="card-content">
+        <canvas #participationChart style="height: 250px; width: 100%;"></canvas>
+        <div *ngIf="loadingParticipation" class="chart-loading">Chargement...</div>
+      </div>
     </div>
   </div>
 
   <!-- MODAL DÉTAILS -->
   <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header"><h3><i class="fas fa-chart-bar"></i> {{ selectedEnquete?.titre }}</h3><button class="modal-close" (click)="closeDetailsModal()"><i class="fas fa-times"></i></button></div>
-      <div class="modal-body">
-        <div class="details-stats"><div class="detail-item"><i class="fas fa-comments"></i><span>{{ selectedEnquete?.totalReponses || 0 }} réponses</span></div><div class="detail-item"><i class="fas fa-percent"></i><span>{{ selectedEnquete?.tauxCompletude || 0 }}% complété</span></div><div class="detail-item"><i class="fas fa-calendar"></i><span>Créée le {{ formatDate(selectedEnquete?.createAt) }}</span></div></div>
-        <div class="details-actions"><button class="btn btn-primary btn-sm" (click)="exportEnquete(selectedEnquete.id, 'excel')"><i class="fas fa-file-excel"></i> Excel</button><button class="btn btn-outline btn-sm" (click)="exportEnquete(selectedEnquete.id, 'pdf')"><i class="fas fa-file-pdf"></i> PDF</button><button class="btn btn-outline btn-sm" (click)="exportEnquete(selectedEnquete.id, 'csv')"><i class="fas fa-file-csv"></i> CSV</button></div>
-        <div class="reponses-list" *ngIf="detailsEnquete"><h4>Réponses détaillées</h4><div class="reponse-card" *ngFor="let user of detailsEnquete"><div class="user-info"><strong>{{ user.prenom }} {{ user.nom }}</strong><span>{{ user.email }}</span></div><div class="user-reponses"><div class="reponse-item" *ngFor="let rep of user.reponses"><span class="question">{{ rep.question }}</span><span class="answer">{{ rep.reponse }}</span></div></div></div></div>
+      <div class="modal-header">
+        <h3><i class="fas fa-chart-bar"></i> {{ selectedEnquete?.titre }}</h3>
+        <button class="modal-close" (click)="closeDetailsModal()"><i class="fas fa-times"></i></button>
       </div>
-      <div class="modal-footer"><button class="btn btn-outline" (click)="closeDetailsModal()">Fermer</button><button class="btn btn-primary" (click)="exportEnquete(selectedEnquete.id, 'excel')">Exporter</button></div>
+      <div class="modal-body">
+        <div class="details-stats">
+          <div class="detail-item"><i class="fas fa-comments"></i><span>{{ selectedEnquete?.totalReponses || 0 }} réponses</span></div>
+          <div class="detail-item"><i class="fas fa-percent"></i><span>{{ selectedEnquete?.tauxCompletude || 0 }}% complété</span></div>
+          <div class="detail-item"><i class="fas fa-calendar"></i><span>Créée le {{ formatDate(selectedEnquete?.createAt) }}</span></div>
+        </div>
+        <div class="details-actions">
+          <button class="btn btn-primary btn-sm" (click)="exportEnquete(selectedEnquete.id, 'excel')"><i class="fas fa-file-excel"></i> Excel</button>
+          <button class="btn btn-outline btn-sm" (click)="exportEnquete(selectedEnquete.id, 'pdf')"><i class="fas fa-file-pdf"></i> PDF</button>
+          <button class="btn btn-outline btn-sm" (click)="exportEnquete(selectedEnquete.id, 'csv')"><i class="fas fa-file-csv"></i> CSV</button>
+        </div>
+        <div class="reponses-list" *ngIf="detailsEnquete && detailsEnquete.length">
+          <h4>Réponses détaillées</h4>
+          <div class="reponse-card" *ngFor="let user of detailsEnquete">
+            <div class="user-info">
+              <strong>{{ user.prenom }} {{ user.nom }}</strong>
+              <span>{{ user.email }}</span>
+            </div>
+            <div class="user-reponses">
+              <div class="reponse-item" *ngFor="let rep of user.reponses">
+                <span class="question">{{ rep.question }}</span>
+                <span class="answer">{{ rep.reponse }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="isLoadingDetails" class="loading-details">Chargement des détails...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeDetailsModal()">Fermer</button>
+        <button class="btn btn-primary" (click)="exportEnquete(selectedEnquete.id, 'excel')">Exporter</button>
+      </div>
     </div>
   </div>
 
   <!-- TOAST -->
-  <div class="toast-notification" *ngIf="showToast" [ngClass]="toastType"><i class="fas" [ngClass]="{'fa-check-circle': toastType === 'success', 'fa-exclamation-circle': toastType === 'error', 'fa-info-circle': toastType === 'info'}"></i><span>{{ toastMessage }}</span></div>
+  <div class="toast-notification" *ngIf="showToast" [ngClass]="toastType">
+    <i class="fas" [ngClass]="{'fa-check-circle': toastType === 'success', 'fa-exclamation-circle': toastType === 'error', 'fa-info-circle': toastType === 'info'}"></i>
+    <span>{{ toastMessage }}</span>
+  </div>
 </div>

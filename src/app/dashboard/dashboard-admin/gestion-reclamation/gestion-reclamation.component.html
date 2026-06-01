@@ -218,6 +218,7 @@
             <button class="action-icon" (click)="toggleCardMenu(reclamation.id)"><i class="fas fa-ellipsis-v"></i></button>
             <!-- Dropdown Menu -->
             <div *ngIf="activeMenuId === reclamation.id" class="card-menu">
+              <button (click)="analyzeReclamation(reclamation)"><i class="fas fa-brain"></i> Analyse IA</button>
               <button (click)="viewDetails(reclamation)"><i class="fas fa-info-circle"></i> Détails</button>
               <button (click)="openImageFullscreen(reclamation)" *ngIf="reclamation.imageUrl"><i class="fas fa-image"></i> Voir l'image</button>
               <button (click)="downloadImage(reclamation)" *ngIf="reclamation.imageUrl"><i class="fas fa-download"></i> Télécharger</button>
@@ -250,6 +251,7 @@
           <div class="claim-meta">
             <span class="meta-tag"><i class="fas fa-tag"></i> {{ reclamation.typeDommage || 'Non spécifié' }}</span>
             <span class="meta-tag"><i class="fas fa-cube"></i> {{ reclamation.dommagesDetectes || 0 }} dommage(s)</span>
+            <span class="meta-tag" *ngIf="reclamation.coutEstime"> {{ reclamation.coutEstime }}DT</span>
           </div>
         </div>
 
@@ -266,7 +268,9 @@
         <div class="ai-analysis">
           <div class="ai-header">
             <div class="ai-icon"><i class="fas fa-microchip"></i></div>
-           
+            <div class="ai-badge" *ngIf="reclamation.coutEstime">
+              <i class="fas fa-chart-line"></i> Estimé: {{ reclamation.coutEstime }}DT
+            </div>
           </div>
           <div class="severity-indicator">
             <div class="severity-label"><span>Gravité</span><strong>{{ reclamation.gravite || 0 }}/10</strong></div>
@@ -280,13 +284,13 @@
             <i class="fas fa-info-circle"></i>
             <span>Détails</span>
           </button>
+
           <button class="action-btn action-response" (click)="openResponseModal(reclamation)">
             <i class="fas fa-reply"></i>
             <span>Répondre</span>
           </button>
           <button class="action-btn action-download" (click)="downloadImage(reclamation)" *ngIf="reclamation.imageUrl" title="Télécharger">
             <i class="fas fa-download"></i>
-            <span>Télécharger</span>
           </button>
           <div class="action-group">
             <button class="action-btn action-status" (click)="mettreEnCours(reclamation.id)" *ngIf="reclamation.statut !== 'EN_COURS'" title="En cours"><i class="fas fa-spinner"></i></button>
@@ -311,6 +315,133 @@
         <button *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage" (click)="goToPage(page)">{{ page }}</button>
       </div>
       <button [disabled]="currentPage === totalPages" (click)="nextPage()"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL ANALYSE IA (RECOMMANDATIONS) - CORRIGÉ ==================== -->
+<div class="modal-overlay" *ngIf="showRecommendationModal" (click)="closeRecommendationModal()">
+  <div class="modal-container analysis-full-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-brain"></i> Analyse IA - Réclamation #{{ selectedAnalysisReclamation?.id }}</h3>
+      <button class="modal-close" (click)="closeRecommendationModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Loading State -->
+      <div *ngIf="isLoadingPrice || isLoadingRecommend" class="analysis-loading">
+        <div class="loading-spinner"></div>
+        <p>Analyse en cours... 
+          <span *ngIf="isLoadingPrice && !isLoadingRecommend">(Estimation des coûts)</span>
+          <span *ngIf="!isLoadingPrice && isLoadingRecommend">(Génération des recommandations)</span>
+        </p>
+      </div>
+      
+      <!-- Results - Avec vérification que currentRecommendData existe -->
+      <ng-container *ngIf="!isLoadingPrice && !isLoadingRecommend && currentPriceData && currentRecommendData">
+        
+        <!-- Section Prix et Durée -->
+        <div class="analysis-section price-section">
+          <h4><i class="fas fa-euro-sign"></i> Estimation financière</h4>
+          <div class="price-card">
+            <div class="price-amount">{{ currentPriceData.price }} €</div>
+            <div class="duration-info">
+              <i class="fas fa-clock"></i> Durée estimée: 
+              <strong>{{ currentPriceData.duration_h }}</strong> heures
+              <span class="days-estimate" *ngIf="currentPriceData.duration_h > 24">
+                (soit {{ (currentPriceData.duration_h / 24).toFixed(1) }} jours)
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Section Recommandations -->
+        <div class="analysis-section recommendations-section">
+          <h4><i class="fas fa-list-check"></i> Recommandations IA</h4>
+          <div class="recommendations-list">
+            <div *ngFor="let rec of currentRecommendData.recommendations; let i = index" 
+                 class="recommendation-item" 
+                 [class.best-recommendation]="i === 0">
+              <div class="rec-rank">
+                <span class="rank-number">{{ i + 1 }}</span>
+                <span class="rec-name">{{ rec.solution }}</span>
+              </div>
+              <div class="rec-confidence">
+                <div class="confidence-bar">
+                  <div class="confidence-fill" [style.width.%]="rec.confidence"></div>
+                </div>
+                <span class="confidence-value">{{ rec.confidence }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Section Analyse détaillée -->
+        <div class="analysis-section deep-analysis">
+          <h4><i class="fas fa-microscope"></i> Analyse détaillée</h4>
+          
+          <div class="analysis-card">
+            <div class="analysis-field">
+              <span class="field-label">Résumé:</span>
+              <span class="field-value">{{ currentRecommendData.analysis.analysis?.case_summary || 'Non disponible' }}</span>
+            </div>
+            <div class="analysis-field">
+              <span class="field-label">Niveau de dommage:</span>
+              <span class="field-value damage-level" [ngClass]="{
+                'level-low': currentRecommendData.analysis.analysis?.damage_level === 'Léger',
+                'level-medium': currentRecommendData.analysis.analysis?.damage_level === 'Moyen',
+                'level-high': currentRecommendData.analysis.analysis?.damage_level === 'Élevé',
+                'level-critical': currentRecommendData.analysis.analysis?.damage_level === 'Critique'
+              }">
+                {{ currentRecommendData.analysis.analysis?.damage_level || 'Non évalué' }}
+              </span>
+            </div>
+            <div class="analysis-field">
+              <span class="field-label">Analyse:</span>
+              <span class="field-value">{{ currentRecommendData.analysis.analysis?.deep_analysis || 'Aucune analyse disponible' }}</span>
+            </div>
+          </div>
+          
+          <!-- Risques -->
+          <div class="risks-section" *ngIf="currentRecommendData.analysis.risks">
+            <h5><i class="fas fa-shield-alt"></i> Évaluation des risques</h5>
+            <div class="risk-item high" *ngFor="let risk of currentRecommendData.analysis.risks.high">
+              <i class="fas fa-exclamation-triangle"></i> {{ risk }}
+            </div>
+            <div class="risk-item medium" *ngFor="let risk of currentRecommendData.analysis.risks.medium">
+              <i class="fas fa-shield-alt"></i> {{ risk }}
+            </div>
+            <div class="risk-item low" *ngFor="let risk of currentRecommendData.analysis.risks.low">
+              <i class="fas fa-info-circle"></i> {{ risk }}
+            </div>
+          </div>
+          
+          <!-- Décision -->
+          <div class="decision-card" *ngIf="currentRecommendData.analysis.decision">
+            <h5><i class="fas fa-gavel"></i> Décision recommandée</h5>
+            <p class="final-choice">{{ currentRecommendData.analysis.decision.final_choice || 'Non spécifiée' }}</p>
+            <p class="justification">{{ currentRecommendData.analysis.decision.justification || 'Aucune justification' }}</p>
+            <div class="risk-warning" *ngIf="currentRecommendData.analysis.decision.risk_if_ignored">
+              <i class="fas fa-warning"></i> {{ currentRecommendData.analysis.decision.risk_if_ignored }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      
+      <!-- Error State -->
+      <div *ngIf="!isLoadingPrice && !isLoadingRecommend && !currentPriceData" class="error-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>Impossible d'analyser la réclamation. Vérifiez que le service IA est disponible.</p>
+        <button class="btn-primary" (click)="analyzeReclamation(selectedAnalysisReclamation!)">
+          <i class="fas fa-sync-alt"></i> Réessayer
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeRecommendationModal()">Fermer</button>
+      <button class="btn-primary" *ngIf="currentRecommendData" [disabled]="isSubmitting" (click)="applyRecommendation()">
+        <i class="fas fa-check-double"></i>
+        {{ isSubmitting ? 'Application...' : 'Appliquer la recommandation' }}
+      </button>
     </div>
   </div>
 </div>
@@ -397,11 +528,9 @@
   </div>
 </div>
 
-<!-- ==================== MODAL IMAGE FULLSCREEN AVEC ZOOM ET TÉLÉCHARGEMENT ==================== -->
+<!-- ==================== MODAL IMAGE FULLSCREEN AVEC ZOOM ==================== -->
 <div class="modal-overlay image-viewer-overlay" *ngIf="showImageModal" (click)="closeImageModal()" (wheel)="onWheel($event)">
   <div class="image-viewer-container" (click)="$event.stopPropagation()">
-    
-    <!-- Header avec contrôles -->
     <div class="image-viewer-header">
       <div class="image-viewer-title">
         <i class="fas fa-image"></i>
@@ -427,14 +556,11 @@
         </button>
       </div>
     </div>
-    
-    <!-- Zone d'affichage de l'image avec drag & drop -->
     <div class="image-viewer-content"
          (mousedown)="onMouseDown($event)"
          (mousemove)="onMouseMove($event)"
          (mouseup)="onMouseUp()"
          (mouseleave)="onMouseUp()">
-      
       <div class="image-container">
         <img [src]="currentImageUrl" 
              [alt]="currentImageName || 'Image'"
@@ -443,22 +569,16 @@
              class="viewer-image"
              draggable="false">
       </div>
-      
-      <!-- Indicateur de zoom -->
       <div class="zoom-indicator" *ngIf="zoomLevel > 1">
         <i class="fas fa-hand-paper"></i>
         <span>Glissez pour déplacer</span>
       </div>
-      
-      <!-- Instructions -->
       <div class="image-instructions">
         <span><i class="fas fa-mouse-pointer"></i> Click + Glisser pour déplacer</span>
         <span><i class="fas fa-mouse"></i> Molette pour zoomer</span>
         <span><i class="fas fa-search-plus"></i> Boutons +/- pour zoomer</span>
       </div>
     </div>
-    
-    <!-- Footer avec informations -->
     <div class="image-viewer-footer">
       <div class="image-info">
         <span><i class="far fa-file-image"></i> Format: {{ (currentImageName && currentImageName.split('.').pop()?.toUpperCase()) || 'Image' }}</span>
@@ -516,9 +636,12 @@
       
       <div class="yolo-preview" *ngIf="previewUrl">
         <img [src]="previewUrl" alt="Preview">
-        <div class="progress-bar" *ngIf="uploadProgress < 100 && !yoloResult">
+        <div class="progress-bar" *ngIf="uploadProgress < 100 && !yoloResult && isRealYoloAnalysis">
           <div class="progress-fill" [style.width.%]="uploadProgress"></div>
           <span>Analyse en cours... {{ uploadProgress }}%</span>
+        </div>
+        <div class="error-message" *ngIf="yoloAnalysisError">
+          <i class="fas fa-exclamation-circle"></i> {{ yoloAnalysisError }}
         </div>
       </div>
       
@@ -528,6 +651,12 @@
         <div class="result-item"><strong>Dommages:</strong> {{ yoloResult.damageCount }}</div>
         <div class="result-item"><strong>Gravité:</strong> {{ yoloResult.averageGravity }}/10</div>
         <div class="result-item"><strong>Confiance:</strong> {{ (yoloResult.averageConfidence * 100).toFixed(0) }}%</div>
+        <div class="result-item" *ngIf="yoloResult.damages?.length">
+          <strong>Détails:</strong>
+          <ul>
+            <li *ngFor="let d of yoloResult.damages">{{ d.label }} ({{ (d.confidence * 100).toFixed(0) }}%)</li>
+          </ul>
+        </div>
       </div>
     </div>
     <div class="modal-footer">

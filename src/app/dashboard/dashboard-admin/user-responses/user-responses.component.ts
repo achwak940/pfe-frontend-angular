@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ReponsesService } from '../reponses.service';
 
@@ -23,7 +22,7 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
   
   // Filtres
   searchTerm = '';
-  filterType = 'all'; // all, recent, oldest
+  filterType = 'all';
   sortBy = 'date_desc';
   dateDebut: string = '';
   dateFin: string = '';
@@ -36,22 +35,26 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
   
   // Notifications
   toasts: Array<{ message: string, type: string, icon: string }> = [];
-  private toastTimeout: any;
+  private refreshInterval: any;
 
-  constructor(
-    private http: HttpClient,
-    private service: ReponsesService
-  ) {}
+  constructor(private service: ReponsesService) {}
 
   ngOnInit(): void {
     this.getCurrentUser();
     this.loadData();
+    this.startAutoRefresh();
   }
 
   ngOnDestroy(): void {
-    if (this.toastTimeout) {
-      clearTimeout(this.toastTimeout);
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
     }
+  }
+
+  startAutoRefresh(): void {
+    this.refreshInterval = setInterval(() => {
+      this.loadData();
+    }, 30000);
   }
 
   getCurrentUser(): void {
@@ -65,13 +68,13 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
   loadData(): void {
     this.getAllReponsesGlobal();
     this.getNombreReponses();
-    this.getSurveysList();
   }
 
   getAllReponsesGlobal(): void {
     this.service.getAllReponsesByAdmin(this.userId).subscribe({
       next: (res: any) => {
         this.listeReponsesGlobal = res.data || [];
+        this.extractSurveysFromResponses();
         this.applyFilters();
         this.showToast('Données chargées avec succès', 'success', 'fas fa-check-circle');
       },
@@ -82,10 +85,33 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
     });
   }
 
-  getSurveysList(): void {
+  extractSurveysFromResponses(): void {
+    const surveysMap = new Map();
+    this.listeReponsesGlobal.forEach(rep => {
+      if (rep.enquete_id && rep.titre && !surveysMap.has(rep.enquete_id)) {
+        surveysMap.set(rep.enquete_id, {
+          id: rep.enquete_id,
+          titre: rep.titre
+        });
+      }
+    });
+    this.surveysList = Array.from(surveysMap.values());
+  }
+
+  loadSurveysList(): void {
     this.service.getAllReponsesByAdmin(this.userId).subscribe({
       next: (res: any) => {
-        this.surveysList = res.data || [];
+        const data = res.data || [];
+        const surveysMap = new Map();
+        data.forEach((rep: any) => {
+          if (rep.enquete_id && rep.titre && !surveysMap.has(rep.enquete_id)) {
+            surveysMap.set(rep.enquete_id, {
+              id: rep.enquete_id,
+              titre: rep.titre
+            });
+          }
+        });
+        this.surveysList = Array.from(surveysMap.values());
       },
       error: (err: any) => console.error('Erreur chargement questionnaires', err)
     });
@@ -94,52 +120,52 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
   applyFilters(): void {
     let filtered = [...this.listeReponsesGlobal];
     
-    // Filtre par recherche
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase().trim();
       filtered = filtered.filter(rep => 
-        rep.prenom?.toLowerCase().includes(term) ||
-        rep.nom?.toLowerCase().includes(term) ||
-        rep.email?.toLowerCase().includes(term)
+        (rep.prenom?.toLowerCase().includes(term) || false) ||
+        (rep.nom?.toLowerCase().includes(term) || false) ||
+        (rep.email?.toLowerCase().includes(term) || false)
       );
     }
     
-    // Filtre par date
     if (this.dateDebut) {
       const debut = new Date(this.dateDebut);
-      filtered = filtered.filter(rep => new Date(rep.date_creation) >= debut);
+      debut.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(rep => {
+        const repDate = new Date(rep.date_creation);
+        return repDate >= debut;
+      });
     }
     if (this.dateFin) {
       const fin = new Date(this.dateFin);
-      fin.setHours(23, 59, 59);
-      filtered = filtered.filter(rep => new Date(rep.date_creation) <= fin);
+      fin.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(rep => {
+        const repDate = new Date(rep.date_creation);
+        return repDate <= fin;
+      });
     }
     
-    // Filtre par questionnaire
     if (this.surveyFilter) {
       filtered = filtered.filter(rep => rep.enquete_id === +this.surveyFilter);
     }
     
-    // Filtre type (récent/ancien)
     if (this.filterType === 'recent') {
       filtered = filtered.filter(rep => {
         const date = new Date(rep.date_creation);
         const now = new Date();
-        const diffTime = Math.abs(now.getTime() - date.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffDays = Math.ceil((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
         return diffDays <= 7;
       });
     } else if (this.filterType === 'oldest') {
       filtered = filtered.filter(rep => {
         const date = new Date(rep.date_creation);
         const now = new Date();
-        const diffTime = Math.abs(now.getTime() - date.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffDays = Math.ceil((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
         return diffDays > 30;
       });
     }
     
-    // Tri
     filtered.sort((a, b) => {
       switch (this.sortBy) {
         case 'date_desc':
@@ -183,7 +209,6 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
     this.showToast('Filtres réinitialisés', 'info', 'fas fa-info-circle');
   }
 
-  // Pagination
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
@@ -231,11 +256,13 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
     return Math.min(a, b);
   }
 
-  // Modal - CORRECTION ICI : Utiliser getDetaillesReponseByid avec D majuscule
   openModal(idReponse: number): void {
     this.service.getDetaillesReponseByid(idReponse).subscribe({
       next: (res: any) => {
-        this.selectedReponse = res.data;
+        this.selectedReponse = res.data || res;
+        if (Array.isArray(this.selectedReponse) && this.selectedReponse.length > 0) {
+          this.selectedReponse = this.selectedReponse[0];
+        }
         this.modalVisible = true;
       },
       error: (err: any) => {
@@ -250,52 +277,47 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
     this.modalVisible = false;
   }
 
-  // Export
   toggleExportDropdown(): void {
     this.exportDropdownVisible = !this.exportDropdownVisible;
-    
-    // Fermer le dropdown après 3 secondes
-    setTimeout(() => {
-      this.exportDropdownVisible = false;
-    }, 3000);
+  }
+
+  closeExportDropdown(): void {
+    this.exportDropdownVisible = false;
   }
 
   downloadCSV(): void {
+    this.showToast('Export CSV en cours...', 'info', 'fas fa-spinner fa-spin');
     this.service.exportReponsesCsv(this.userId).subscribe({
       next: (data: Blob) => {
-        this.downloadBlob(data, 'reponses.csv', 'text/csv');
+        this.downloadBlob(data, `reponses_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
         this.showToast('Export CSV réussi', 'success', 'fas fa-file-csv');
+        this.closeExportDropdown();
       },
-      error: (err: any) => {
-        console.error('Erreur téléchargement CSV', err);
-        this.showToast('Erreur lors de l\'export CSV', 'error', 'fas fa-exclamation-circle');
-      }
+      error: () => this.showToast('Erreur lors de l\'export CSV', 'error', 'fas fa-exclamation-circle')
     });
   }
 
   telechargementPdf(): void {
+    this.showToast('Export PDF en cours...', 'info', 'fas fa-spinner fa-spin');
     this.service.exportAllReponsesPdf(this.userId).subscribe({
       next: (blob: Blob) => {
-        this.downloadBlob(blob, 'reponses.pdf', 'application/pdf');
+        this.downloadBlob(blob, `reponses_${new Date().toISOString().split('T')[0]}.pdf`, 'application/pdf');
         this.showToast('Export PDF réussi', 'success', 'fas fa-file-pdf');
+        this.closeExportDropdown();
       },
-      error: (err: any) => {
-        console.error('Erreur téléchargement PDF', err);
-        this.showToast('Erreur lors de l\'export PDF', 'error', 'fas fa-exclamation-circle');
-      }
+      error: () => this.showToast('Erreur lors de l\'export PDF', 'error', 'fas fa-exclamation-circle')
     });
   }
 
   downloadExcel(): void {
+    this.showToast('Export Excel en cours...', 'info', 'fas fa-spinner fa-spin');
     this.service.exportAllReponsesExcel(this.userId).subscribe({
       next: (data: Blob) => {
-        this.downloadBlob(data, 'reponses.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        this.downloadBlob(data, `reponses_${new Date().toISOString().split('T')[0]}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         this.showToast('Export Excel réussi', 'success', 'fas fa-file-excel');
+        this.closeExportDropdown();
       },
-      error: (err: any) => {
-        console.error('Erreur téléchargement Excel', err);
-        this.showToast('Erreur lors de l\'export Excel', 'error', 'fas fa-exclamation-circle');
-      }
+      error: () => this.showToast('Erreur lors de l\'export Excel', 'error', 'fas fa-exclamation-circle')
     });
   }
 
@@ -313,16 +335,14 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
   getNombreReponses(): void {
     this.service.getNombreReponsesByAdmin(this.userId).subscribe({
       next: (res: any) => {
-        this.nombreReponses = res.nomberReponses || 0;
+        this.nombreReponses = res.totalReponses || res.nomberReponses || 0;
       },
       error: (err: any) => console.error('Erreur serveur ❌', err)
     });
   }
 
-  // Utilitaires
   copyToClipboard(text: string): void {
     if (!text) return;
-    
     navigator.clipboard.writeText(text).then(() => {
       this.showToast('Email copié dans le presse-papier', 'success', 'fas fa-copy');
     }).catch(() => {
@@ -331,15 +351,51 @@ export class UserResponsesComponent implements OnInit, OnDestroy {
   }
 
   getStars(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i + 1);
+    return [1, 2, 3, 4, 5];
   }
 
   showToast(message: string, type: string, icon: string): void {
     this.toasts.push({ message, type, icon });
-    
-    // Auto-supprimer après 3 secondes
     setTimeout(() => {
       this.toasts.shift();
     }, 3000);
+  }
+
+  exportSelectedResponse(): void {
+    if (this.selectedReponse) {
+      this.downloadCSV();
+    }
+  }
+
+  formatDate(date: string): string {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  // Méthode pour obtenir l'URL complète de l'image
+  getImageUrl(photoProfil: string): string {
+    if (!photoProfil) {
+      return '';
+    }
+    // Le chemin contient déjà /uploads/profiles/...
+    return `http://localhost:3000${photoProfil}`;
+  }
+
+  // Méthode pour gérer les erreurs de chargement d'image
+  onImageError(event: any): void {
+    console.error('Erreur chargement image:', event.target.src);
+    event.target.style.display = 'none';
+    const parent = event.target.parentElement;
+    if (parent) {
+      const icon = document.createElement('i');
+      icon.className = 'fas fa-user-circle';
+      icon.style.fontSize = '40px';
+      icon.style.color = '#9D50BB';
+      parent.appendChild(icon);
+    }
   }
 }

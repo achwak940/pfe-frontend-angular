@@ -7,6 +7,7 @@ import {
   ApiResponse,
   RoleObject,
 } from '../statistique-user-total.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-users-management',
@@ -81,7 +82,8 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private service: StatistiqueUserTotalService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+      private router: Router,
   ) {
     this.editForm = this.fb.group({
       prenom: ['', [Validators.required, Validators.minLength(2)]],
@@ -929,4 +931,7 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
     this.notification.show = false;
     if (this.notificationTimeout) clearTimeout(this.notificationTimeout);
   }
+  goBackToRoles(): void {
+  this.router.navigate(['/admin/gere-roles']); // Ajustez le chemin selon votre route
+}
 }

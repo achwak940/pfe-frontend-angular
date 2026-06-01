@@ -11,8 +11,15 @@ export class GestionQuestionsComponent implements OnInit {
   currentUser!: any;
   userId!: number;
   questions: any[] = [];
-  filteredQuestions: any[] = []; // Pour le filtrage
-  currentFilter: string = 'all'; // Filtre actif
+  filteredQuestions: any[] = [];
+  currentFilter: string = 'all';
+    // ... vos autres propriétés
+  Math = Math; // Ajoutez cette ligne
+  // Pagination
+  currentPage: number = 1;
+  itemsPerPage: number = 6;
+  totalPages: number = 1;
+  paginatedQuestions: any[] = [];
 
   // Formulaire
   questionTitle: string = '';
@@ -21,27 +28,26 @@ export class GestionQuestionsComponent implements OnInit {
   required: boolean = true;
   options: string[] = ['', ''];
   
-  // Configuration pour le type rating (étoiles)
   ratingConfig = {
     maxStars: 5,
     minValue: 1,
     maxValue: 5
   };
   
-  // Configuration pour le type scale (échelle)
   scaleConfig = {
     minLabel: 'Pas satisfait',
     maxLabel: 'Très satisfait',
     steps: 5
   };
   
-  // État
   showToast: boolean = false;
   toastMessage: string = '';
   isEditing: boolean = false;
   editingQuestionId: number | null = null;
+  searchTerm: string = '';
+  sortBy: string = 'date';
+  sortOrder: 'asc' | 'desc' = 'desc';
 
-  // Liste des types de questions disponibles
   questionTypes = [
     { value: 'multiple', label: 'Choix multiple', icon: 'fa-list' },
     { value: 'unique', label: 'Choix unique', icon: 'fa-dot-circle' },
@@ -67,8 +73,7 @@ export class GestionQuestionsComponent implements OnInit {
       .subscribe({
         next: (res: any) => {
           this.questions = res.data || res || [];
-          this.filterQuestions(this.currentFilter); // Appliquer le filtre actuel
-          console.log('Questions:', this.questions);
+          this.filterQuestions(this.currentFilter);
         },
         error: (err) => {
           console.error('Erreur fetching questions', err);
@@ -76,7 +81,76 @@ export class GestionQuestionsComponent implements OnInit {
       });
   }
 
-  // Méthodes pour les statistiques
+  filterQuestions(filter: string) {
+    this.currentFilter = filter;
+    let filtered = [...this.questions];
+    
+    // Filtre par statut
+    if (filter === 'active') {
+      filtered = filtered.filter(q => q.active === true);
+    } else if (filter === 'inactive') {
+      filtered = filtered.filter(q => q.active === false);
+    }
+    
+    // Filtre par recherche
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(q => 
+        q.texte.toLowerCase().includes(term) ||
+        this.getTypeLabel(q.type).toLowerCase().includes(term)
+      );
+    }
+    
+    // Tri
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      if (this.sortBy === 'date') {
+        comparison = new Date(a.create_at).getTime() - new Date(b.create_at).getTime();
+      } else if (this.sortBy === 'title') {
+        comparison = a.texte.localeCompare(b.texte);
+      } else if (this.sortBy === 'type') {
+        comparison = a.type.localeCompare(b.type);
+      }
+      return this.sortOrder === 'asc' ? comparison : -comparison;
+    });
+    
+    this.filteredQuestions = filtered;
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  updatePagination() {
+    this.totalPages = Math.ceil(this.filteredQuestions.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedQuestions = this.filteredQuestions.slice(startIndex, endIndex);
+  }
+
+  changePage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+      // Scroll to top of questions list
+      document.querySelector('.questions-header')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  getPagesArray(): number[] {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxVisible - 1);
+    
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
   getRatingCount(): number {
     return this.questions.filter(q => q.type === 'rating').length;
   }
@@ -89,24 +163,18 @@ export class GestionQuestionsComponent implements OnInit {
     return this.questions.filter(q => q.type === 'scale').length;
   }
 
-  // Méthode de filtrage
-  filterQuestions(filter: string) {
-    this.currentFilter = filter;
-    if (filter === 'all') {
-      this.filteredQuestions = [...this.questions];
-    } else if (filter === 'active') {
-      this.filteredQuestions = this.questions.filter(q => q.active === true);
-    } else if (filter === 'inactive') {
-      this.filteredQuestions = this.questions.filter(q => q.active === false);
-    }
+  getActiveCount(): number {
+    return this.questions.filter(q => q.active === true).length;
   }
 
-  // TrackBy function pour éviter la perte de focus
+  getInactiveCount(): number {
+    return this.questions.filter(q => q.active === false).length;
+  }
+
   trackByIndex(index: number, item: string): number {
     return index;
   }
 
-  // Gestion des options
   addOptions() {
     this.options.push('');
     this.options = [...this.options];
@@ -120,7 +188,6 @@ export class GestionQuestionsComponent implements OnInit {
   }
 
   onTypeChange() {
-    // Réinitialiser les configurations quand on change de type
     if (this.questionType === 'text') {
       this.options = [];
     } else if (this.questionType === 'multiple' || this.questionType === 'unique') {
@@ -138,9 +205,7 @@ export class GestionQuestionsComponent implements OnInit {
     }
   }
 
-  // Sauvegarder (ajout ou modification)
   saveQuestion() {
-    // Validation
     if (!this.questionTitle.trim()) {
       this.showToastMessage('Le titre de la question est requis');
       return;
@@ -168,7 +233,6 @@ export class GestionQuestionsComponent implements OnInit {
       active: this.questionStatus === 'active'
     };
 
-    // Ajouter les données selon le type
     if (this.questionType === 'multiple' || this.questionType === 'unique') {
       payload.options = optionsFormatted;
     } else if (this.questionType === 'rating') {
@@ -182,7 +246,6 @@ export class GestionQuestionsComponent implements OnInit {
     }
 
     if (this.isEditing && this.editingQuestionId) {
-      // Mode modification
       this.service.updateQuestion(this.editingQuestionId, payload).subscribe({
         next: () => {
           this.getAllQuestions();
@@ -195,7 +258,6 @@ export class GestionQuestionsComponent implements OnInit {
         }
       });
     } else {
-      // Mode ajout
       this.service.ajoutquestionAvecDesOptions(payload).subscribe({
         next: () => {
           this.getAllQuestions();
@@ -210,7 +272,6 @@ export class GestionQuestionsComponent implements OnInit {
     }
   }
 
-  // Éditer une question
   editQuestion(question: any) {
     this.isEditing = true;
     this.editingQuestionId = question.id;
@@ -219,7 +280,6 @@ export class GestionQuestionsComponent implements OnInit {
     this.questionStatus = question.active ? 'active' : 'inactive';
     this.required = question.obligatoire;
 
-    // Charger les options si présentes
     if (question.options && question.options.length > 0) {
       this.options = question.options.map((opt: any) => opt.texte);
       while (this.options.length < 2) {
@@ -229,7 +289,6 @@ export class GestionQuestionsComponent implements OnInit {
       this.options = ['', ''];
     }
     
-    // Charger les configurations spécifiques
     if (question.ratingConfig) {
       this.ratingConfig = question.ratingConfig;
     }
@@ -238,7 +297,6 @@ export class GestionQuestionsComponent implements OnInit {
       this.scaleConfig = question.scaleConfig;
     }
 
-    // Scroll vers le formulaire
     setTimeout(() => {
       document.querySelector('.question-form-card')?.scrollIntoView({ 
         behavior: 'smooth' 
@@ -246,12 +304,10 @@ export class GestionQuestionsComponent implements OnInit {
     }, 100);
   }
 
-  // Annuler l'édition
   cancelEdit() {
     this.resetForm();
   }
 
-  // Supprimer une question
   deleteQuestion(question: any) {
     Swal.fire({
       title: 'Confirmation de suppression',
@@ -314,7 +370,6 @@ export class GestionQuestionsComponent implements OnInit {
     });
   }
 
-  // Réinitialiser le formulaire
   resetForm() {
     this.questionTitle = '';
     this.questionType = 'multiple';
@@ -327,7 +382,6 @@ export class GestionQuestionsComponent implements OnInit {
     this.editingQuestionId = null;
   }
 
-  // Afficher le toast
   showToastMessage(message: string) {
     this.toastMessage = message;
     this.showToast = true;
@@ -336,7 +390,6 @@ export class GestionQuestionsComponent implements OnInit {
     }, 3000);
   }
 
-  // Helper pour afficher le type en français
   getTypeLabel(type: string): string {
     const types: {[key: string]: string} = {
       'multiple': 'Choix multiple',
@@ -361,7 +414,6 @@ export class GestionQuestionsComponent implements OnInit {
     return icons[type] || 'fa-question';
   }
   
-  // Méthodes pour la prévisualisation
   getStarsArray(maxStars: number): number[] {
     return Array(maxStars).fill(0);
   }
@@ -370,8 +422,43 @@ export class GestionQuestionsComponent implements OnInit {
     return Array(steps).fill(0);
   }
 
-  // Méthode pour obtenir la classe CSS du bouton de filtre
   getFilterButtonClass(filter: string): string {
     return this.currentFilter === filter ? 'active' : '';
+  }
+
+  toggleSortOrder() {
+    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    this.filterQuestions(this.currentFilter);
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.filterQuestions(this.currentFilter);
+  }
+
+  exportToCSV() {
+    const headers = ['ID', 'Titre', 'Type', 'Statut', 'Obligatoire', 'Date de création'];
+    const data = this.filteredQuestions.map(q => [
+      q.id,
+      q.texte,
+      this.getTypeLabel(q.type),
+      q.active ? 'Active' : 'Inactive',
+      q.obligatoire ? 'Oui' : 'Non',
+      new Date(q.create_at).toLocaleDateString()
+    ]);
+    
+    const csvContent = [headers, ...data].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'questions_export.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    this.showToastMessage('Export CSV effectué avec succès !');
   }
 }

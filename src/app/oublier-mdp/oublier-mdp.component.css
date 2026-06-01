@@ -138,12 +138,13 @@
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  
 }
 .particle {
   position: absolute;
   width: 6px;
   height: 6px;
-  background: radial-gradient(circle, var(--purple-500) 0%, transparent 70%);
+  background: wh;
   border-radius: 50%;
   opacity: 0.4;
   animation: particleFloat 15s linear infinite;
